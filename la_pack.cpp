@@ -717,16 +717,13 @@ matrix<double> la_pack::rowEchelonReduceUToI(matrix<double> &A, bool roundOff) /
 
 double la_pack::trace(matrix<double> &A)
 /*
-	retuns num of diagonal elements
+	retuns sum of diagonal elements
 */
 {
 	double trace = 0 ;
 		for(long long  i = 1 ; i <= A.numRows() ;i++)
 		{
-			for(long long  j = 1; j <= A.numCols() ; j++)
-			{
-					trace += A(i,j);
-			}
+			trace += A(i,i);
 		}
 		return trace; 
 }

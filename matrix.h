@@ -27,6 +27,18 @@ End April 4th Night
 #include <stdio.h>  //randFill
 #include <cstdlib>
 
+#include <stdexcept>
+
+template <class T>
+class matrix;
+
+
+//OPERATORS
+template<typename T>	
+std::ostream& operator<<(std::ostream& out, const matrix<T>& temp); // Not working 
+
+
+
 
 //------------------------------------------------------------------------------------------------
 
@@ -35,12 +47,37 @@ class matrix
 {
 public:
 	//CONSTRUCTORS
-	matrix(void) {}; // Give a function body . even if you do not give it a body to prevent linker errors
-	~matrix(void); // On line 64 ; 
-	matrix(long long rows, long long  cols) :_rows(rows), _cols(cols), _matrix(_rows*_cols){ _size = _rows*_cols; } // 
-	matrix(const matrix<T>& rhs);
+	matrix(void)  : _rows(0) , _cols(0) , _size(0)
+	{
 
+	};
+       
+	~matrix(void);
+
+
+	matrix(size_t rows , size_t cols , T val = 0) : _rows(rows) , _cols(cols) , _matrix(_rows * _cols, val), _size(_rows * _cols)
+	{
+
+	}
+matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._size)
+	{
+		_matrix = rhs._matrix;
+	};
+
+	
 	//GENERAL
+	// resize the matrix	
+	void resize(size_t rows , size_t cols , T val = 0)
+	{
+		_rows = rows; 
+		_cols = cols;
+		_size = rows * cols;		
+	
+		_matrix.resize(_size , val);
+
+	}	
+
+
 	void print();
 	long long  numRows() const { return (_rows); }; // Implicit inline 
 	long long  numCols() const { return  (_cols); };
@@ -62,8 +99,8 @@ public:
 
 
 	// Adds a single Column to the matrix 
-	matrix<T> addCol(matrix<T> col);
-	matrix<T> addRow(matrix<T> row);
+	matrix<T> addCol(const matrix<T>& col);
+	matrix<T> addRow(const matrix<T>& row);
 	bool isSquare() const { return ((_rows == _cols) ? true : false); }
 	bool isRowVector()const { return ((_rows == 1) ? true : false); }
 	bool isColVector() const { return ((_cols == 1) ? true : false); }
@@ -72,8 +109,10 @@ public:
 	bool isUpperTriangular() const ;
 	bool isLowerTriangular() const;
 	bool isDiagonallyDominant() const;
-	//OPERATORS
-	//friend std::ostream& operator<<(std::ostream& out, matrix<T> &temp); // Not working 
+
+
+	matrix<T> getIdentity(long long  aRow);
+
 	matrix<T>& operator=(const matrix<T>& rhs);
 	matrix<T> operator*(const T rhs);
 	matrix<T> operator/(const T rhs);
@@ -84,24 +123,19 @@ public:
 	bool operator==(const matrix<T> & rhs);
 	bool operator!=(const matrix<T> & rhs){ return !(*this == rhs); }
 
-
-	T& operator()(long long  rows, long long  cols) const ;//friend std::ostream& operator<<(std::ostream& out , matrix &temp);
-
-	//------------------------------------------------------------------------------------------------
-
-
+	T& operator()(const long long  rows, const long long  cols) const;
 
 private:
 
-	// CONSTRUCTORS
-	//matrix(void);
 
 	void init(); // sets up _matirx 
 
-	//DATA // Make Constant in Future 
-	long long  _rows;
-	long long  _cols;
-	long long  _size;
+	// The size specifiers cannot be const as the matrix has the ability to resize	
+	size_t  _rows;
+	size_t  _cols;
+	size_t _size;
+
+
 	std::vector<T> _matrix;
 
 	// GENERAL
@@ -119,7 +153,58 @@ typedef matrix<double> matDouble;
 typedef matrix<int> matInt;
 
 
-// ----------------------------------------------------------------------------------------------------------------------------------------------
+/*
+ * add support to add a row at the end of the current matrix.
+ * 
+ *
+ */
+
+template <class T>
+matrix<T> matrix<T>::addRow(const matrix<T>& row)
+{
+	if(row.isRowVector )
+	{
+		if(row.numCols() != _cols && _cols != 0)
+		{
+			throw std::invalid_argument(std::string("Given row does not have eqaul number of columns as current matrix"));
+		}
+
+		// More optimial might to be reserve and then add move elmements ?
+		
+		_matrix.reserve(_size + row._size);	 // increase the allocated memory
+
+		_matrix.insert(_matrix.end() , row.begin()  , row.end());	
+
+		// update the bookkeeping
+		_size += row._size;
+		++_rows;
+	}
+	else
+	{
+		throw std::invalid_argument(std::string("Given row is not a row Vector in addRow"));
+	}
+
+
+}
+
+
+// Fills in with 1. Make sure 1 can be casted into your template class
+template <class T>
+matrix<T> matrix<T>::getIdentity(long long  aRow)
+{
+	matrix<T> A(aRow,aRow);
+	for(long long  i = 1 ; i <= aRow ; i++)
+	{
+		for(long long  j = 1 ; j <= aRow ; j++)
+		{
+			if(i == j )
+			{
+				A(i,j) = 1 ; 
+			}
+		}
+	}
+	return A; 
+}
 
 
 template <class T>
@@ -543,20 +628,6 @@ Create a new matrix with same number of cols , but only a single row
 
 
 
-//------------------------------------------------------------------------------------------------
-
-
-template <class T>
-matrix<T>::matrix(const matrix<T>& rhs)
-{
-	/*
-	//Copy Constructor
-	*/
-	_matrix = rhs._matrix;
-	_rows = rhs._rows;
-	_cols = rhs._cols;
-}
-
 
 template <class T>
 matrix<T>  matrix<T>::operator*(const matrix<T> & rhs)
@@ -713,7 +784,8 @@ matrix<T> matrix<T>::operator-(const matrix<T> &rhs)
 
 
 template <class T>
-void matrix<T>::print(){
+void matrix<T>::print()
+{
 	std::cout << std::endl << std::endl;
 	for (long long i = 1; i <= _rows; i++)
 	{
@@ -756,7 +828,6 @@ void matrix<T>::randFill(T start, T end)
 		for (long long j = 1; j <= _cols; j++)
 		{
 			_matrix[(i - 1)*_cols + (j - 1)] = static_cast<T>(std::rand() / (end - start) + 1);
-			// Look at Stack Over Flow Question
 		}
 	}
 }
@@ -766,8 +837,6 @@ void matrix<T>::randFill(T start, T end)
 template <class T >
 matrix<T>::~matrix(void)
 {
-	//delete [] _matrix;
-	// Memory management handled by vector class	
 	_matrix.clear();
 }
 
@@ -776,53 +845,28 @@ matrix<T>::~matrix(void)
 
 template <class T>
 void matrix<T>::init(){
-	/*
 	// Initlializer called by the matrix(row,col)
-	---------------------------------------------*/
-	_matrix = std::vector<T>(_rows*_cols);
-	for (long long i = 1; i <= _rows; i++)
-	{
-		for (long long j = 1; j <= _cols; j++)
-		{
-			_matrix[(i - 1)*_cols + (j - 1)] = 0;
-		}
-	}
-}
+	_matrix = std::vector<T>(_rows*_cols , 0 ); // Fills in the vector with zeros
 
-// instead of rand use std::random . implement later 
-
-/*
-template <class T ,typename Fn ,typename ...Args>
-matrix<T>::loopApply(Fn fn , Args...args )
-{
-for(long long  i = 1; i <= _rows ;i++)
-{
-for(long long  j = 1 ; j <= _cols ; j++)
-{
-_matrix[(i - 1)*_cols + (j -1 )] = fn(args...) ;
 }
-}
-}
-
-
 
 
 template <class T>
-std::ostream& operator<<(std::ostream& out, matrix<T> &temp)
+std::ostream& operator<<(std::ostream& out, const matrix<T>& temp)
 {
-	for (long long i = 1; i <= _rows; i++)
+	out << std::endl;
+	for (long long i = 1; i <= temp.numRows(); i++)
 	{
-		for (long long j = 1; j <= _cols; j++)
+		for (long long j = 1; j <= temp.numCols(); j++)
 		{
-			//out << temp.get(i,j);
-			out << std::setw(7) << get(i, j);
-			if (j == _cols) out << std::endl;
+		//	out << temp.get(i,j);
+			out << std::setw(7) << temp(i, j);
+			if (j == temp.numCols()) out << std::endl;
 		}
 	}
 	return out;
 }
 
-*/
 
 
 #endif
