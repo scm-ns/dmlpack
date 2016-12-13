@@ -15,8 +15,7 @@ int main()
 	matrix<int> C(A*B);
 
 	std::cout << C << std::endl;	
-	C(1,1) = 0;
-	std::cout << C << std::endl;	
+
 	std::cout << (A * B) << std::endl;
 
 };

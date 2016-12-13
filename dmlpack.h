@@ -13,7 +13,7 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <cmath>
-
+#include <algorithm>
 
 
 #include "matrix.h"
@@ -125,8 +125,30 @@ class dmlpack
 //		matrix<T>& test_y_ ; While testing only the x labels are given and we have to predict the y values from that 
 
 
+
+
+		//percetron internals
+
+		bool single_preceptron(matrix<T> feature , matrix<T>weight);
+
+
+
+
+
+
+
+
+		// multi-layer perceptron : Internals.
+
+
+
+
+
+
+
 		// naive bayes //internals	------------------------------------
 		void naive_bayes_train();
+		std::pair<matrix<T> , matrix<T> > naive_bayes_inference();
 		std::size_t num_samples;  // in a multi batch train scenario ne need to keep track of the number of samples we have seen
 					      //------------------------------------
 		std::size_t num_classes;
@@ -134,13 +156,13 @@ class dmlpack
 
 
 		// Normalize with laplace smoothing
-		T normalize_laplace(T val) 
+		T normalize_laplace(size_t class_occurance  , size_t total_classes , size_t total_occurances ,  size_t strength = 1)  // pretend there is a uniform distribution of the data. Then update it based on evidence
 		{ 
-			return (double ) ( (val + 1) / (num_classes + 1) ) ;
+			return (double ) ( (class_occurance + strength) / (double) (total_occurances + total_classes * strength) ) ;
 		};	
 
 
-		matrix<T> softmax(matrix<T> prob) // has to be applied on a column vector
+		matrix<T> softmax(matrix<T>& prob) const // has to be applied on a column vector
 		{
 			matrix<T> res(prob.numRows , prob.numCols);	
 			
@@ -339,35 +361,35 @@ void dmlpack<T>::naive_bayes_train()
 
 
 
-
 /*
  * Returns both the final probabilites of each class for each training samples and the result from applying softmax
- *
  */
-
 template <typename T>
 std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 {
 
-
 	matrix<T> res; // the matrix will be of size # test samples * num classes
 
+	size_t num_test_samples = test_x_.numRows();
+
+	// Now compute the class prediction for each test sample
+	matrix<T> prediction(num_test_samples , 1);  
 
 
 	// Go through each element in the features of x and from compuute the probabilites
-	for(size_t test_sample = 1; test_sample <= test_x_.numRows() ; ++test_sample) // each row in the matrices
+	for(size_t test_sample = 1; test_sample <= num_test_samples; ++test_sample) // each row in the matrices
 	{
 
 		matrix<T> sub_mat(1, num_classes); // this row vector will be concatenated to the end of the res
 
 		// fill them with P(Y)
 	
-		for(size_t class_idx = 1 ; class_idx < num_classes ; ++class_idx)
+		for(size_t class_idx = 1 ; class_idx <= num_classes ; ++class_idx)
 		{
-			sub_mat(1,class_idx) = map_class_occurance[class_idx];  // number of occuracnes of the given clas
-			
+			sub_mat(1,class_idx) =  normalize_laplace(map_class_occurance[class_idx] , num_classes , num_samples );  // number of occuracnes of the given clas
 			// convert to probability by normalizing
-			sub_mat(1 , class_idx) /= num_samples;   	
+		
+			sub_mat(1 , class_idx) = std::log(sub_mat(1 , class_idx));
 
 			/*
 			 * Normalizing here, instead of when the insertion into the map happens, enables us to train in batches
@@ -376,13 +398,11 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 			 */
 		}
 	
-
+		size_t num_features = test_x_.numCols(); 
 		/*
 		 * p(y , f_i ) = p(y) * sigma{ p(f_i|y) }
 		 */
-
-
-		for(size_t feature_idx = 1 ; feature_idx < test_x_.numCols() ; ++feature_idx)
+		for(size_t feature_idx = 1 ; feature_idx <=  num_features; ++feature_idx)
 		{
 			T val = test_x_(test_sample , feature_idx); 
 
@@ -391,22 +411,73 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 			// if the feature is not present, then it does not give up any way to update the probability of which class to choose from
 				// we have to compute for each class. That is given this feature, what is the probability of seeeing a partucular class	
 				
-				for(size_t class_idx = 1 ; class_idx < num_classes ; ++num_classes)
+				for(size_t class_idx = 1 ; class_idx <= num_classes ; ++num_classes)
 				{
 					// compute p(f_i / y) , by counting the occurance of a feature for the partucular class and dividing it by the total occurance of that feature
-					sub_mat(1,class_idx) *= map_feature_in_class_occurance[std::make_pair(feature_idx , class_idx)]; 
+					T temp = normalize_laplace( map_feature_in_class_occurance[std::make_pair(feature_idx , class_idx)] ,
+						       	        	num_features , 
+									map_feature_occurance[feature_idx] ); 
 
-					sub_mat(1,class_idx) /= map_feature_occurance[feature_idx];
+					sub_mat(1, class_idx) += std::log(temp);
 				}
 
 			}
 
 
 		}
+		
+		res.addRow(sub_mat); // add the probabilities over the different classes 
+		
+		// Use softMax and select max to do prediction on what is the best class to be taken
 
+		// normalize using softmax. squishes everything to lie in the 0,1 range and the total sum = 1. 
+		sub_mat = softmax(sub_mat);
+
+		// std::max_element + distance to find the index of with the largest probaility . 
+		// Add one since the output of distance is 0 index, while the classes are 1 indexed 
+		prediction(test_sample , 1) = std::distance(std::begin(sub_mat) , std::max_element(std::begin(sub_mat) , std::end(sub_mat))) + 1;
 
 	}
 
+	return make_pair( res , prediction );
+}
+
+
+/* 
+ * RUn the tained model on the given test data and gives back the accuracyt . 
+ * 	How to measure accuracy ? For now just count the number of times the prediction and the actual y matches. 
+ */
+
+
+
+
+
+/*
+ * A single percetron model 
+ * Plug this model into others to obtain better results.
+ *
+ * if feauture * weight >= threshold then 1 else 0
+ *
+ * intput : the feature (row vector), the weight vector (column vector) , double threshould
+ * output : 0 or 1 representing whether the neuroing has fired or not 
+ */
+
+template <typename T>
+bool dmlpack<T>::single_preceptron(matrix<T> feature , matrix<T>weight)
+{
+
+
+
 
 }
+
+
+
+
+
+
+
+
+
+
 
