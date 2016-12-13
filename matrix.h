@@ -79,26 +79,27 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 
 
 	void print();
-	long long  numRows() const { return (_rows); }; // Implicit inline 
-	long long  numCols() const { return  (_cols); };
+	size_t  numRows() const { return (_rows); }; // Implicit inline 
+	size_t numCols() const { return  (_cols); };
 	void randFill(T start = 0, T end = 1000); // Will only work for simple data types
 	void symetricRandFill(T start = 0, T end = 1000); // Will only work for simple data types
 	void setAllNum(T aNum);
-	matrix<T> returnRow(int aRow) const;
-	matrix<T> returnCol(int aCol) const;
-	matrix<T> removeCol(int aCol);
-	matrix<T> removeRow(int aRow);
+	matrix<T> returnRow(size_t aRow) const;
+	matrix<T> returnCol(size_t aCol) const;
+	matrix<T> removeCol(size_t aCol);
+	matrix<T> removeRow(size_t aRow);
 
 	void replaceCol(matrix<T> colVec,int aCol) ;
 	void replaceRow(matrix<T> rowVec, int aRow)  ;
-	void swap(int aRow, int aCol, int bRow, int bCol) { int temp = this->get(aRow, aCol); this->insert(aRow, aCol, this->get(bRow, bCol)); this->insert(bRow, bCol, temp); };
+	void swap(int aRow, int aCol, int bRow, int bCol) 
+	{ 
+		T temp = this->get(aRow, aCol); 
+	  	this->insert(aRow, aCol, this->get(bRow, bCol)); this->insert(bRow, bCol, temp); };
 
 	matrix<T> getDiagonalVector() const;
 	matrix<T> getDiagonalMatrix() const;
-	// Adds a single Column to the matrix 
 
 
-	// Adds a single Column to the matrix 
 	matrix<T> addCol(const matrix<T>& col);
 	matrix<T> addRow(const matrix<T>& row);
 	bool isSquare() const { return ((_rows == _cols) ? true : false); }
@@ -112,6 +113,9 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 
 
 	matrix<T> getIdentity(long long  aRow);
+	T sum();
+	matrix<T> transpose();
+	T innerProduct(const matrix<T>& A, const matrix<T>& B);
 
 	matrix<T>& operator=(const matrix<T>& rhs);
 	matrix<T> operator*(const T rhs);
@@ -124,6 +128,7 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 	bool operator!=(const matrix<T> & rhs){ return !(*this == rhs); }
 
 	T& operator()(const long long  rows, const long long  cols) const;
+
 
 private:
 
@@ -139,9 +144,20 @@ private:
 	std::vector<T> _matrix;
 
 	// GENERAL
-	void insert(long long i, long long j, T aVaule) { _matrix[(i - 1)*_cols + (j - 1)] = aVaule; }
-	T& get(long long  i, long long  j) const { return const_cast<T &>( _matrix[(i - 1)*_cols + (j - 1)] ) ; }
-	static void error(const char* p){ std::string str = "matrix -> Error: "; std::cout << str << p << std::endl; }
+	void insert(size_t i, size_t j, T aVaule) 
+	{ 
+		_matrix[(i - 1)*_cols + (j - 1)] = aVaule; 
+	}
+
+	T& get(size_t i, size_t j) const 
+	{ 
+		return const_cast<T &>( _matrix[(i - 1)*_cols + (j - 1)] ) ; 
+	}
+
+	static void error(const char* p)
+	{ 
+		std::string str = "matrix -> Error: "; std::cout << str << p << std::endl; 
+	}
 };
 
 
@@ -348,47 +364,8 @@ matrix<T> matrix<T>::getDiagonalMatrix() const
 
 
 
-//
-//template <class T>
-//void matrix<T>::symetricRandFill(T start, T end)
-//{
-//	if (_rows == _cols)
-//	{
-//		std::srand(time(0));
-//		for (long long i = 1; i <= _rows; i++)
-//		{
-//			for (long long j = 1; j <= _cols; j++)
-//			{
-//				if (i >= j)
-//				{
-//					_matrix[(i - 1)*_cols + (j - 1)] = static_cast<T>(std::rand() / (end - start) + 1);
-//				}
-//			}
-//		}
-//
-//		for (long long i = 1; i <= _rows; i++)
-//		{
-//			for (long long j = 1; j <= _cols; j++)
-//			{
-//				if (j > i)
-//				{
-//					_matrix[(i - 1)*_cols + (j - 1)] = _matrix[(j - 1)*_cols + (i - 1)];
-//				}
-//			}
-//		}
-//	}
-//	else
-//	{
-//		error("Non Square matrix Cannot be square ");
-//	}
-//}
-
-
 template <class T>
 bool matrix<T>::isEqual(matrix<T> rhs) const
-/*
-returns True if equal , else false ;
-*/
 {
 	bool equal = false;
 	if (rhs.numRows() == numRows() && rhs.numCols() == numCols())
@@ -424,9 +401,10 @@ void matrix<T>::setAllNum(T aNum)
 	}
 }
 
+// Diagonal element is greater than the other elements in row
 template <class T>
 bool matrix<T>::isDiagonallyDominant() const
-{  // Diagonal element is greater than the other elements in row
+{  
 	bool isDominant = false;
 	for (long long i = 1; i <= _rows; i++)
 	{
@@ -542,7 +520,7 @@ bool matrix<T>::isDiagonal() const
 //------------------------------------------------------------------------------------------------
 
 template <class T>
-matrix<T> matrix<T>::returnRow(int aRow) const
+matrix<T> matrix<T>::returnRow(size_t aRow) const
 /*
 Create a new matrix with same number of cols , but only a single row
 */
@@ -562,7 +540,7 @@ Create a new matrix with same number of cols , but only a single row
 }
 
 template <class T>
-matrix<T> matrix<T>::removeCol(int aCol)
+matrix<T> matrix<T>::removeCol(size_t aCol)
 /*
 No operation is done on the input matrix , the matrix returned is a new matrix
 remove a col and returns a matrix of same size but without the specified col
@@ -583,7 +561,7 @@ remove a col and returns a matrix of same size but without the specified col
 }
 
 template <class T>
-matrix<T> matrix<T>::removeRow(int aRow)
+matrix<T> matrix<T>::removeRow(size_t aRow)
 /*
 No operation is done on the input matrix , the matrix returned is a new matrix
 remove a col and returns a matrix of same size but without the specified col
@@ -606,7 +584,7 @@ remove a col and returns a matrix of same size but without the specified col
 //----------------------------------------------------------------------------------------------------------------------------------------------
 
 template <class T>
-matrix<T> matrix<T>::returnCol(int aCol) const
+matrix<T> matrix<T>::returnCol(size_t aCol) const
 /*
 Create a new matrix with same number of cols , but only a single row
 */
@@ -850,6 +828,40 @@ void matrix<T>::init(){
 
 }
 
+template <class T>
+T matrix<T>::sum()
+{
+	T sum = 0; 
+
+	if (isColVector())
+	{
+		for (size_t i = 1; i <= numRows(); i++) // Go through each row and add them up 
+		{
+			sum += get(i, 1);
+		}
+	}
+	else if (isRowVector())
+	{
+		for (size_t i = 1; i <= numCols(); i++) // Go through each row and add them up 
+		{
+			sum += get(1,i);
+		}
+
+	}
+	else // matrix is a normal matrix , fat or thin 
+	{
+		for (size_t i = 1; i <= numRows(); i++)
+		{
+			for (size_t j = 1; j <= numCols(); j++)
+			{
+				sum += get(i, j);
+			}
+		}
+	}
+
+	return sum; 
+}
+
 
 template <class T>
 std::ostream& operator<<(std::ostream& out, const matrix<T>& temp)
@@ -865,6 +877,74 @@ std::ostream& operator<<(std::ostream& out, const matrix<T>& temp)
 		}
 	}
 	return out;
+}
+
+
+
+/*
+ * Tranpose the given matrix
+ *
+ */
+template <class T>
+matrix<T> matrix<T>::transpose()
+{
+	matrix<double> R(numCols(),numRows()); 
+	for(long long  i = 1; i <= numRows() ; i++)
+	{
+		for(long long  j = 1; j <= numCols() ; j++)
+		{
+			R(j,i) = get(i,j);
+		}
+	}
+	return R;
+}
+
+
+
+/*
+ * Computes the dot product
+	inner Product :
+	At * B // t = transpose
+	Row Vec * Col Vec 
+	(1, n) * (n , 1)
+
+	Allows the user to be sloppy
+
+*/
+template <class T>
+T matrix<T>::innerProduct(const matrix<T>& A, const matrix<T>& B)
+{
+	T result = 0 ; 
+	
+	if(A.isRowVector() && B.isColVector() && (A.numCols() == B.numRows()))
+	{
+		for(size_t  i = 1 ; i <= A.numRows();i++)
+		{	
+			result += A(1,i)*B(i,1);
+		}
+		return result;
+	}
+	else if(A.isRowVector() && B.isRowVector() && (A.numCols() == B.numCols()))
+	{
+		for(size_t i = 1 ; i <= A.numCols();i++)
+		{	
+			result += A(1,i)*B(1,i);
+		}
+		return result;
+	}
+	else if(A.isColVector() && B.isColVector() && (A.numRows() == B.numRows()))
+	{
+		for(size_t i = 1 ; i <= A.numRows();i++)
+		{	
+			result += A(i,1)*B(i,1);
+		}
+		return result;
+	}
+	else
+	{
+		error("innerProduct -> A and B are not in proper format ");
+		return result*(0);
+	}
 }
 
 
