@@ -506,12 +506,12 @@ void dmlpack<T>::multi_class_perceptron_train()
 	// Initially all the weights are 0
 	perceptron_weight_.resize(num_classes , num_features + 1 , 0 ); // + 1 for the biases 
 
+	perceptron_weight_(1 , num_features + 1) = 1 ; // set the bias for the class to be 1, so the tie can be broken for arg_max, when the algorithm starts are the weight vector is filled with 0
+
 
 	// Now go through the data set and fill in these values
 	for(size_t train_sample = 1; train_sample <= num_train_samples ; ++train_sample) // each row in the matrices
 	{
-
-		size_t class_idx = 1;
 
 		// get the feature vector
 		matrix<T> feature_vec = train_x_.returnRow(train_sample);	
@@ -526,29 +526,48 @@ void dmlpack<T>::multi_class_perceptron_train()
 		// Update the weight of the class with the max weight
 		// and also the class that was predicted .
 	
-
 		matrix<T> class_pred(1,num_classes);
 
+		size_t actual_class_id = 0 ; 
+
 		// first go over the y portion of the data set to find the class
-		for(class_idx = 1  ; class_idx <= num_classes ; ++class_idx)
+		for(size_t class_idx = 1  ; class_idx <= num_classes ; ++class_idx)
 		{
 
 			// get the weight vector for a particular class
 			matrix<T> weight_vec = perceptron_weight_.returnRow(class_idx);			
-			bool pred = single_preceptron(feature_vec , weight_vec);
-			
+			std::pair<bool, T> pred = single_preceptron(feature_vec , weight_vec);
+		
+			class_pred(1,class_idx) = pred.second;
+
 			bool actual = train_y_(train_sample , class_idx); 	
 
-			// check if the classification is correct
-			// if correct do nothing.
-			// else update the weight vector for this particular class
-			if(pred != actual)
+			if(actual)
 			{
-				weight_vec = weight_vec + actual * feature_vec;
-				perceptron_weight_.replaceRow(weight_vec);
+				actual_class_id = class_idx;
 			}
-
+			
 		}
+		
+		auto predicted_class_idx = class_pred.arg_max();
+
+		// update the weight vectors
+		// if the predicted class and the acutal class are not the same,
+		// then we reduce the weight vector for the predicted class 
+		// and increase the weight vector for the actual class .
+		if(predicted_class_idx != actual_class_id)
+		{
+			// reduce the weight vector for the predicted class 
+			matrix<T> reduced_weight = perceptron_weight_.returnRow(predicted_class_idx);		
+			reduced_weight = reduced_weight - feature_vec;	
+			perceptron_weight_.replaceRow(reduced_weight , predicted_class_idx);
+			
+			// increase the weight vector for the actual class .
+			matrix<T> increase_weight = perceptron_weight_.returnRow(actual_class_id);		
+			increase_weight = increase_weight + feature_vec;	
+			perceptron_weight_.replaceRow(increase_weight, actual_class_id);
+		}
+	
 
 	}	
 

@@ -129,8 +129,8 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 	matrix<T> operator*(const T rhs);
 	matrix<T> operator/(const T rhs);
 	matrix<T> operator*(const matrix<T> &rhs);
-	matrix<T> operator+(const matrix<T> &rhs);
-	matrix<T> operator-(const matrix<T> &rhs);
+	matrix<T> operator+(const matrix<T> &rhs) const;
+	matrix<T> operator-(const matrix<T> &rhs) const;
 	
 	bool operator==(const matrix<T> & rhs);
 	bool operator!=(const matrix<T> & rhs){ return !(*this == rhs); }
@@ -712,7 +712,7 @@ matrix<T>& matrix<T>::operator=(const matrix<T>& rhs)
 //------------------------------------------------------------------------------------------------
 
 template <class T>
-matrix<T> matrix<T>::operator+(const  matrix<T> &rhs)
+matrix<T> matrix<T>::operator+(const  matrix<T> &rhs) const
 {
 
 	matrix<T> R(_rows, _cols);
@@ -737,7 +737,7 @@ matrix<T> matrix<T>::operator+(const  matrix<T> &rhs)
 
 
 template <class T>
-matrix<T> matrix<T>::operator-(const matrix<T> &rhs)
+matrix<T> matrix<T>::operator-(const matrix<T> &rhs) const
 {
 
 	matrix<T> R(_rows, _cols);
