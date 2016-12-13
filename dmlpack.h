@@ -129,10 +129,7 @@ class dmlpack
 
 		//percetron internals
 
-		bool single_preceptron(matrix<T> feature , matrix<T>weight);
-
-
-
+		bool single_preceptron(matrix<T> feature , matrix<T>weight , T threshold  = 0);
 
 
 
@@ -449,9 +446,6 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
  */
 
 
-
-
-
 /*
  * A single percetron model 
  * Plug this model into others to obtain better results.
@@ -461,20 +455,19 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
  * intput : the feature (row vector), the weight vector (column vector) , double threshould
  * output : 0 or 1 representing whether the neuroing has fired or not 
  */
-
 template <typename T>
-bool dmlpack<T>::single_preceptron(matrix<T> feature , matrix<T>weight)
+bool dmlpack<T>::single_preceptron(matrix<T> feature , matrix<T>weight , T threshold )
 {
-
-
-
-
+	T res = feature.innerProduct(weight);
+	if(res > threshold)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
-
-
-
-
-
 
 
 

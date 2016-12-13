@@ -115,7 +115,7 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 	matrix<T> getIdentity(long long  aRow);
 	T sum();
 	matrix<T> transpose();
-	T innerProduct(const matrix<T>& A, const matrix<T>& B);
+	T innerProduct(const matrix<T>& B);
 
 	matrix<T>& operator=(const matrix<T>& rhs);
 	matrix<T> operator*(const T rhs);
@@ -909,34 +909,35 @@ matrix<T> matrix<T>::transpose()
 	(1, n) * (n , 1)
 
 	Allows the user to be sloppy
+	Here A is the current matrix
 
 */
 template <class T>
-T matrix<T>::innerProduct(const matrix<T>& A, const matrix<T>& B)
+T matrix<T>::innerProduct(const matrix<T>& B)
 {
 	T result = 0 ; 
 	
-	if(A.isRowVector() && B.isColVector() && (A.numCols() == B.numRows()))
+	if(isRowVector() && B.isColVector() && (numCols() == B.numRows()))
 	{
-		for(size_t  i = 1 ; i <= A.numRows();i++)
+		for(size_t  i = 1 ; i <= numRows();i++)
 		{	
-			result += A(1,i)*B(i,1);
+			result += get(1,i)*B(i,1);
 		}
 		return result;
 	}
-	else if(A.isRowVector() && B.isRowVector() && (A.numCols() == B.numCols()))
+	else if(isRowVector() && B.isRowVector() && (numCols() == B.numCols()))
 	{
-		for(size_t i = 1 ; i <= A.numCols();i++)
+		for(size_t i = 1 ; i <= numCols();i++)
 		{	
-			result += A(1,i)*B(1,i);
+			result += get(1,i)*B(1,i);
 		}
 		return result;
 	}
-	else if(A.isColVector() && B.isColVector() && (A.numRows() == B.numRows()))
+	else if(isColVector() && B.isColVector() && (numRows() == B.numRows()))
 	{
-		for(size_t i = 1 ; i <= A.numRows();i++)
+		for(size_t i = 1 ; i <= numRows();i++)
 		{	
-			result += A(i,1)*B(i,1);
+			result += get(i,1)*B(i,1);
 		}
 		return result;
 	}
