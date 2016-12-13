@@ -145,12 +145,6 @@ class dmlpack
 		void train_on_batch();
 	
 
-
-
-
-
-
-
 	private:
 		classifier_type ml_type_; // machine learning type
 
@@ -595,39 +589,40 @@ void dmlpack<T>::multi_class_perceptron_train(perceptron_type type)
 		// and increase the weight vector for the actual class .
 		if(predicted_class_idx != actual_class_id)
 		{
-
-
 			// reduce the weight vector for the predicted class 
 			matrix<T> reduced_weight = perceptron_weight_.returnRow(predicted_class_idx);		
 
-
-
-
-			reduced_weight = reduced_weight - feature_vec;	
-			perceptron_weight_.replaceRow(reduced_weight , predicted_class_idx);
-			
 			// increase the weight vector for the actual class .
 			matrix<T> increase_weight = perceptron_weight_.returnRow(actual_class_id);		
 
 
-			
-
-
-
-			increase_weight = increase_weight + feature_vec;	
-			perceptron_weight_.replaceRow(increase_weight, actual_class_id);
-		}
-	
-
+			// different update rules based on choice 	
+			if(type == perceptron_type::simple)
+			{
+				auto res = perceptron_update(reduced_weight , increase_weight , feature_vec);
+				reduced_weight = res.first;
+				increase_weight = res.second;	
+			}
+			else
+			{
+				auto res = mira_perceptron_update(reduced_weight , increase_weight , feature_vec);
+				reduced_weight = res.first;
+				increase_weight = res.second;	
+			}
+		}	
 	}	
-
-
 }
 
 
 
 
 
-
+/*
+ *
+ * Create a single layer neural network. 
+ * Train the neural net
+ *
+ *
+ */
 
 
