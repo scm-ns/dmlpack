@@ -128,20 +128,17 @@ class dmlpack
 
 
 		//percetron internals
+		std::pair<bool,T> single_preceptron(const matrix<T>& feature , const matrix<T>& weight , T threshold  = 0 ) const;
 
-		bool single_preceptron(matrix<T> feature , matrix<T>weight , T threshold  = 0);
+		std::pair<matrix<T> , matrix<T>> multi_class_perceptron_inference();
 
+		void multi_class_perceptron_train();
 
+	 	matrix<T> perceptron_weight_;
 
 
 
 		// multi-layer perceptron : Internals.
-
-
-
-
-
-
 
 		// naive bayes //internals	------------------------------------
 		void naive_bayes_train();
@@ -159,53 +156,10 @@ class dmlpack
 		};	
 
 
-		matrix<T> softmax(matrix<T>& prob) const // has to be applied on a column vector
-		{
-			matrix<T> res(prob.numRows , prob.numCols);	
-			
-			double norm_factor = 0 ; 	
-			
-			for(int idx = 0 ; idx < prob.size() ; ++idx)
-			{
-				if(prob.isColVector)
-				{
-					norm_factor += std::exp(prob(idx,1));
-				}
-				else
-				{
-					norm_factor += std::exp(prob(1,idx));
-				}
-
-			}
-
-			// Now compute e^(x) / sigma e^(x_i)
-			for(int idx = 0 ; idx < prob.size() ; ++idx)
-			{
-				if(prob.isColVector)
-				{
-					res(idx,1) =  std::exp(prob(idx,1)); 
-
-					// normalize
-					res(idx,1) /= norm_factor;
-				}
-				else
-				{
-					res(1,idx) =  std::exp(prob(idx,1)); 
-
-					// normalize
-					res(1,idx) /= norm_factor;
-				}
-			}
-	
-			return res;
-		}
-
-
-
+		matrix<T> softmax(matrix<T>& prob) const ;// has to be applied on a column vector
+		
 		using occurance = std::size_t;
-
 		using class_index = std::size_t;
-
 		using feature_index = std::size_t;
 
 		// These objects should persist between multiple calls of the function
@@ -214,15 +168,15 @@ class dmlpack
 
 
 		// to compute p(y)
-		static std::unordered_map<class_index,occurance , hash_fctor> map_class_occurance;  // maintain mapping between class and count of its occurances in the training set
+		std::unordered_map<class_index,occurance , hash_fctor> map_class_occurance;  // maintain mapping between class and count of its occurances in the training set
 
 		// to compute p(f_i)
-		static std::unordered_map<feature_index, occurance , hash_fctor> map_feature_occurance ; // maintain mapping between each feature and the number of times it appears in the data set
+		std::unordered_map<feature_index, occurance , hash_fctor> map_feature_occurance ; // maintain mapping between each feature and the number of times it appears in the data set
 
 		using feature_in_class = std::pair<size_t , size_t>;
 
 		// to compute p(f_i | y)
-		static std::unordered_map< feature_in_class , occurance , hash_fctor> map_feature_in_class_occurance ;  // mapping between the occurance of each feature in a particular class
+		std::unordered_map< feature_in_class , occurance , hash_fctor> map_feature_in_class_occurance ;  // mapping between the occurance of each feature in a particular class
 
 
 
@@ -265,6 +219,49 @@ struct hash_fctor // functor
 
 };
 
+
+
+template <typename T>
+matrix<T> dmlpack<T>::softmax(matrix<T>& prob) const // has to be applied on a column vector
+{
+	matrix<T> res(prob.numRows , prob.numCols);	
+	
+	double norm_factor = 0 ; 	
+	
+	for(int idx = 0 ; idx < prob.size() ; ++idx)
+	{
+		if(prob.isColVector)
+		{
+			norm_factor += std::exp(prob(idx,1));
+		}
+		else
+		{
+			norm_factor += std::exp(prob(1,idx));
+		}
+
+	}
+
+	// Now compute e^(x) / sigma e^(x_i)
+	for(int idx = 0 ; idx < prob.size() ; ++idx)
+	{
+		if(prob.isColVector)
+		{
+			res(idx,1) =  std::exp(prob(idx,1)); 
+
+			// normalize
+			res(idx,1) /= norm_factor;
+		}
+		else
+		{
+			res(1,idx) =  std::exp(prob(idx,1)); 
+
+			// normalize
+			res(1,idx) /= norm_factor;
+		}
+	}
+
+	return res;
+}
 
 
 
@@ -432,7 +429,8 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 
 		// std::max_element + distance to find the index of with the largest probaility . 
 		// Add one since the output of distance is 0 index, while the classes are 1 indexed 
-		prediction(test_sample , 1) = std::distance(std::begin(sub_mat) , std::max_element(std::begin(sub_mat) , std::end(sub_mat))) + 1;
+		prediction(test_sample , 1) = sub_mat.arg_max();
+			
 
 	}
 
@@ -456,19 +454,106 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
  * output : 0 or 1 representing whether the neuroing has fired or not 
  */
 template <typename T>
-bool dmlpack<T>::single_preceptron(matrix<T> feature , matrix<T>weight , T threshold )
+std::pair<bool, T> dmlpack<T>::single_preceptron(const matrix<T>& feature , const matrix<T>& weight , T threshold ) const
 {
 	T res = feature.innerProduct(weight);
 	if(res > threshold)
 	{
-		return true;
+		return std::make_pair(true , res);
 	}
 	else
 	{
-		return false;
+		return std::make_pair(false, res);
 	}
 }
 
+
+
+
+/*
+ *
+ * Perceptron algorithm
+ * For each output class there should be a particular weight vector that can recognize it.
+ * The number of items in the weight vector will be equal to the number of features that we choose.
+ * 
+ * So how will training work ? 
+ * 	 The weight vector for each class will be modified for each training sample.
+ *	 so a training sample has class 1
+ *	 we will update the class 0 weight vector so that it will not be activated on seeing this feature vector
+ * 	 we will update the class 1 weight vector so that it will be activated on the next occurance of a similar feature.
+ *
+ *
+ * 	 For each feature a bias has to be added to ensure that the descision can move away from the origin 
+ *	 Will the bias addition be done with when the data source does the conversion or will it added / simulated with in this function ? 
+ *		Simulated within this function. 
+ *		The bias is anyways going to be +1 in the feature set
+ *		The weight vector will determine what the magnitude of the bias will be 
+ *
+ * Before calling the function set the training set 
+ * The training set's y should be in one-shot encoding
+ *
+ */
+
+template <typename T>
+void dmlpack<T>::multi_class_perceptron_train()
+{
+
+	const size_t num_train_samples = train_x_.numRows();
+
+	//Resize the weight vector to hold # classes rows and #features columns
+	// A weight vector for each of the classes 
+	// the weight vector will be used to determine how much the neuron will look at each feature
+	// Initially all the weights are 0
+	perceptron_weight_.resize(num_classes , num_features + 1 , 0 ); // + 1 for the biases 
+
+
+	// Now go through the data set and fill in these values
+	for(size_t train_sample = 1; train_sample <= num_train_samples ; ++train_sample) // each row in the matrices
+	{
+
+		size_t class_idx = 1;
+
+		// get the feature vector
+		matrix<T> feature_vec = train_x_.returnRow(train_sample);	
+
+		// Append the +1 towards its end. 
+		feature_vec.resize(1 , feature_vec.numCols() + 1);
+		feature_vec(1 , feature_vec.numCols()) = 1;
+
+
+		// Okay two seperate ways to implement this. 
+		// Update the weight of all the classes. 
+		// Update the weight of the class with the max weight
+		// and also the class that was predicted .
+	
+
+		matrix<T> class_pred(1,num_classes);
+
+		// first go over the y portion of the data set to find the class
+		for(class_idx = 1  ; class_idx <= num_classes ; ++class_idx)
+		{
+
+			// get the weight vector for a particular class
+			matrix<T> weight_vec = perceptron_weight_.returnRow(class_idx);			
+			bool pred = single_preceptron(feature_vec , weight_vec);
+			
+			bool actual = train_y_(train_sample , class_idx); 	
+
+			// check if the classification is correct
+			// if correct do nothing.
+			// else update the weight vector for this particular class
+			if(pred != actual)
+			{
+				weight_vec = weight_vec + actual * feature_vec;
+				perceptron_weight_.replaceRow(weight_vec);
+			}
+
+		}
+
+	}	
+
+
+}
 
 
 

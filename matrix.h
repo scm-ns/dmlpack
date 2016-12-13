@@ -28,6 +28,7 @@ End April 4th Night
 #include <cstdlib>
 
 #include <stdexcept>
+#include <algorithm>
 
 template <class T>
 class matrix;
@@ -91,10 +92,13 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 
 	void replaceCol(matrix<T> colVec,int aCol) ;
 	void replaceRow(matrix<T> rowVec, int aRow)  ;
+
 	void swap(int aRow, int aCol, int bRow, int bCol) 
 	{ 
-		T temp = this->get(aRow, aCol); 
-	  	this->insert(aRow, aCol, this->get(bRow, bCol)); this->insert(bRow, bCol, temp); };
+		T temp = get(aRow, aCol); 
+	  	insert(aRow, aCol, get(bRow, bCol));
+		insert(bRow, bCol, temp); 
+	};
 
 	matrix<T> getDiagonalVector() const;
 	matrix<T> getDiagonalMatrix() const;
@@ -114,8 +118,12 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 
 	matrix<T> getIdentity(long long  aRow);
 	T sum();
-	matrix<T> transpose();
-	T innerProduct(const matrix<T>& B);
+	matrix<T> transpose() const;
+	T innerProduct(const matrix<T>& B) const;
+	
+	// returns the index which has the maximum value in the vector
+	// onlys works on row or column vectors, not on matrix
+	size_t arg_max();
 
 	matrix<T>& operator=(const matrix<T>& rhs);
 	matrix<T> operator*(const T rhs);
@@ -129,8 +137,8 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 
 	T& operator()(const long long  rows, const long long  cols) const;
 
-
 private:
+
 
 
 	void init(); // sets up _matirx 
@@ -169,12 +177,25 @@ typedef matrix<double> matDouble;
 typedef matrix<int> matInt;
 
 
+template <class T>
+size_t matrix<T>::arg_max()
+{
+	if(isRowVector() || isColVector())
+	{
+		std::distance(std::begin(_matrix) , std::max_element(std::begin(_matrix) , std::end(_matrix))) + 1;
+	}
+	else
+	{
+		throw std::invalid_argument(std::string("arg_max can only be applied to a row or col vector"));
+	}
+
+}
+
+
+
 /*
  * add support to add a row at the end of the current matrix.
- * 
- *
  */
-
 template <class T>
 matrix<T> matrix<T>::addRow(const matrix<T>& row)
 {
@@ -264,26 +285,18 @@ void matrix<T>::symetricRandFill(T start , T end )
 	}
 }
 
-
-template <class T>
-void matrix<T>::replaceCol(matrix<T> colVec, int aCol) 
 /*
 Replaces the specified column of matrix with a given column
 Index as always starts at 1
 */
+template <class T>
+void matrix<T>::replaceCol(matrix<T> colVec, int aCol) 
 {
 	if (colVec.isColVector())
 	{
-		for (long long i = 1; i <= _rows; i++)
+		for (size_t i = 1 ; i <= _rows; ++i)
 		{
-			for (long long j = 1; j <= _cols; j++)
-			{
-				if (aCol == j)
-				{
-					//_matrix[(i - 1)*_cols + (j - 1)] = ;
-					insert(i, j, colVec(i, 1));
-				}
-			}
+			insert(i, aCol, colVec(i, 1));
 		}
 
 	}
@@ -293,26 +306,18 @@ Index as always starts at 1
 	}
 }
 
-
+/*
+	Replaces the specified row of matrix with a given row
+	Index as always starts at 1
+*/
 template <class T>
 void matrix<T>::replaceRow(matrix<T> rowVec, int aRow) 
-/*
-Replaces the specified row of matrix with a given row
-Index as always starts at 1
-*/
 {
 	if (rowVec.isRowVector())
 	{
-		for (long long i = 1; i <= _rows; i++)
+		for (size_t j = 1; j <= _cols; ++j)
 		{
-			for (long long j = 1; j <= _cols; j++)
-			{
-				if (aRow == i)
-				{
-					//_matrix[(i - 1)*_cols + (j - 1)] = rowVec(i, 1);
-					insert(i, j, rowVec(1, j));
-				}
-			}
+			insert(aRow, j, rowVec(1, j));
 		}
 
 	}
@@ -332,7 +337,6 @@ matrix<T> matrix<T>::getDiagonalVector() const
 			{
 				if (j == i)
 				{
-					//_matrix[(i - 1)*_cols + (j - 1)] = rowVec(i, 1);
 					vector(i, 1) = get(i, j);
 				}
 			}
@@ -886,7 +890,7 @@ std::ostream& operator<<(std::ostream& out, const matrix<T>& temp)
  *
  */
 template <class T>
-matrix<T> matrix<T>::transpose()
+matrix<T> matrix<T>::transpose() const
 {
 	matrix<double> R(numCols(),numRows()); 
 	for(long long  i = 1; i <= numRows() ; i++)
@@ -913,7 +917,7 @@ matrix<T> matrix<T>::transpose()
 
 */
 template <class T>
-T matrix<T>::innerProduct(const matrix<T>& B)
+T matrix<T>::innerProduct(const matrix<T>& B) const
 {
 	T result = 0 ; 
 	
