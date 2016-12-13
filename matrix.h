@@ -39,8 +39,6 @@ template<typename T>
 std::ostream& operator<<(std::ostream& out, const matrix<T>& temp); // Not working 
 
 
-
-
 //------------------------------------------------------------------------------------------------
 
 template <class T>
@@ -136,6 +134,9 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 	bool operator!=(const matrix<T> & rhs){ return !(*this == rhs); }
 
 	T& operator()(const long long  rows, const long long  cols) const;
+
+	T normEuclidean();
+
 
 private:
 
@@ -952,6 +953,15 @@ T matrix<T>::innerProduct(const matrix<T>& B) const
 	}
 }
 
+/*
+	Returns Euclidean or L2 norm of a matrix 
+*/
+template <class T>
+T matrix<T>::normEuclidean()
+{
+	T innerProd = innerProduct(this);
+	return std::sqrt(innerProd);
+}
 
 
 #endif

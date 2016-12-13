@@ -1,5 +1,5 @@
 #include "matrix.h"
-
+#include "dmlpack.h"
 
 #include <iostream>
 
@@ -17,6 +17,7 @@ int main()
 	std::cout << C << std::endl;	
 
 	std::cout << (A * B) << std::endl;
-
+	
+	dmlpack<float> K{classifier_type::naive_bayes};
 };
 

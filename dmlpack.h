@@ -14,14 +14,13 @@
 #include <unordered_map>
 #include <cmath>
 #include <algorithm>
-
+#include <memory>
 
 #include "matrix.h"
 #include "debug.h"
 
 
-/*
- * Start : Dec 10 th: 
+/* * Start : Dec 10 th: 
  * Memory Strategy : As long as I am not doing any real threading or cuda issues. I am going to make the C++ lib handle all the memory. 
  * 	> That is I will not explicitly allocate memory, but use the start contrainers to do the dirty work for me.
  *
@@ -29,6 +28,11 @@
 
 
 enum class classifier_type { naive_bayes , perceptron , multi_layer_nn };
+
+
+enum class perceptron_type {simple, mira};
+
+
 /*
  * HOW TO USE : 
  * 	init the class with a particular type of classiifer 
@@ -45,7 +49,41 @@ enum class classifier_type { naive_bayes , perceptron , multi_layer_nn };
 
 
 // Contains the operators used to create the hash functions
-struct hash_fctor; // functor
+struct hash_fctor // functor
+{
+	template <class T1 , class T2>
+	std::size_t operator() (const std::pair<T1 , T2> & p) const 
+	{
+		auto h1 = std::hash<T1>{}(p.first);
+		auto h2 = std::hash<T2>{}(p.second);	
+		// check out 
+		// http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx for good hash algorithms
+		
+		unsigned int hash = 0 ; 
+		
+		// SHIFT ADD XOR HASH
+		hash ^= (hash << 5) + (hash >> 2) + h1 + h2;
+		
+		return hash;
+	}
+
+
+	template <class T>
+	std::size_t operator() (const T& p) const 
+	{
+		auto h1 = std::hash<T>{}(p);
+
+		
+		unsigned int hash = 0 ; 
+		
+		// SHIFT ADD XOR HASH
+		hash ^= (hash << 5) + (hash >> 2) + h1 ;
+		
+		return hash;
+	}
+
+};
+
 
 template <typename T>
 class dmlpack
@@ -117,11 +155,11 @@ class dmlpack
 		classifier_type ml_type_; // machine learning type
 
 		// training data
-		matrix<T>& train_x_;			
-		matrix<T>& train_y_;	
+		std::shared_ptr<matrix<T>> train_x_;			
+		std::shared_ptr<matrix<T>> train_y_;			
 
 		// testing data
-		matrix<T>& test_x_ ; 
+		std::shared_ptr<matrix<T>> test_x_;			
 //		matrix<T>& test_y_ ; While testing only the x labels are given and we have to predict the y values from that 
 
 
@@ -132,13 +170,21 @@ class dmlpack
 
 		std::pair<matrix<T> , matrix<T>> multi_class_perceptron_inference();
 
-		void multi_class_perceptron_train();
 
+		void multi_class_perceptron_train(perceptron_type type);
 	 	matrix<T> perceptron_weight_;
+
+
+		// mira perceptron internals
+
 
 
 
 		// multi-layer perceptron : Internals.
+
+
+
+
 
 		// naive bayes //internals	------------------------------------
 		void naive_bayes_train();
@@ -182,42 +228,6 @@ class dmlpack
 
 };
 
-
-
-struct hash_fctor // functor
-{
-	template <class T1 , class T2>
-	std::size_t operator() (const std::pair<T1 , T2> & p) const 
-	{
-		auto h1 = std::hash<T1>{}(p.first);
-		auto h2 = std::hash<T2>{}(p.second);	
-		// check out 
-		// http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx for good hash algorithms
-		
-		unsigned int hash = 0 ; 
-		
-		// SHIFT ADD XOR HASH
-		hash ^= (hash << 5) + (hash >> 2) + h1 + h2;
-		
-		return hash;
-	}
-
-
-	template <class T>
-	std::size_t operator() (const T& p) const 
-	{
-		auto h1 = std::hash<T>{}(p);
-
-		
-		unsigned int hash = 0 ; 
-		
-		// SHIFT ADD XOR HASH
-		hash ^= (hash << 5) + (hash >> 2) + h1 ;
-		
-		return hash;
-	}
-
-};
 
 
 
@@ -469,9 +479,38 @@ std::pair<bool, T> dmlpack<T>::single_preceptron(const matrix<T>& feature , cons
 
 
 
+/*
+ * simple perceptron update rule
+ */
+template <typename T>
+std::pair<matrix<T> , matrix<T>> perceptron_update(const matrix<T>& predicted_id_weight ,const matrix<T>& actual_id_weight ,const matrix<T>& feature_vec)
+{
+	matrix<T> predicted_id_weight_result = predicted_id_weight - feature_vec;
+	matrix<T> actual_id_weight_result  = actual_id_weight + feature_vec;
+
+	return std::make_pair(predicted_id_weight_result , actual_id_weight_result);	
+}	
 
 /*
- *
+ * perceptron update with mira
+ */
+template <typename T>
+std::pair<matrix<T> , matrix<T>> mira_perceptron_update(const matrix<T>& predicted_id_weight , const matrix<T>& actual_id_weight , const matrix<T>& feature_vec)
+{
+
+	T tau = (predicted_id_weight - actual_id_weight).innerProduct(feature_vec.transpose());
+
+	tau += 1;
+	tau /= 2 * feature_vec.normEuclidean();
+
+	matrix<T> predicted_id_weight_result = predicted_id_weight - tau * feature_vec;
+	matrix<T> actual_id_weight_result  = actual_id_weight + tau * feature_vec;
+
+	return std::make_pair(predicted_id_weight_result , actual_id_weight_result);	
+}
+
+
+/*
  * Perceptron algorithm
  * For each output class there should be a particular weight vector that can recognize it.
  * The number of items in the weight vector will be equal to the number of features that we choose.
@@ -493,9 +532,8 @@ std::pair<bool, T> dmlpack<T>::single_preceptron(const matrix<T>& feature , cons
  * The training set's y should be in one-shot encoding
  *
  */
-
 template <typename T>
-void dmlpack<T>::multi_class_perceptron_train()
+void dmlpack<T>::multi_class_perceptron_train(perceptron_type type)
 {
 
 	const size_t num_train_samples = train_x_.numRows();
@@ -557,13 +595,25 @@ void dmlpack<T>::multi_class_perceptron_train()
 		// and increase the weight vector for the actual class .
 		if(predicted_class_idx != actual_class_id)
 		{
+
+
 			// reduce the weight vector for the predicted class 
 			matrix<T> reduced_weight = perceptron_weight_.returnRow(predicted_class_idx);		
+
+
+
+
 			reduced_weight = reduced_weight - feature_vec;	
 			perceptron_weight_.replaceRow(reduced_weight , predicted_class_idx);
 			
 			// increase the weight vector for the actual class .
 			matrix<T> increase_weight = perceptron_weight_.returnRow(actual_class_id);		
+
+
+			
+
+
+
 			increase_weight = increase_weight + feature_vec;	
 			perceptron_weight_.replaceRow(increase_weight, actual_class_id);
 		}
@@ -573,6 +623,9 @@ void dmlpack<T>::multi_class_perceptron_train()
 
 
 }
+
+
+
 
 
 
