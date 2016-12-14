@@ -27,7 +27,7 @@
  */
 
 
-enum class classifier_type { naive_bayes , perceptron , multi_layer_nn };
+enum class classifier_type { naive_bayes , perceptron , single_later_nn , multi_layer_nn };
 
 
 enum class perceptron_type {simple, mira};
@@ -158,26 +158,26 @@ class dmlpack
 
 
 
+		// single layer neural network 
+
+		matrix<T> single_layer_nn_weigh_;			 // single layer neural network weights
+
+		void single_layer_nn_train(double learning_rate, size_t iterations);
+
+
 
 		//percetron internals
 		std::pair<bool,T> single_preceptron(const matrix<T>& feature , const matrix<T>& weight , T threshold  = 0 ) const;
 
 		std::pair<matrix<T> , matrix<T>> multi_class_perceptron_inference();
 
-
 		void multi_class_perceptron_train(perceptron_type type);
 	 	matrix<T> perceptron_weight_;
-
-
-		// mira perceptron internals
 
 
 
 
 		// multi-layer perceptron : Internals.
-
-
-
 
 
 		// naive bayes //internals	------------------------------------
@@ -616,13 +616,59 @@ void dmlpack<T>::multi_class_perceptron_train(perceptron_type type)
 
 
 
-
 /*
- *
  * Create a single layer neural network. 
- * Train the neural net
- *
- *
+ * assume all the neruons are of sigmoid type
+ * Train the neural net using the back prop algorithm
+ * 
+ * Hold the weight vector within a single matrix for now. 
+ * What determines the size of the neuron matrix ? 
  */
+template <typename T>
+void dmlpack<T>::single_layer_nn_train(double learning_rate, size_t iterations)
+{
+	const size_t num_train_samples = train_x_.numRows();
+
+	//Resize the weight vector to hold # classes rows and #features columns
+	// A weight vector for each of the classes 
+	// the weight vector will be used to determine how much the neuron will look at each feature
+	// Initially all the weights are 0
+	single_layer_nn_weigh_.resize(num_classes , num_features + 1 , 0 ); // + 1 for the biases 
+
+
+	//matrix<T> delta_weight(num_classes , num_features + 1 , 0);		
+	for(size_t iter = 0 ; iter < iterations ; ++iter)
+	{
+		for(size_t train_sample = 1; train_sample <= num_train_samples ; ++train_sample) // each row in the matrices
+		{
+			// get the feature vector
+			matrix<T> feature_vec = train_x_.returnRow(train_sample);	
+
+			// Append the +1 towards its end. 
+			feature_vec.resize(1 , feature_vec.numCols() + 1);
+			feature_vec(1 , feature_vec.numCols()) = 1;
+
+			matrix<T> actual_output_vec  = train_y_.returnRow(train_sample);
+
+			matrix<T> pred_output_vec = single_layer_nn_weigh_.transpose() * feature_vec;
+		//	delta_weight = delta_weight + learning_rate * ( ( actual_output_vec - pred_output_vec ) * feature_vec); 
+		
+			//incremental change
+			single_layer_nn_weigh_ = single_layer_nn_weigh_ + learning_rate * ( ( actual_output_vec - pred_output_vec ) * feature_vec); 
+
+		}
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
 
 

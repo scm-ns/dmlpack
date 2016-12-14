@@ -119,6 +119,8 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 	matrix<T> transpose() const;
 	T innerProduct(const matrix<T>& B) const;
 	
+	T selfInnerProduct() const;
+
 	// returns the index which has the maximum value in the vector
 	// onlys works on row or column vectors, not on matrix
 	size_t arg_max();
@@ -952,6 +954,13 @@ T matrix<T>::innerProduct(const matrix<T>& B) const
 		return result*(0);
 	}
 }
+
+template <class T>
+T matrix<T>::selfInnerProduct() const;
+{
+	return innerProduct(this);	
+}
+
 
 /*
 	Returns Euclidean or L2 norm of a matrix 
