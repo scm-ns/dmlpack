@@ -157,6 +157,10 @@ class dmlpack
 //		matrix<T>& test_y_ ; While testing only the x labels are given and we have to predict the y values from that 
 
 
+		// multi layer neural network internals
+
+
+
 
 		// single layer neural network 
 
