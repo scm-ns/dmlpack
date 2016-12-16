@@ -1,7 +1,6 @@
 /*
  *
- * Might end up being a header only class or namespace 
- *
+ * Might end up being a header only class or namespace *
  * Provide functionality for : 
  * 	Naive Bayes
  * 	Perceptron
@@ -15,6 +14,8 @@
 #include <cmath>
 #include <algorithm>
 #include <memory>
+#include <queue>
+
 
 #include "matrix.h"
 #include "debug.h"
@@ -159,8 +160,12 @@ class dmlpack
 
 		// multi layer neural network internals
 
+		// will hold the different types of neural layers	
+		std::vector<matrix<T>> network_layers_;
 
+		void multi_layer_nn_train(double learning_rate, size_t iterations);
 
+		T sigmoid(T val);
 
 		// single layer neural network 
 
@@ -638,26 +643,30 @@ void dmlpack<T>::single_layer_nn_train(double learning_rate, size_t iterations)
 	// the weight vector will be used to determine how much the neuron will look at each feature
 	// Initially all the weights are 0
 	single_layer_nn_weigh_.resize(num_classes , num_features + 1 , 0 ); // + 1 for the biases 
-
+	// m * n
 
 	//matrix<T> delta_weight(num_classes , num_features + 1 , 0);		
 	for(size_t iter = 0 ; iter < iterations ; ++iter)
 	{
 		for(size_t train_sample = 1; train_sample <= num_train_samples ; ++train_sample) // each row in the matrices
 		{
-			// get the feature vector
+			// get the feature vector 1 * n
 			matrix<T> feature_vec = train_x_.returnRow(train_sample);	
 
 			// Append the +1 towards its end. 
 			feature_vec.resize(1 , feature_vec.numCols() + 1);
 			feature_vec(1 , feature_vec.numCols()) = 1;
+		
+			// m * 1
+			matrix<T> actual_output_vec  = train_y_.returnRow(train_sample).transpose();
+			
+		 	// m * 1				// m * n 		// n * 1
+			matrix<T> pred_output_vec = single_layer_nn_weigh_ * feature_vec.transpose();
 
-			matrix<T> actual_output_vec  = train_y_.returnRow(train_sample);
-
-			matrix<T> pred_output_vec = single_layer_nn_weigh_.transpose() * feature_vec;
 		//	delta_weight = delta_weight + learning_rate * ( ( actual_output_vec - pred_output_vec ) * feature_vec); 
 		
 			//incremental change
+			
 			single_layer_nn_weigh_ = single_layer_nn_weigh_ + learning_rate * ( ( actual_output_vec - pred_output_vec ) * feature_vec); 
 
 		}
@@ -666,10 +675,177 @@ void dmlpack<T>::single_layer_nn_train(double learning_rate, size_t iterations)
 }
 
 
+template <typename T>
+T dmlpack<T>::sigmoid(T val)
+{
+	T ret= 1 ;
+	ret /= (1 + std::exp(-val));
+	return ret;
+}
+
+
+/*
+ * multy layer neural network. 
+ * Each layer is inserted into a std::vector
+ * Each layer will be a matrix
+ *
+ */
+
+template <typename T>
+void dmlpack<T>::multi_layer_nn_train(double learning_rate, size_t iterations)
+{
+
+	const size_t num_train_samples = train_x_.numRows();
+
+
+
+	// for now assume it is a 2 layer network
+	// 1 hidden layer
+	// 1 fully connected layer
+
+	// How will layers be inserted into the vector ? 
+	// the output layer will be at the end of the vector
+	// while input layers will be at the front (index 0)
+
+	// create the pipeline
+
+	const size_t num_neuron_hidden_layer = 20;
+	const size_t num_neuron_hidden_layer_2 = 15;
+
+	matrix<T> hidden_layer(num_neuron_hidden_layer,num_features + 1); // m1 * n
+
+	matrix<T> hidden_layer_2(num_neuron_hidden_layer_2,num_neuron_hidden_layer); // m2 * m1
+	matrix<T> output_layer(num_classes, num_neuron_hidden_layer_2);
+
+	// m1 * n    *    n * 1
+	// m1 * 1
+	// m2 * m1   *    m1 * 1
+	// m2 * 1
+	// o * m2    *    m2 * 1
+	// o * 1
+
+
+	//simple for now. Copy into the pipeline. Later, look into creating the layers in place, or about moving it
+	network_layers_.push_back(hidden_layer);
+	network_layers_.push_back(hidden_layer_2);
+	network_layers_.push_back(output_layer);
+
+
+
+	// copy the values into a queue, where the output from each layer is stored during the forward pass
+	std::queue<matrix<T>> qu;
+
+
+
+		//matrix<T> delta_weight(num_classes , num_features + 1 , 0);		
+	for(size_t iter = 0 ; iter < iterations ; ++iter)
+	{
+		for(size_t train_sample = 1; train_sample <= num_train_samples ; ++train_sample) // each row in the matrices
+		{
+			// get the feature vector 1 * n
+			matrix<T> feature_vec = train_x_.returnRow(train_sample);	
+
+			// Append the +1 towards its end. 
+			feature_vec.resize(1 , feature_vec.numCols() + 1);
+			feature_vec(1 , feature_vec.numCols()) = 1;
+	
+			// forward propogate the signal thorugh the network and store in a queue. while updating the weigh. read from it .
+			for(auto itr = network_layers_.begin() ; itr != network_layers_.end() ; ++itr)
+			{
+				matrix<T> output ;	
+				if(itr == network_layers_.begin()) // if the first layer, feed in the actual input
+				{
+					output = feature_vec.transpose();	
+				}		
+				else
+				{
+					output = qu.top();
+				}
+
+				std::for_each(output.begin() , output.end() , [this](T& val)
+						{
+							val = sigmoid(val);
+						});
+
+
+				qu.push( (*itr) * output);
+				
+			}
+
+	
+			// o * 1
+			matrix<T> actual_output_vec  = train_y_.returnRow(train_sample).transpose();
+
+
+			// propogate down from the last layer backward . And update the weights accroding to the differing rules.
+			// output layer has a different rule
+			for(auto itr = --network_layers_.end() ; itr >= network_layers_.begin() ; --itr)
+			{
+
+				// update the weights for the current layer.
+				// 	TO DO : VEctorize the code 
+
+				auto current_layer_activation = qu.top() ; qu.pop();
+				auto prev_layer_activation = qu.top() ;
+				
+				bool output_layer_flag = (itr == --network_layers_.end());
+
+
+
+				itr->transform_inplace([&itr , &output_layer_flag , &learning_rate, &current_layer_activation , &prev_layer_activation](std::size_t row , std::size_t col)
+						{
+							T w_delta = 0 ;
+
+							if(output_layer_flag)
+							{
+								// error will be calculated between the training output and the results from forward pass in the final layer
+								
+							
+								// go over each of the neurons in the current layer
+
+								w_delta = current_layer_activation(col , 1);
+								w_delta *= (actual_output_vec(1,col) - w_delta);
+								w_delta *= (1 - w_delta); 
+
+
+							}
+							else
+							{
+
+
+
+							}
+		
+							return learning_rate * w_delta * prev_layer_activation(col , 1);
+
+						});
 
 
 
 
+
+				
+
+
+			}
+
+
+
+		 	// m * 1				// m * n 		// n * 1
+			matrix<T> pred_output_vec = single_layer_nn_weigh_ * feature_vec.transpose();
+
+		//	delta_weight = delta_weight + learning_rate * ( ( actual_output_vec - pred_output_vec ) * feature_vec); 
+		
+			//incremental change
+			
+			single_layer_nn_weigh_ = single_layer_nn_weigh_ + learning_rate * ( ( actual_output_vec - pred_output_vec ) * feature_vec); 
+
+		}
+	}
+
+
+
+}
 
 
 

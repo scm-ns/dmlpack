@@ -29,6 +29,8 @@ End April 4th Night
 
 #include <stdexcept>
 #include <algorithm>
+#include <functional>
+
 
 template <class T>
 class matrix;
@@ -75,6 +77,24 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 		_matrix.resize(_size , val);
 
 	}	
+
+	inline typename std::vector<T>::iterator begin() const
+	{
+		return _matrix.begin();
+	}
+
+	inline typename std::vector<T>::iterator end() const
+	{
+		return _matrix.end();
+	}
+
+	typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx)
+	{
+		typename std::vector<T>::iterator it = begin();
+		std::advance(it , (row_idx * _cols));
+		//begin() + (row_idx * _cols); 
+		return it;
+	}
 
 
 	void print();
@@ -138,6 +158,32 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 	T& operator()(const long long  rows, const long long  cols) const;
 
 	T normEuclidean();
+
+	matrix<T> transform_create(std::size_t rows , std::size_t cols , std::function<T(std::size_t , std::size_t , matrix<T>)> lam) // create a new matrix of specified rows and cols and applies the lambda function to each of them
+	{
+		matrix<T> res(rows , cols);
+		for(std::size_t idx = 0 ; idx < rows ; ++idx)
+		{
+			for(std::size_t  jdx = 0 ; jdx < cols ; ++jdx)
+			{
+				res(idx , jdx) =  lam(idx , jdx , res);	
+			}
+		}	
+		return res;
+	}
+
+
+	matrix<T> transform_inplace(std::function<T(std::size_t , std::size_t , T)> lam) // apply the lambda function ot each element of the vector. 
+	{
+		for(std::size_t idx = 0 ; idx < _rows ; ++idx)
+		{
+			for(std::size_t  jdx = 0 ; jdx < _cols ; ++jdx)
+			{
+				insert(idx , jdx , lam(idx , jdx , get(idx, jdx) ) );	 // highly inefficeint code. Make it simpler
+			}
+		}	
+	}
+
 
 
 private:
@@ -956,7 +1002,7 @@ T matrix<T>::innerProduct(const matrix<T>& B) const
 }
 
 template <class T>
-T matrix<T>::selfInnerProduct() const;
+T matrix<T>::selfInnerProduct() const
 {
 	return innerProduct(this);	
 }
