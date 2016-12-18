@@ -57,9 +57,7 @@ class data_source
 		matrix<int> y_data_;	
 		void add_py_feature_list(PyObject * container);
 		// one hot encoding
-		void add_py_label_list(PyObject * container);
-
-
+		void add_py_label_list(PyObject * container, const int num_classes);
 
 };
 

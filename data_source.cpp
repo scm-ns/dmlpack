@@ -16,12 +16,16 @@ void data_source::add_py_feature_list(PyObject * container)
 		PyObject* height = PyObject_GetAttrString(val,"height");
 		PyObject* width = PyObject_GetAttrString(val,"width");
 
-		// expand the data storage to increase in size for the data
-		x_data_.resize(PyList_Size(container) , PyInt_AsLong(height) * PyInt_AsLong(width));  
+		
+		const Py_ssize_t sample_size = PyList_Size(container);
 
-		for(Py_ssize_t sample = 0 ; sample < PyList_Size(container) ; ++sample)
+		// expand the data storage to increase in size for the data
+		x_data_.resize(sample_size , PyInt_AsLong(height) * PyInt_AsLong(width));   // the number of features is #rows * #cols
+
+		for(Py_ssize_t sample = 0 ; sample < sample_size; ++sample)
 		{
 			PyObject* val = PyList_GetItem(container, sample);
+			// by reading the samples.py, we see that this is going to be a Datum class. So we extract the required information for the class	
 
 			PyObject* get_pixl = PyObject_GetAttrString(val,"getPixel");
 			
@@ -31,10 +35,11 @@ void data_source::add_py_feature_list(PyObject * container)
 
 				for(int col = 0 ; col < PyInt_AsLong(width) ; ++col)
 				{
-					PyObject * temp = PyObject_CallFunction(get_pixl,(char *)"(ii)" , col,row);
+					PyObject * temp = PyObject_CallFunction(get_pixl,(char *)"(ii)" , col,row); // they have col first, then row odering for some reason in berkely code
 
 					x_data_(sample + 1, idx  + 1) = PyFloat_AsDouble(temp);
-					++idx;
+
+					++idx; // idx will hold the column to which the current feature is being added for this specific training examples (row = samples)
 
 				}
 			}	
@@ -49,6 +54,31 @@ void data_source::add_py_feature_list(PyObject * container)
 }
 
 
+// adds the data stored in the list into the y_data in the class. Used to get the labels from the python side)
+// num of classes is needed as an easy way to determine the size of the storage
+void data_source::add_py_label_list(PyObject * container, const int num_classes)
+{
+	if(PyList_Check(container))
+	{
+
+		const Py_ssize_t sample_size = PyList_Size(container);
+		// expand the data storage to increase in size for the data
+		x_data_.resize(sample_size ,num_classes );  
+
+		for(Py_ssize_t sample = 0 ; sample < sample_size ; ++sample)
+		{
+			PyObject* val = PyList_GetItem(container, sample);
+
+			int idx = 0 ;
+
+		}
+
+	}
+	else
+	{
+		throw std::logic_error("object ptr not a list or tuple");
+	}
+}
 
 void data_source::read_store_berkely_data(BRKLY_DATA data , DATA_TYPE type)
 {
@@ -71,8 +101,11 @@ void data_source::read_store_berkely_data(BRKLY_DATA data , DATA_TYPE type)
 	std::string feature_func_to_call_str; 
 	std::string label_func_to_call_str ;
 
+	int num_classes = 0 ;
+
 	if(data == BRKLY_DATA::DIGIT)
 	{
+		num_classes = 10;
 		switch(type)
 		{
 			case(DATA_TYPE::TRAIN):
@@ -86,6 +119,28 @@ void data_source::read_store_berkely_data(BRKLY_DATA data , DATA_TYPE type)
 			case(DATA_TYPE::VALID):
 				feature_func_to_call_str = "load_digit_valid_x";
 				label_func_to_call_str = "load_digit_valid_y";
+				break;
+
+		};
+
+
+	}
+	else if(data == BRKLY_DATA::FACE)
+	{
+		num_classes = 1;
+		switch(type)
+		{
+			case(DATA_TYPE::TRAIN):
+				feature_func_to_call_str = "load_face_train_x";
+				label_func_to_call_str = "load_face_train_y";
+				break;
+			case(DATA_TYPE::TEST):
+				feature_func_to_call_str = "load_face_test_x";
+				label_func_to_call_str = "load_face_test_y";
+				break;
+			case(DATA_TYPE::VALID):
+				feature_func_to_call_str = "load_face_valid_x";
+				label_func_to_call_str = "load_face_valid_y";
 				break;
 
 		};
@@ -110,7 +165,7 @@ void data_source::read_store_berkely_data(BRKLY_DATA data , DATA_TYPE type)
 
 	PyObject* label_list = PyObject_CallObject(load_data_func_y , NULL);
 
-//	add_py_label_list(label_list);	
+//	add_py_label_list(label_list, num_classes);	
 
 
 	// decrement all the reference counters
