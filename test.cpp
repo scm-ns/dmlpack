@@ -12,7 +12,7 @@ int main()
 	data_source a{};
 	a.read_store_berkely_data(BRKLY_DATA::DIGIT , DATA_TYPE::TRAIN);
 
-	matrix<double> data = a.get_train_features(); 	
+	matrix<int> data = a.get_train_features(); 	
 
 	std::cout << data.returnRow(5) << std::endl;
 	std::cout << data.returnRow(5000) << std::endl;

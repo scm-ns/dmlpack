@@ -57,7 +57,7 @@ class data_source
 	private:
 		matrix<int> x_data_;
 		matrix<int> y_data_;	
-		void py_list_to_vec(PyObject * container);
+		void py_feature_list_to_vec(PyObject * container);
 
 
 

@@ -78,12 +78,15 @@ void data_source::read_store_berkely_data(BRKLY_DATA data , DATA_TYPE type)
 			case(DATA_TYPE::TRAIN):
 				feature_func_to_call_str = "load_digit_train_x";
 				label_func_to_call_str = "load_digit_train_y";
+				break;
 			case(DATA_TYPE::TEST):
 				feature_func_to_call_str = "load_digit_test_x";
 				label_func_to_call_str = "load_digit_test_y";
+				break;
 			case(DATA_TYPE::VALID):
 				feature_func_to_call_str = "load_digit_valid_x";
 				label_func_to_call_str = "load_digit_valid_y";
+				break;
 
 		};
 
@@ -95,7 +98,7 @@ void data_source::read_store_berkely_data(BRKLY_DATA data , DATA_TYPE type)
 		throw std::invalid_argument("function not found");
 	PyObject* train_list = PyObject_CallObject(load_data_func , NULL);
 
-	py_list_to_vec(train_list);	
+	py_feature_list_to_vec(train_list);	
 
 
 
