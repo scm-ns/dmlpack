@@ -2,3 +2,5 @@
 *.gch
 *.out
 *.exe
+*.pyc
+*.zip

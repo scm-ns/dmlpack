@@ -1,4 +1,8 @@
+#ifndef DMLPACK_H
+#define DMLPACK_H
+
 /*
+ *
  *
  * Might end up being a header only class or namespace *
  * Provide functionality for : 
@@ -803,7 +807,7 @@ void dmlpack<T>::multi_layer_nn_train(double learning_rate, size_t iterations)
 				bool output_layer_flag = (itr == --network_layers_.end());
 					
 
-				itr->transform_inplace([&itr , &p_itr , &output_layer_flag , &learning_rate, &current_layer_activation , &prev_layer_activation , &current_layer_grad](std::size_t row , std::size_t col)
+				itr->transform_inplace([&](std::size_t row , std::size_t col)
 						{
 							T w_delta = 0 ;
 
@@ -822,7 +826,7 @@ void dmlpack<T>::multi_layer_nn_train(double learning_rate, size_t iterations)
 							{
 
 								w_delta = current_layer_activation(col , 1);
-								w_delta *= current_layer_grad * (*p_itr)(
+//								w_delta *= current_layer_grad * (*p_itr)(
 
 								
 
@@ -877,4 +881,4 @@ void dmlpack<T>::multi_layer_nn_train(double learning_rate, size_t iterations)
 
 
 
-
+#endif

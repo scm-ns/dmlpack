@@ -1,11 +1,22 @@
 #include "matrix.h"
 #include "dmlpack.h"
+#include "data_source.h"
+
 
 #include <iostream>
 
 
 int main()
 {
+
+	data_source a{};
+	a.read_store_berkely_data(BRKLY_DATA::DIGIT , DATA_TYPE::TRAIN);
+
+	matrix<double> data = a.get_train_features(); 	
+
+	std::cout << data.returnRow(5) << std::endl;
+	std::cout << data.returnRow(5000) << std::endl;
+
 	matrix<int> A(1,1, -2);	
 
 	matrix<int> B(1,1, -9);	
