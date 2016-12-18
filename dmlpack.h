@@ -32,7 +32,7 @@
  */
 
 
-enum class classifier_type { naive_bayes , perceptron , single_later_nn , multi_layer_nn };
+enum class CLASSIFIER_TYPE { NAIVE_BAYES , PERCEPTRON , SINGLE_LAYER_NN , MULTI_LAYER_NN };
 
 
 enum class perceptron_type {simple, mira};
@@ -94,7 +94,7 @@ template <typename T>
 class dmlpack
 {
 	public:	
-		dmlpack(classifier_type ml_type) : ml_type_(ml_type)
+		dmlpack(CLASSIFIER_TYPE ml_type) : ml_type_(ml_type)
 		{
 			
 		};	
@@ -107,7 +107,7 @@ class dmlpack
 		// feed the entire training data
 		// keep reference to the class, instead of copying the data set
 		// This means that the data should outlive the class
-		void feed_train_data(const matrix<T>& train_x , const matrix<T>& train_y) const
+		void feed_train_data(const matrix<T> train_x , const matrix<T> train_y) const
 		{
 			train_x_ = train_x; 
 			train_y_ = train_y;	
@@ -123,7 +123,7 @@ class dmlpack
 	
 
 		// feed the entire test data 
-		void feed_test_data(matrix<T>& test_x )
+		void feed_test_data(matrix<T> test_x )
 		{
 			test_x_ = test_x;	
 		}
@@ -151,7 +151,7 @@ class dmlpack
 	
 
 	private:
-		classifier_type ml_type_; // machine learning type
+		CLASSIFIER_TYPE ml_type_; // machine learning type
 
 		// training data
 		std::shared_ptr<matrix<T>> train_x_;			
@@ -236,6 +236,32 @@ class dmlpack
 };
 
 
+
+template <typename T>
+void dmlpack<T>::train()
+{
+	switch(ml_type_)
+	{
+		case(CLASSIFIER_TYPE::NAIVE_BAYES):
+			naive_bayes_train();
+			break;
+
+		case(CLASSIFIER_TYPE::PERCEPTRON):
+			multi_class_perceptron_train():
+			break;
+
+		case(CLASSIFIER_TYPE::SINGLE_LAYER_NN):
+			single_layer_nn_train();
+			break;
+
+		case(CLASSIFIER_TYPE::MULTI_LAYER_NN):
+			multi_layer_nn_train();
+			break;	
+
+	}
+
+
+}
 
 
 template <typename T>

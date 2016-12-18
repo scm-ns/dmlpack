@@ -45,9 +45,12 @@ int main()
 	std::cout << "Mat SIZE col# : " << label.numCols() << std::endl;
 
 
+	dmlpack<int> K{CLASSIFIER_TYPE::NAIVE_BAYES};
+	
+	K.feed_train_data(std::move(data) , std::move(label));
+		
+	K.train();
 
-
-	dmlpack<float> K{classifier_type::naive_bayes};
 };
 
 
