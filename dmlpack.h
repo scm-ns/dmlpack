@@ -735,6 +735,12 @@ void dmlpack<T>::multi_layer_nn_train(double learning_rate, size_t iterations)
 	// copy the values into a queue, where the output from each layer is stored during the forward pass
 	std::queue<matrix<T>> qu;
 
+	/*
+	 * do the gradients have to be stored in a queue. No, the grad from the previous layer (i) is used in the current layer ( i - 1), 
+	 * and in the next layer ( i - 2 ), the grad from the current layer (i -1 ) is only required, we will not need the grad from the previous layer ( i )
+	 * But the gradients will of different sizes in different layers. 
+	 */
+	matrix<T> gradiant_store;
 
 
 		//matrix<T> delta_weight(num_classes , num_features + 1 , 0);		
@@ -781,6 +787,9 @@ void dmlpack<T>::multi_layer_nn_train(double learning_rate, size_t iterations)
 			// output layer has a different rule
 			for(auto itr = --network_layers_.end() ; itr >= network_layers_.begin() ; --itr)
 			{
+		
+				auto p_itr = itr + 1;
+
 
 				// update the weights for the current layer.
 				// 	TO DO : VEctorize the code 
@@ -788,21 +797,21 @@ void dmlpack<T>::multi_layer_nn_train(double learning_rate, size_t iterations)
 				auto current_layer_activation = qu.top() ; qu.pop();
 				auto prev_layer_activation = qu.top() ;
 				
+				// stores the gradient for the current layer which is fed back into lower layers	
+				matrix<T> current_layer_grad(current_layer_activation.numRows() , current_layer_activation.numCols());
+
 				bool output_layer_flag = (itr == --network_layers_.end());
+					
 
-
-
-				itr->transform_inplace([&itr , &output_layer_flag , &learning_rate, &current_layer_activation , &prev_layer_activation](std::size_t row , std::size_t col)
+				itr->transform_inplace([&itr , &p_itr , &output_layer_flag , &learning_rate, &current_layer_activation , &prev_layer_activation , &current_layer_grad](std::size_t row , std::size_t col)
 						{
 							T w_delta = 0 ;
 
 							if(output_layer_flag)
 							{
 								// error will be calculated between the training output and the results from forward pass in the final layer
-								
 							
 								// go over each of the neurons in the current layer
-
 								w_delta = current_layer_activation(col , 1);
 								w_delta *= (actual_output_vec(1,col) - w_delta);
 								w_delta *= (1 - w_delta); 
@@ -812,16 +821,33 @@ void dmlpack<T>::multi_layer_nn_train(double learning_rate, size_t iterations)
 							else
 							{
 
+								w_delta = current_layer_activation(col , 1);
+								w_delta *= current_layer_grad * (*p_itr)(
+
+								
+
+								// in w(current_num_neur , prev_num_neur) each row represents the connnection of the a single nueron in the current layer 
+								// with all the neurons in the previous layer-
+								// 
+								// So, inorder to determine the connets of a neuron in the lower layer with the neurons in the upper layer, we 
+								// actually have to look at a particular column of each row of the weight matrix. 
+								// 	The column index is decided by the nueron in the lower layer .
+
+
 
 
 							}
-		
+	
+
+							current_layer_grad(col ,1 ) = w_delta;	 // store the current gradients for the next layers
+
 							return learning_rate * w_delta * prev_layer_activation(col , 1);
 
 						});
 
+				
 
-
+				gradiant_store = std::move(current_layer_grad);
 
 
 				
