@@ -6,7 +6,6 @@
 # John DeNero (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # For more info, see http://inst.eecs.berkeley.edu/~cs188/sp09/pacman.html
 
-import util
 
 ## Constants
 DATUM_WIDTH = 0 # in pixels
@@ -20,6 +19,16 @@ FACE_DATUM_HEIGHT=70
 
 
 ## Module Classes
+def arrayInvert(array):
+  """
+  Inverts a matrix stored as a list of lists.
+  """
+  result = [[] for i in array]
+  for outer in array:
+    for inner in range(len(outer)):
+      result[inner].append(outer[inner])
+  return result
+
 
 
 
@@ -69,7 +78,7 @@ class Datum:
     self.width = DATUM_WIDTH
     if data == None:
       data = [[' ' for i in range(DATUM_WIDTH)] for j in range(DATUM_HEIGHT)] 
-    self.pixels = util.arrayInvert(convertToInteger(data)) 
+    self.pixels = arrayInvert(convertToInteger(data)) 
     
   def getPixel(self, column, row):
     """
@@ -88,7 +97,7 @@ class Datum:
     Renders the data item as an ascii image.
     """
     rows = []
-    data = util.arrayInvert(self.pixels)
+    data = arrayInvert(self.pixels)
     for row in data:
       ascii = map(asciiGrayscaleConversionFunction, row)
       rows.append( "".join(ascii) )

@@ -7,37 +7,9 @@ char * DATA_LOADER_PYTHON_CLASS = (char*)"samples\0";
 
 // Pass in a py obj that is pointing to a list or typle in python and a std::vec will be 
 // returned containing the data
-std::vector<double> data_source::py_list_tuple_to_vec(PyObject * container)
+void data_source::py_feature_list_to_vec(PyObject * container)
 {
-
-	if(PyTuple_Check(container))
-	{
-		for(Py_ssize_t i = 0 ; i < PyTuple_Size(container) ; ++i)
-		{
-			PyObject* val = PyTuple_GetItem(container, i);
-
-			PyObject* get_pixl = PyObject_GetAttrString(val,"getPixel");
-
-			PyObject* height = PyObject_GetAttrString(val,"height");
-			PyObject* width = PyObject_GetAttrString(val,"width");
-
-			for(int i = 0 ; i < PyInt_AsLong(height) ; ++i)
-			{
-
-				for(int j = 0 ; j < PyInt_AsLong(width) ; ++j)
-				{
-					PyObject * temp = PyObject_CallFunction(get_pixl, (char *)"(ii)" , j,i);
-					//data.push_back( PyFloat_AsDouble(temp));
-
-					//std::cout << data.back() << std::endl;	
-				}
-			}	
-
-
-		}
-
-	}
-	else if(PyList_Check(container))
+	if(PyList_Check(container))
 	{
 
 		// Get the heigt and size data
@@ -63,13 +35,11 @@ std::vector<double> data_source::py_list_tuple_to_vec(PyObject * container)
 					PyObject * temp = PyObject_CallFunction(get_pixl,(char *)"(ii)" , col,row);
 
 					x_data_(sample + 1, idx  + 1) = PyFloat_AsDouble(temp);
-					std::cout << x_data_(sample + 1 , idx + 1) ;
 					++idx;
 
 				}
 			}	
 
-			std::cout << std::endl;
 		}
 
 	}
@@ -77,7 +47,6 @@ std::vector<double> data_source::py_list_tuple_to_vec(PyObject * container)
 	{
 		throw std::logic_error("object ptr not a list or tuple");
 	}
-	return std::vector<double>{};
 }
 
 
@@ -99,13 +68,34 @@ void data_source::read_store_berkely_data(BRKLY_DATA data , DATA_TYPE type)
 	if(!data_loader_module)
 		throw std::invalid_argument("module not found");
 
-	PyObject* load_data_func = PyObject_GetAttrString(data_loader_module , (char*)"load_digit_train_x");
+	std::string feature_func_to_call_str; 
+	std::string label_func_to_call_str ;
+
+	if(data == BRKLY_DATA::DIGIT)
+	{
+		switch(type)
+		{
+			case(DATA_TYPE::TRAIN):
+				feature_func_to_call_str = "load_digit_train_x";
+				label_func_to_call_str = "load_digit_train_y";
+			case(DATA_TYPE::TEST):
+				feature_func_to_call_str = "load_digit_test_x";
+				label_func_to_call_str = "load_digit_test_y";
+			case(DATA_TYPE::VALID):
+				feature_func_to_call_str = "load_digit_valid_x";
+				label_func_to_call_str = "load_digit_valid_y";
+
+		};
+
+
+	}
+
+	PyObject* load_data_func = PyObject_GetAttrString(data_loader_module , feature_func_to_call_str.c_str());
 	if(!load_data_func || !PyCallable_Check(load_data_func))
 		throw std::invalid_argument("function not found");
 	PyObject* train_list = PyObject_CallObject(load_data_func , NULL);
 
-
-	py_list_tuple_to_vec(train_list);	
+	py_list_to_vec(train_list);	
 
 
 

@@ -49,15 +49,15 @@ class data_source
 		data_source(const data_source& ) = delete;
 		data_source& operator=(const data_source& ) = delete;	
 
-		matrix<double> get_train_features()
+		matrix<int> get_train_features()
 		{
 			return x_data_;
 		}
 
 	private:
-		matrix<double> x_data_;
-		matrix<double> y_data_;	
-		std::vector<double> py_list_tuple_to_vec(PyObject * container);
+		matrix<int> x_data_;
+		matrix<int> y_data_;	
+		void py_list_to_vec(PyObject * container);
 
 
 
