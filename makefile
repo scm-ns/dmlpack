@@ -5,7 +5,7 @@ OPTIMIZE_FLAG= -O2
 LIB_FLAGS= -I/usr/include/python2.7
 LIB= -lpython2.7
 OBJECTS= data_source.o test.o
-PROG_DEBUG= dml_debug
+PROG_DEBUG= dml_debug.exe
 
 
 
