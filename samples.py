@@ -11,9 +11,16 @@
 DATUM_WIDTH = 0 # in pixels
 DATUM_HEIGHT = 0 # in pixels
 
-TEST_SET_SIZE = 100
+DIGIT_TEST_SET_SIZE = 1000
+DIGIT_TRAIN_SET_SIZE = 5000
+DIGIT_VALID_SET_SIZE = 100
 DIGIT_DATUM_WIDTH=28
 DIGIT_DATUM_HEIGHT=28
+
+
+FACE_TRAIN_SET_SIZE = 451
+FACE_TEST_SET_SIZE = 150
+FACE_VALID_SET_SIZE = 301
 FACE_DATUM_WIDTH=60
 FACE_DATUM_HEIGHT=70
 
@@ -109,31 +116,56 @@ class Datum:
 
 def load_digit_train_x():
   print "Loading training feature data for digits "
-  rawTrainingData = loadDataFile("digitdata/trainingimages", 5000,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
-  return rawTrainingData;
-  #trainingLabels = samples.loadLabelsFile("digitdata/traininglabels", 5000)
-  #rawValidationData = samples.loadDataFile("digitdata/validationimages", 100,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
-  #validationLabels = samples.loadLabelsFile("digitdata/validationlabels", 100)
-  #rawTestData = samples.loadDataFile("digitdata/testimages", TEST_SIZE,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
-    
+  return loadDataFile("digitdata/trainingimages", DIGIT_TRAIN_SET_SIZE,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
+   
 
 def load_digit_train_y():
   print "Loading training labels data for digits "
-  trainingLabels = samples.loadLabelsFile("digitdata/traininglabels", 5000)
-  return trainingLabels
+  return samples.loadLabelsFile("digitdata/traininglabels", DIGIT_TEST_SET_SIZE)
 
-def load_data_digit_valid_x():
+def load_digit_valid_x():
   print "Loading valid feature data for digits "
-  return  loadDataFile("digitdata/validationimages", 100,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
+  return  loadDataFile("digitdata/validationimages", DIGIT_TRAIN_SET_SIZE,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
     
-
-def load_data_digit_valid_y():
+def load_digit_valid_y():
   print "Loading valid labels data for digits "
-  return loadLabelsFile("digitdata/validationlabels", 100)
+  return loadLabelsFile("digitdata/validationlabels", DIGIT_VALID_SET_SIZE)
 
-def load_data_digits_test_x():
+def load_digits_test_x():
   print "Loading test feature data for digits "
-  return loadDataFile("digitdata/testimages", TEST_SIZE,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
+  return loadDataFile("digitdata/testimages", DIGIT_TEST_SET_SIZE,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
+
+def load_digits_test_y():
+  print "Loading test labels for digits "  
+  return loadLabelsFile("digitdata/testlabels", DIGIT_TEST_SET_SIZE)
+
+
+# FACE DATA LOAD
+
+def load_face_train_x():
+  print "Loading training feature data for face"
+  return loadDataFile("facedata/facedatatrain", FACE_TRAIN_SET_SIZE,FACE_DATUM_WIDTH,FACE_DATUM_HEIGHT)
+   
+
+def load_face_train_y():
+  print "Loading training labels data for face "
+  return samples.loadLabelsFile("facedata/facedatatrainlabels", FACE_TRAIN_SET_SIZE)
+
+def load_face_valid_x():
+  print "Loading valid feature data for face "
+  return  loadDataFile("facedata/facedatavalidation", FACE_VALID_SET_SIZE,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
+    
+def load_face_valid_y():
+  print "Loading valid labels data for face "
+  return loadLabelsFile("facedata/facedatavalidationlabels", FACE_VALID_SET_SIZE)
+
+def load_face_test_x():
+  print "Loading test feature data for face "
+  return loadDataFile("facedata/facedatatest", FACE_TEST_SET_SIZE,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
+
+def load_face_test_y():
+  print "Loading test labels for face "  
+  return loadLabelsFile("facedata/facedatatestlabels", FACE_TEST_SET_SIZE)
 
 
 # Data processing, cleanup and display functions

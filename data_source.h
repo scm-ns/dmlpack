@@ -33,9 +33,7 @@ class data_source
 {
 	public:
 		/*
-		 *
-		 *
-		 *
+		 * Read the berkely data set and store it in the classes
 		 */
 		void read_store_berkely_data(BRKLY_DATA data , DATA_TYPE type);	
 	
@@ -57,7 +55,9 @@ class data_source
 	private:
 		matrix<int> x_data_;
 		matrix<int> y_data_;	
-		void py_feature_list_to_vec(PyObject * container);
+		void add_py_feature_list(PyObject * container);
+		// one hot encoding
+		void add_py_label_list(PyObject * container);
 
 
 
