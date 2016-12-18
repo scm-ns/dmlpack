@@ -121,7 +121,7 @@ def load_digit_train_x():
 
 def load_digit_train_y():
   print "Loading training labels data for digits "
-  return samples.loadLabelsFile("digitdata/traininglabels", DIGIT_TEST_SET_SIZE)
+  return loadLabelsFile("digitdata/traininglabels", DIGIT_TEST_SET_SIZE)
 
 def load_digit_valid_x():
   print "Loading valid feature data for digits "
@@ -149,7 +149,7 @@ def load_face_train_x():
 
 def load_face_train_y():
   print "Loading training labels data for face "
-  return samples.loadLabelsFile("facedata/facedatatrainlabels", FACE_TRAIN_SET_SIZE)
+  return loadLabelsFile("facedata/facedatatrainlabels", FACE_TRAIN_SET_SIZE)
 
 def load_face_valid_x():
   print "Loading valid feature data for face "

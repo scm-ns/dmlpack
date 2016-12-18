@@ -22,8 +22,13 @@
 #include <stdexcept>
 #include <iostream>
 
+#define DEBUG
 
-
+#ifdef DEBUG
+#define dout std::cout << __FILE__<< " (" << __LINE__ << ") " << "DEBUG : "
+#else
+#define dout 0 && std::cout
+#endif
 
 enum class BRKLY_DATA { DIGIT , FACE };
 enum class DATA_TYPE { TRAIN , VALID , TEST };
@@ -47,9 +52,14 @@ class data_source
 		data_source(const data_source& ) = delete;
 		data_source& operator=(const data_source& ) = delete;	
 
-		matrix<int> get_train_features()
+		matrix<int> get_features()
 		{
 			return x_data_;
+		}
+
+		matrix<int> get_labels()
+		{
+			return y_data_;
 		}
 
 	private:

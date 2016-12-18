@@ -12,22 +12,23 @@ void data_source::add_py_feature_list(PyObject * container)
 	{
 
 		// Get the heigt and size data
-		PyObject* val = PyList_GetItem(container, 10);
-		PyObject* height = PyObject_GetAttrString(val,"height");
-		PyObject* width = PyObject_GetAttrString(val,"width");
+		PyObject* datum = PyList_GetItem(container, 10);
+		PyObject* height = PyObject_GetAttrString(datum,"height");
+		PyObject* width = PyObject_GetAttrString(datum,"width");
 
 		
 		const Py_ssize_t sample_size = PyList_Size(container);
+		dout << "SAMPLE SIZE " << sample_size << std::endl;		
 
 		// expand the data storage to increase in size for the data
 		x_data_.resize(sample_size , PyInt_AsLong(height) * PyInt_AsLong(width));   // the number of features is #rows * #cols
 
 		for(Py_ssize_t sample = 0 ; sample < sample_size; ++sample)
 		{
-			PyObject* val = PyList_GetItem(container, sample);
+			PyObject* datum_obj = PyList_GetItem(container, sample);
 			// by reading the samples.py, we see that this is going to be a Datum class. So we extract the required information for the class	
 
-			PyObject* get_pixl = PyObject_GetAttrString(val,"getPixel");
+			PyObject* get_pixl = PyObject_GetAttrString(datum_obj,"getPixel");
 			
 			int idx = 0 ;
 			for(int row  = 0 ; row < PyInt_AsLong(height) ; ++row)
@@ -38,9 +39,10 @@ void data_source::add_py_feature_list(PyObject * container)
 					PyObject * temp = PyObject_CallFunction(get_pixl,(char *)"(ii)" , col,row); // they have col first, then row odering for some reason in berkely code
 
 					x_data_(sample + 1, idx  + 1) = PyFloat_AsDouble(temp);
+	
+//					dout << "IDX : " << idx << "DATA : " << x_data_(sample + 1 , idx + 1) << std::endl;
 
 					++idx; // idx will hold the column to which the current feature is being added for this specific training examples (row = samples)
-
 				}
 			}	
 
@@ -62,14 +64,30 @@ void data_source::add_py_label_list(PyObject * container, const int num_classes)
 	{
 
 		const Py_ssize_t sample_size = PyList_Size(container);
-		// expand the data storage to increase in size for the data
-		x_data_.resize(sample_size ,num_classes );  
+		// expand the data storage to increase in size for the ata
+		y_data_.resize(sample_size ,num_classes , 0);  
+
+		dout << "SAMPLE SIZE " << sample_size << std::endl;		
 
 		for(Py_ssize_t sample = 0 ; sample < sample_size ; ++sample)
 		{
-			PyObject* val = PyList_GetItem(container, sample);
+			// here val is an int
+			PyObject* int_obj = PyList_GetItem(container, sample);
 
-			int idx = 0 ;
+			// from the value of int. determine which index should we marked as 1
+			int val_int = PyInt_AsLong(int_obj);
+
+			if(num_classes == 1)
+			{
+				y_data_(sample + 1 ,1) = val_int; 		
+			}
+			else
+			{
+				// val_int lies between 0 and 9 for digits, so mark the 1 to 10th position as 1 based on the result
+				y_data_(sample + 1, val_int + 1) = 1;
+			}
+
+			dout << "VAL :" << val_int << "SAMPLE # : " << sample + 1 << "STORED :" << y_data_.returnRow(sample + 1) <<  std::endl;
 
 		}
 
@@ -87,10 +105,6 @@ void data_source::read_store_berkely_data(BRKLY_DATA data , DATA_TYPE type)
 
 	Py_Initialize();
 
-
-	//PyRun_SimpleString("import sys");
-	//PyRun_SimpleString("sys.path.append(\".\")");
-
 	PyObject* data_loader_module_name = PyString_FromString(DATA_LOADER_PYTHON_CLASS.c_str());
 
 	PyObject* data_loader_module = PyImport_Import(data_loader_module_name);
@@ -98,6 +112,7 @@ void data_source::read_store_berkely_data(BRKLY_DATA data , DATA_TYPE type)
 	if(!data_loader_module)
 		throw std::invalid_argument("module not found");
 
+	// hold the function names. assign it dynamically based on function params
 	std::string feature_func_to_call_str; 
 	std::string label_func_to_call_str ;
 
@@ -147,6 +162,10 @@ void data_source::read_store_berkely_data(BRKLY_DATA data , DATA_TYPE type)
 
 
 	}
+	else
+	{
+		throw std::logic_error("The given data type does not exist. DONT BE STUPID");
+	}
 	
 	// Load the features
 	PyObject* load_data_func_x = PyObject_GetAttrString(data_loader_module , feature_func_to_call_str.c_str());
@@ -165,7 +184,7 @@ void data_source::read_store_berkely_data(BRKLY_DATA data , DATA_TYPE type)
 
 	PyObject* label_list = PyObject_CallObject(load_data_func_y , NULL);
 
-//	add_py_label_list(label_list, num_classes);	
+	add_py_label_list(label_list, num_classes);	
 
 
 	// decrement all the reference counters
