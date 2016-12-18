@@ -18,4 +18,4 @@ $(PROG_DEBUG) : $(OBJECTS)
 	$(CC) $(DEBUG_FLAGS) $(LIB_FLAGS) $(CFLAGS) $<
 
 clean:
-	rm $(PROG) $(OBJECTS)
+	rm $(PROG_DEBUG) $(OBJECTS)
