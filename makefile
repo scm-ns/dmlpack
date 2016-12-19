@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS= -std=c++11 -c
-DEBUG_FLAGS= -g -Wall
+DEBUG_FLAGS= -g 
 OPTIMIZE_FLAG= -O2
 LIB_FLAGS= -I/usr/include/python2.7
 LIB= -lpython2.7
@@ -18,4 +18,4 @@ $(PROG_DEBUG) : $(OBJECTS)
 	$(CC) $(DEBUG_FLAGS) $(LIB_FLAGS) $(CFLAGS) $<
 
 clean:
-	rm $(PROG_DEBUG) $(OBJECTS)
+	rm $(PROG_DEBUG) $(OBJECTS) *.gch

@@ -12,6 +12,15 @@
  *
  */
 
+//#define DEBUG_D
+
+#ifdef DEBUG_D
+#define dout std::cout << __FILE__<< " (" << __LINE__ << ") " << "DEBUG : "
+#else
+#define dout 0 && std::cout
+#endif
+
+
 
 #include <stdexcept>
 #include <unordered_map>
@@ -32,10 +41,13 @@
  */
 
 
-enum class CLASSIFIER_TYPE { NAIVE_BAYES , PERCEPTRON , SINGLE_LAYER_NN , MULTI_LAYER_NN };
+enum class CLASSIFIER_TYPE { NAIVE_BAYES , PERCEPTRON , PERCEPTRON_MIRA , SINGLE_LAYER_NN , MULTI_LAYER_NN };
 
 
 enum class perceptron_type {simple, mira};
+
+
+const double MIRA_CAP = 0.001;
 
 
 /*
@@ -94,7 +106,7 @@ template <typename T>
 class dmlpack
 {
 	public:	
-		dmlpack(CLASSIFIER_TYPE ml_type) : ml_type_(ml_type)
+		dmlpack(CLASSIFIER_TYPE ml_type) : ml_type_(ml_type) , num_samples(0)
 		{
 			
 		};	
@@ -107,7 +119,7 @@ class dmlpack
 		// feed the entire training data
 		// keep reference to the class, instead of copying the data set
 		// This means that the data should outlive the class
-		void feed_train_data(const matrix<T> train_x , const matrix<T> train_y) const
+		void feed_train_data( matrix<T> train_x ,  matrix<T> train_y) 
 		{
 			train_x_ = train_x; 
 			train_y_ = train_y;	
@@ -117,29 +129,35 @@ class dmlpack
 
 			num_features = train_x_.numCols();
 
-			num_samples += train_x_.numRows();
+			num_samples = train_x_.numRows();
 
 		}
 	
 
 		// feed the entire test data 
-		void feed_test_data(matrix<T> test_x )
+		void feed_test_data(matrix<T> test_x , matrix<T> test_y)
 		{
 			test_x_ = test_x;	
+			test_y_ = test_y;
 		}
 
-		// train on the whole data set provided
-		void train();	
+		// train on the percentage of the data set provided
+		void train(float percentage = 1, int iter = 4);	
 
 
 		// set the test set on the model and give back the accuracy 		
 		double test();	
 
+		void test_accuracy();
+
 		// run inference , take in data point and see what the model predicts
 		matrix<T> inference(matrix<T>& test_x);
+
+		// test set already set
+		std::pair<matrix<T>,matrix<T>> inference();
 		
 		// pass in the index of the test set where you want the inference to be done.
-		matrix<T> inference(size_t test_set_idx);	
+//		matrix<T> inference(float percent_test);	
 
 
 		// train on a batch of data 
@@ -154,12 +172,15 @@ class dmlpack
 		CLASSIFIER_TYPE ml_type_; // machine learning type
 
 		// training data
-		std::shared_ptr<matrix<T>> train_x_;			
-		std::shared_ptr<matrix<T>> train_y_;			
+		matrix<T> train_x_;			
+		matrix<T> train_y_;			
 
 		// testing data
-		std::shared_ptr<matrix<T>> test_x_;			
-//		matrix<T>& test_y_ ; While testing only the x labels are given and we have to predict the y values from that 
+		matrix<T> test_x_;			
+		matrix<T> test_y_ ; //While testing only the x labels are given and we have to predict the y values from that 
+
+		
+		matrix<T> prediction_;
 
 
 		// multi layer neural network internals
@@ -167,7 +188,7 @@ class dmlpack
 		// will hold the different types of neural layers	
 		std::vector<matrix<T>> network_layers_;
 
-		void multi_layer_nn_train(double learning_rate, size_t iterations);
+		void multi_layer_nn_train(double learning_rate = 0.0001, size_t iterations = 100);
 
 		T sigmoid(T val);
 
@@ -175,26 +196,23 @@ class dmlpack
 
 		matrix<T> single_layer_nn_weigh_;			 // single layer neural network weights
 
-		void single_layer_nn_train(double learning_rate, size_t iterations);
+		void single_layer_nn_train(double learning_rate = 0.0001, size_t iterations = 1);
 
 
 
 		//percetron internals
+	 	matrix<T> perceptron_weight_;
 		std::pair<bool,T> single_preceptron(const matrix<T>& feature , const matrix<T>& weight , T threshold  = 0 ) const;
 
 		std::pair<matrix<T> , matrix<T>> multi_class_perceptron_inference();
 
-		void multi_class_perceptron_train(perceptron_type type);
-	 	matrix<T> perceptron_weight_;
+		void multi_class_perceptron_train(perceptron_type type = perceptron_type::simple , float percentage = 100);
+		void multi_class_perceptron_train_iter(perceptron_type type , float percentage , int num_iter = 100);
 
-
-
-
-		// multi-layer perceptron : Internals.
 
 
 		// naive bayes //internals	------------------------------------
-		void naive_bayes_train();
+		void naive_bayes_train(float percentage);
 		std::pair<matrix<T> , matrix<T> > naive_bayes_inference();
 		std::size_t num_samples;  // in a multi batch train scenario ne need to keep track of the number of samples we have seen
 					      //------------------------------------
@@ -235,19 +253,74 @@ class dmlpack
 
 };
 
+template <typename T>
+void dmlpack<T>::test_accuracy()
+{
+	const int num_test_samples = test_y_.numRows();
 
+	dout << prediction_ << std::endl;
+
+	if(prediction_.numRows() != num_test_samples)
+	{
+		dout << "error" ;
+		throw std::invalid_argument("number of sampels do not match");
+	}
+		
+	int correct  = 0 ;
+	if(num_classes == 1)
+	{
+		for(size_t idx = 1 ; idx <= num_test_samples ; ++idx)
+		{
+			if(prediction_(idx, 1) == test_y_(idx,1))
+			{
+				correct++;
+			}
+		}
+
+	}		
+	else
+	{
+		for(size_t idx = 1 ; idx <= num_test_samples ; ++idx)
+		{
+			int actual_val = 0 ; 
+			for(size_t class_idx = 1 ; class_idx <= num_classes ; ++class_idx)
+			{
+				if(test_y_(idx , class_idx) == 1)
+				{
+					actual_val = class_idx - 1;
+					break;
+				}
+			}
+			dout << actual_val << std::endl;	
+			if(prediction_(idx, 1) == actual_val)
+			{
+				correct++;
+			}
+		}
+
+	}
+
+
+	std::cout << " NUMBER OF CORRECT PREDICTIONS = " << correct << " OUT OF " << num_test_samples << std::endl;
+	std::cout << " Accurary % " << ( (correct) / (double) num_test_samples ) * 100 << std::endl;
+
+}
 
 template <typename T>
-void dmlpack<T>::train()
+void dmlpack<T>::train(float percentage , int iter)
 {
 	switch(ml_type_)
 	{
 		case(CLASSIFIER_TYPE::NAIVE_BAYES):
-			naive_bayes_train();
+			naive_bayes_train(percentage);
 			break;
 
 		case(CLASSIFIER_TYPE::PERCEPTRON):
-			multi_class_perceptron_train():
+			multi_class_perceptron_train_iter(perceptron_type::simple , percentage , iter);
+			break;
+
+		case(CLASSIFIER_TYPE::PERCEPTRON_MIRA):
+			multi_class_perceptron_train_iter(perceptron_type::mira , percentage, iter);
 			break;
 
 		case(CLASSIFIER_TYPE::SINGLE_LAYER_NN):
@@ -265,15 +338,43 @@ void dmlpack<T>::train()
 
 
 template <typename T>
+std::pair<matrix<T>,matrix<T>> dmlpack<T>::inference()
+{
+	switch(ml_type_)
+	{
+		case(CLASSIFIER_TYPE::NAIVE_BAYES):
+			return naive_bayes_inference();
+			break;
+
+		case(CLASSIFIER_TYPE::PERCEPTRON):
+		case(CLASSIFIER_TYPE::PERCEPTRON_MIRA):
+			return multi_class_perceptron_inference();
+			break;
+	
+		case(CLASSIFIER_TYPE::SINGLE_LAYER_NN):
+			single_layer_nn_train();
+			break;
+
+		case(CLASSIFIER_TYPE::MULTI_LAYER_NN):
+			multi_layer_nn_train();
+			break;	
+
+	}
+
+
+}
+
+template <typename T>
 matrix<T> dmlpack<T>::softmax(matrix<T>& prob) const // has to be applied on a column vector
 {
-	matrix<T> res(prob.numRows , prob.numCols);	
-	
+	matrix<T> res(prob.numRows() , prob.numCols());	
+	dout << "softmax" ;
+
 	double norm_factor = 0 ; 	
 	
-	for(int idx = 0 ; idx < prob.size() ; ++idx)
+	for(int idx = 1 ; idx <= prob.size() ; ++idx)
 	{
-		if(prob.isColVector)
+		if(prob.isColVector())
 		{
 			norm_factor += std::exp(prob(idx,1));
 		}
@@ -285,9 +386,9 @@ matrix<T> dmlpack<T>::softmax(matrix<T>& prob) const // has to be applied on a c
 	}
 
 	// Now compute e^(x) / sigma e^(x_i)
-	for(int idx = 0 ; idx < prob.size() ; ++idx)
+	for(int idx = 1 ; idx <= prob.size() ; ++idx)
 	{
-		if(prob.isColVector)
+		if(prob.isColVector())
 		{
 			res(idx,1) =  std::exp(prob(idx,1)); 
 
@@ -296,13 +397,13 @@ matrix<T> dmlpack<T>::softmax(matrix<T>& prob) const // has to be applied on a c
 		}
 		else
 		{
-			res(1,idx) =  std::exp(prob(idx,1)); 
+			res(1,idx) =  std::exp(prob(1,idx)); 
 
 			// normalize
 			res(1,idx) /= norm_factor;
 		}
 	}
-
+	dout << res << std::endl;
 	return res;
 }
 
@@ -322,7 +423,7 @@ matrix<T> dmlpack<T>::softmax(matrix<T>& prob) const // has to be applied on a c
  * 	
  */
 template <typename T>
-void dmlpack<T>::naive_bayes_train()
+void dmlpack<T>::naive_bayes_train(float percentage)
 {
 
 	// check number of traning samples are consistent
@@ -347,12 +448,20 @@ void dmlpack<T>::naive_bayes_train()
 	for(size_t train_sample = 1; train_sample <= train_x_.numRows() ; ++train_sample) // each row in the matrices
 	{
 
-		size_t class_idx = 1;
+		if(percentage * train_x_.numRows() < train_sample)
+		{
+			break;
+		}
 
+		size_t class_idx = 1;
+		
+		dout << train_sample << std::endl;
 		// first go over the y portion of the data set to find the class
 		for(class_idx = 1  ; class_idx <= num_classes ; ++class_idx)
 		{
 			T val = train_y_(train_sample , class_idx );		 // the matrix is 1 indexed, this is odd for cs. But is standard in math > what is better ? 
+
+			dout << val << std::endl;
 
 			/*
 			 * Why keep templates ? 
@@ -411,7 +520,7 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 
 	// Now compute the class prediction for each test sample
 	matrix<T> prediction(num_test_samples , 1);  
-
+	prediction_.resize(num_test_samples , 1);
 
 	// Go through each element in the features of x and from compuute the probabilites
 	for(size_t test_sample = 1; test_sample <= num_test_samples; ++test_sample) // each row in the matrices
@@ -420,13 +529,18 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 		matrix<T> sub_mat(1, num_classes); // this row vector will be concatenated to the end of the res
 
 		// fill them with P(Y)
-	
+
+		dout << test_sample << std::endl;
+
 		for(size_t class_idx = 1 ; class_idx <= num_classes ; ++class_idx)
 		{
+
+			dout << num_classes << " " << num_samples << " " << map_class_occurance[class_idx];
 			sub_mat(1,class_idx) =  normalize_laplace(map_class_occurance[class_idx] , num_classes , num_samples );  // number of occuracnes of the given clas
 			// convert to probability by normalizing
 		
-			sub_mat(1 , class_idx) = std::log(sub_mat(1 , class_idx));
+			dout << sub_mat  << std::endl;
+			//sub_mat(1 , class_idx) = std::log(sub_mat(1 , class_idx));
 
 			/*
 			 * Normalizing here, instead of when the insertion into the map happens, enables us to train in batches
@@ -435,6 +549,7 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 			 */
 		}
 	
+		dout << sub_mat  << std::endl;
 		size_t num_features = test_x_.numCols(); 
 		/*
 		 * p(y , f_i ) = p(y) * sigma{ p(f_i|y) }
@@ -442,20 +557,27 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 		for(size_t feature_idx = 1 ; feature_idx <=  num_features; ++feature_idx)
 		{
 			T val = test_x_(test_sample , feature_idx); 
+			dout << val  << std::endl;
+			dout << feature_idx << std::endl;
 
 			if(val == 1) // The feature is present and we will have to compute the p(f_i | y)
 			{
 			// if the feature is not present, then it does not give up any way to update the probability of which class to choose from
 				// we have to compute for each class. That is given this feature, what is the probability of seeeing a partucular class	
 				
-				for(size_t class_idx = 1 ; class_idx <= num_classes ; ++num_classes)
+				for(size_t class_idx = 1 ; class_idx <= num_classes ; ++class_idx)
 				{
 					// compute p(f_i / y) , by counting the occurance of a feature for the partucular class and dividing it by the total occurance of that feature
+				
+					dout << class_idx << map_feature_in_class_occurance[std::make_pair(feature_idx , class_idx)]  << " " << num_features << " " << map_feature_occurance[feature_idx]  << std::endl;
+
 					T temp = normalize_laplace( map_feature_in_class_occurance[std::make_pair(feature_idx , class_idx)] ,
 						       	        	num_features , 
 									map_feature_occurance[feature_idx] ); 
 
-					sub_mat(1, class_idx) += std::log(temp);
+					dout << temp << std::endl	;
+					sub_mat(1, class_idx) += temp ;// std::log(temp);
+					dout << sub_mat << std::endl;
 				}
 
 			}
@@ -463,21 +585,27 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 
 		}
 		
-		res.addRow(sub_mat); // add the probabilities over the different classes 
-		
+		dout << sub_mat  << std::endl;
+
 		// Use softMax and select max to do prediction on what is the best class to be taken
 
 		// normalize using softmax. squishes everything to lie in the 0,1 range and the total sum = 1. 
 		sub_mat = softmax(sub_mat);
 
+		dout << sub_mat  << std::endl;
+
+		res.addRow(sub_mat); // add the probabilities over the different classes 
+
 		// std::max_element + distance to find the index of with the largest probaility . 
 		// Add one since the output of distance is 0 index, while the classes are 1 indexed 
 		prediction(test_sample , 1) = sub_mat.arg_max();
-			
 
+		dout << sub_mat << std::endl;
+		dout << prediction << std::endl;
 	}
 
-	return make_pair( res , prediction );
+	prediction_ = prediction;
+	return std::make_pair( res , prediction );
 }
 
 
@@ -500,6 +628,7 @@ template <typename T>
 std::pair<bool, T> dmlpack<T>::single_preceptron(const matrix<T>& feature , const matrix<T>& weight , T threshold ) const
 {
 	T res = feature.innerProduct(weight);
+	dout << "value " << res << std::endl;
 	if(res > threshold)
 	{
 		return std::make_pair(true , res);
@@ -528,7 +657,7 @@ std::pair<matrix<T> , matrix<T>> perceptron_update(const matrix<T>& predicted_id
  * perceptron update with mira
  */
 template <typename T>
-std::pair<matrix<T> , matrix<T>> mira_perceptron_update(const matrix<T>& predicted_id_weight , const matrix<T>& actual_id_weight , const matrix<T>& feature_vec)
+std::pair<matrix<T> , matrix<T>> mira_perceptron_update(const matrix<T>& predicted_id_weight , const matrix<T>& actual_id_weight , matrix<T>& feature_vec , double cap = MIRA_CAP)
 {
 
 	T tau = (predicted_id_weight - actual_id_weight).innerProduct(feature_vec.transpose());
@@ -536,10 +665,31 @@ std::pair<matrix<T> , matrix<T>> mira_perceptron_update(const matrix<T>& predict
 	tau += 1;
 	tau /= 2 * feature_vec.normEuclidean();
 
-	matrix<T> predicted_id_weight_result = predicted_id_weight - tau * feature_vec;
-	matrix<T> actual_id_weight_result  = actual_id_weight + tau * feature_vec;
+	tau = std::min(cap , tau);
+
+	matrix<T> predicted_id_weight_result = predicted_id_weight - feature_vec * tau;
+	matrix<T> actual_id_weight_result  = actual_id_weight + feature_vec * tau;
 
 	return std::make_pair(predicted_id_weight_result , actual_id_weight_result);	
+}
+
+template <typename T>
+void dmlpack<T>::multi_class_perceptron_train_iter(perceptron_type type , float percentage , int num_iter)
+{
+	//Resize the weight vector to hold # classes rows and #features columns
+	// A weight vector for each of the classes 
+	// the weight vector will be used to determine how much the neuron will look at each feature
+	// Initially all the weights are 0
+	perceptron_weight_.resize(num_classes , num_features + 1 , 0 ); // + 1 for the biases 
+
+	perceptron_weight_(1 , num_features + 1) = 1 ; // set the bias for the class to be 1, so the tie can be broken for arg_max, when the algorithm starts are the weight vector is filled with 0
+
+	
+	for(int i = 0; i < num_iter ; ++i)
+	{
+		std::cout << " ITERATION : # " << i << std::endl;
+		multi_class_perceptron_train(type , percentage);
+	}
 }
 
 
@@ -566,23 +716,25 @@ std::pair<matrix<T> , matrix<T>> mira_perceptron_update(const matrix<T>& predict
  *
  */
 template <typename T>
-void dmlpack<T>::multi_class_perceptron_train(perceptron_type type)
+void dmlpack<T>::multi_class_perceptron_train(perceptron_type type , float percentage)
 {
 
 	const size_t num_train_samples = train_x_.numRows();
 
-	//Resize the weight vector to hold # classes rows and #features columns
-	// A weight vector for each of the classes 
-	// the weight vector will be used to determine how much the neuron will look at each feature
-	// Initially all the weights are 0
-	perceptron_weight_.resize(num_classes , num_features + 1 , 0 ); // + 1 for the biases 
+	dout << train_x_.numRows() << " " ;
 
-	perceptron_weight_(1 , num_features + 1) = 1 ; // set the bias for the class to be 1, so the tie can be broken for arg_max, when the algorithm starts are the weight vector is filled with 0
+
 
 
 	// Now go through the data set and fill in these values
 	for(size_t train_sample = 1; train_sample <= num_train_samples ; ++train_sample) // each row in the matrices
 	{
+		dout << train_sample << std::endl;
+
+		if(percentage * train_x_.numRows() < train_sample)
+		{
+			break;
+		}
 
 		// get the feature vector
 		matrix<T> feature_vec = train_x_.returnRow(train_sample);	
@@ -591,6 +743,7 @@ void dmlpack<T>::multi_class_perceptron_train(perceptron_type type)
 		feature_vec.resize(1 , feature_vec.numCols() + 1);
 		feature_vec(1 , feature_vec.numCols()) = 1;
 
+		dout << feature_vec << std::endl;
 
 		// Okay two seperate ways to implement this. 
 		// Update the weight of all the classes. 
@@ -604,23 +757,30 @@ void dmlpack<T>::multi_class_perceptron_train(perceptron_type type)
 		// first go over the y portion of the data set to find the class
 		for(size_t class_idx = 1  ; class_idx <= num_classes ; ++class_idx)
 		{
-
+			dout << class_idx << " " << num_classes << std::endl;
 			// get the weight vector for a particular class
 			matrix<T> weight_vec = perceptron_weight_.returnRow(class_idx);			
 			std::pair<bool, T> pred = single_preceptron(feature_vec , weight_vec);
 		
 			class_pred(1,class_idx) = pred.second;
 
+			dout << weight_vec << std::endl;
+
 			bool actual = train_y_(train_sample , class_idx); 	
 
 			if(actual)
 			{
-				actual_class_id = class_idx;
+				actual_class_id = class_idx - 1;
 			}
 			
 		}
-		
+	
+		dout << "class pred " << class_pred << std::endl;	
+
+
 		auto predicted_class_idx = class_pred.arg_max();
+
+		dout << "class pred arg " << predicted_class_idx << std::endl;	
 
 		// update the weight vectors
 		// if the predicted class and the acutal class are not the same,
@@ -629,10 +789,10 @@ void dmlpack<T>::multi_class_perceptron_train(perceptron_type type)
 		if(predicted_class_idx != actual_class_id)
 		{
 			// reduce the weight vector for the predicted class 
-			matrix<T> reduced_weight = perceptron_weight_.returnRow(predicted_class_idx);		
+			matrix<T> reduced_weight = perceptron_weight_.returnRow(predicted_class_idx + 1);		
 
 			// increase the weight vector for the actual class .
-			matrix<T> increase_weight = perceptron_weight_.returnRow(actual_class_id);		
+			matrix<T> increase_weight = perceptron_weight_.returnRow(actual_class_id + 1);		
 
 
 			// different update rules based on choice 	
@@ -648,11 +808,60 @@ void dmlpack<T>::multi_class_perceptron_train(perceptron_type type)
 				reduced_weight = res.first;
 				increase_weight = res.second;	
 			}
+
+			perceptron_weight_.replaceRow(reduced_weight , predicted_class_idx + 1);
+			perceptron_weight_.replaceRow(increase_weight, actual_class_id + 1);
+			
 		}	
 	}	
 }
 
 
+
+
+template <typename T>
+std::pair<matrix<T> , matrix<T>> dmlpack<T>::multi_class_perceptron_inference()
+{
+	matrix<T> res; // the matrix will be of size # test samples * num classes
+
+	size_t num_test_samples = test_x_.numRows();
+
+	// Now compute the class prediction for each test sample
+	matrix<T> prediction(num_test_samples , 1);  
+
+	// Go through each element in the features of x and from compuute the probabilites
+	for(size_t test_sample = 1; test_sample <= num_test_samples; ++test_sample) // each row in the matrices
+	{
+
+		// get the feature vector
+		matrix<T> feature_vec = train_x_.returnRow(test_sample);	
+
+		// Append the +1 towards its end. 
+		feature_vec.resize(1 , feature_vec.numCols() + 1);
+		feature_vec(1 , feature_vec.numCols()) = 1;
+
+		matrix<T> sub_mat(1 , num_classes);
+
+		for(int class_idx = 1 ; class_idx < num_classes ; ++class_idx)
+		{
+			sub_mat(1,class_idx)  = perceptron_weight_.returnRow(class_idx).innerProduct(feature_vec);
+		}
+
+		res.addRow(sub_mat); // add the probabilities over the different classes 
+		
+		// Use softMax and select max to do prediction on what is the best class to be taken
+
+		// std::max_element + distance to find the index of with the largest probaility . 
+		// Add one since the output of distance is 0 index, while the classes are 1 indexed 
+		prediction(test_sample , 1) = sub_mat.arg_max();
+			
+	}
+
+	prediction_ = prediction;
+
+	return std::make_pair( res , prediction );
+
+}
 
 
 /*
@@ -693,11 +902,9 @@ void dmlpack<T>::single_layer_nn_train(double learning_rate, size_t iterations)
 		 	// m * 1				// m * n 		// n * 1
 			matrix<T> pred_output_vec = single_layer_nn_weigh_ * feature_vec.transpose();
 
-		//	delta_weight = delta_weight + learning_rate * ( ( actual_output_vec - pred_output_vec ) * feature_vec); 
-		
 			//incremental change
-			
-			single_layer_nn_weigh_ = single_layer_nn_weigh_ + learning_rate * ( ( actual_output_vec - pred_output_vec ) * feature_vec); 
+
+			single_layer_nn_weigh_ = single_layer_nn_weigh_ + ( ( actual_output_vec - pred_output_vec ) * feature_vec) * learning_rate; 
 
 		}
 	}
@@ -795,7 +1002,7 @@ void dmlpack<T>::multi_layer_nn_train(double learning_rate, size_t iterations)
 				}		
 				else
 				{
-					output = qu.top();
+					output = qu.front();
 				}
 
 				std::for_each(output.begin() , output.end() , [this](T& val)
@@ -824,8 +1031,8 @@ void dmlpack<T>::multi_layer_nn_train(double learning_rate, size_t iterations)
 				// update the weights for the current layer.
 				// 	TO DO : VEctorize the code 
 
-				auto current_layer_activation = qu.top() ; qu.pop();
-				auto prev_layer_activation = qu.top() ;
+				auto current_layer_activation = qu.front() ; qu.pop();
+				auto prev_layer_activation = qu.front() ;
 				
 				// stores the gradient for the current layer which is fed back into lower layers	
 				matrix<T> current_layer_grad(current_layer_activation.numRows() , current_layer_activation.numCols());
@@ -833,7 +1040,7 @@ void dmlpack<T>::multi_layer_nn_train(double learning_rate, size_t iterations)
 				bool output_layer_flag = (itr == --network_layers_.end());
 					
 
-				itr->transform_inplace([&](std::size_t row , std::size_t col)
+				itr->transform_inplace([&](std::size_t row , std::size_t col, int val)
 						{
 							T w_delta = 0 ;
 
@@ -894,7 +1101,7 @@ void dmlpack<T>::multi_layer_nn_train(double learning_rate, size_t iterations)
 		
 			//incremental change
 			
-			single_layer_nn_weigh_ = single_layer_nn_weigh_ + learning_rate * ( ( actual_output_vec - pred_output_vec ) * feature_vec); 
+			single_layer_nn_weigh_ = single_layer_nn_weigh_ +  ( ( actual_output_vec - pred_output_vec ) * feature_vec) * learning_rate; 
 
 		}
 	}

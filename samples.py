@@ -20,7 +20,7 @@ DIGIT_DATUM_HEIGHT=28
 
 FACE_TRAIN_SET_SIZE = 451
 FACE_TEST_SET_SIZE = 150
-FACE_VALID_SET_SIZE = 301
+FACE_VALID_SET_SIZE = 300
 FACE_DATUM_WIDTH=60
 FACE_DATUM_HEIGHT=70
 
@@ -121,21 +121,21 @@ def load_digit_train_x():
 
 def load_digit_train_y():
   print "Loading training labels data for digits "
-  return loadLabelsFile("digitdata/traininglabels", DIGIT_TEST_SET_SIZE)
+  return loadLabelsFile("digitdata/traininglabels", DIGIT_TRAIN_SET_SIZE)
 
 def load_digit_valid_x():
   print "Loading valid feature data for digits "
-  return  loadDataFile("digitdata/validationimages", DIGIT_TRAIN_SET_SIZE,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
+  return  loadDataFile("digitdata/validationimages", DIGIT_VALID_SET_SIZE,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
     
 def load_digit_valid_y():
   print "Loading valid labels data for digits "
   return loadLabelsFile("digitdata/validationlabels", DIGIT_VALID_SET_SIZE)
 
-def load_digits_test_x():
+def load_digit_test_x():
   print "Loading test feature data for digits "
   return loadDataFile("digitdata/testimages", DIGIT_TEST_SET_SIZE,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
 
-def load_digits_test_y():
+def load_digit_test_y():
   print "Loading test labels for digits "  
   return loadLabelsFile("digitdata/testlabels", DIGIT_TEST_SET_SIZE)
 

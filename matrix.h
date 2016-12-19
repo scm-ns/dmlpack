@@ -60,7 +60,7 @@ public:
 	{
 
 	}
-matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._size)
+	matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._size)
 	{
 		_matrix = rhs._matrix;
 	};
@@ -78,12 +78,12 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 
 	}	
 
-	inline typename std::vector<T>::iterator begin() const
+	inline typename std::vector<T>::iterator begin() 
 	{
 		return _matrix.begin();
 	}
 
-	inline typename std::vector<T>::iterator end() const
+	inline typename std::vector<T>::iterator end() 
 	{
 		return _matrix.end();
 	}
@@ -100,11 +100,14 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 	void print();
 	size_t  numRows() const { return (_rows); }; // Implicit inline 
 	size_t numCols() const { return  (_cols); };
+	size_t size() const { return (_size) ; };
 	void randFill(T start = 0, T end = 1000); // Will only work for simple data types
 	void symetricRandFill(T start = 0, T end = 1000); // Will only work for simple data types
 	void setAllNum(T aNum);
+
 	matrix<T> returnRow(size_t aRow) const;
 	matrix<T> returnCol(size_t aCol) const;
+
 	matrix<T> removeCol(size_t aCol);
 	matrix<T> removeRow(size_t aRow);
 
@@ -122,8 +125,8 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 	matrix<T> getDiagonalMatrix() const;
 
 
-	matrix<T> addCol(const matrix<T>& col);
-	matrix<T> addRow(const matrix<T>& row);
+	matrix<T> addCol( matrix<T>& col);
+	void addRow( matrix<T>& row);
 	bool isSquare() const { return ((_rows == _cols) ? true : false); }
 	bool isRowVector()const { return ((_rows == 1) ? true : false); }
 	bool isColVector() const { return ((_cols == 1) ? true : false); }
@@ -139,14 +142,17 @@ matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._
 	matrix<T> transpose() const;
 	T innerProduct(const matrix<T>& B) const;
 	
-	T selfInnerProduct() const;
+	T selfInnerProduct();
 
 	// returns the index which has the maximum value in the vector
 	// onlys works on row or column vectors, not on matrix
 	size_t arg_max();
 
 	matrix<T>& operator=(const matrix<T>& rhs);
-	matrix<T> operator*(const T rhs);
+	
+	
+	template <class P>
+	matrix<T> operator*(const P rhs);
 	matrix<T> operator/(const T rhs);
 	matrix<T> operator*(const matrix<T> &rhs);
 	matrix<T> operator+(const matrix<T> &rhs) const;
@@ -225,7 +231,7 @@ private:
 typedef matrix<double> matDouble; 
 typedef matrix<int> matInt;
 
-
+//  0 indexed
 template <class T>
 size_t matrix<T>::arg_max()
 {
@@ -246,9 +252,9 @@ size_t matrix<T>::arg_max()
  * add support to add a row at the end of the current matrix.
  */
 template <class T>
-matrix<T> matrix<T>::addRow(const matrix<T>& row)
+void matrix<T>::addRow( matrix<T>& row)
 {
-	if(row.isRowVector )
+	if(row.isRowVector() )
 	{
 		if(row.numCols() != _cols && _cols != 0)
 		{
@@ -256,10 +262,15 @@ matrix<T> matrix<T>::addRow(const matrix<T>& row)
 		}
 
 		// More optimial might to be reserve and then add move elmements ?
-		
-		_matrix.reserve(_size + row._size);	 // increase the allocated memory
-
-		_matrix.insert(_matrix.end() , row.begin()  , row.end());	
+	
+		if(_size == 0)
+		{
+			_matrix = row._matrix;
+		}
+		else
+		{
+			_matrix.insert(_matrix.end() , row.begin()  , row.end());	
+		}
 
 		// update the bookkeeping
 		_size += row._size;
@@ -692,8 +703,9 @@ a new matrix
 
 
 
-template <class T>
-matrix<T> matrix<T>::operator*(const T rhs)
+template <typename T>
+template <typename P>
+matrix<T> matrix<T>::operator*(const P rhs)
 /*
 Multiply by scalar
 DoesNot Modify Input Matrix
@@ -709,6 +721,7 @@ DoesNot Modify Input Matrix
 	}
 	return result;
 }
+
 
 template <class T>
 matrix<T> matrix<T>::operator/(const T rhs)
@@ -841,8 +854,7 @@ T& matrix<T>::operator()(const long long  rows, const long long  cols) const
 	-----------------------------------*/
 	if (rows > _rows || cols > _cols)
 	{
-		error("() -> Index out of range :: Returning "); std::cout << rows << cols << std::endl;
-		return get(1, 1);
+		throw std::invalid_argument(" index out of range ");
 	}
 	else
 		return get(rows, cols);
@@ -924,7 +936,6 @@ std::ostream& operator<<(std::ostream& out, const matrix<T>& temp)
 	{
 		for (long long j = 1; j <= temp.numCols(); j++)
 		{
-		//	out << temp.get(i,j);
 			out << std::setw(7) << temp(i, j);
 			if (j == temp.numCols()) out << std::endl;
 		}
@@ -941,7 +952,7 @@ std::ostream& operator<<(std::ostream& out, const matrix<T>& temp)
 template <class T>
 matrix<T> matrix<T>::transpose() const
 {
-	matrix<double> R(numCols(),numRows()); 
+	matrix<T> R(numCols(),numRows()); 
 	for(long long  i = 1; i <= numRows() ; i++)
 	{
 		for(long long  j = 1; j <= numCols() ; j++)
@@ -1002,9 +1013,9 @@ T matrix<T>::innerProduct(const matrix<T>& B) const
 }
 
 template <class T>
-T matrix<T>::selfInnerProduct() const
+T matrix<T>::selfInnerProduct()
 {
-	return innerProduct(this);	
+	return innerProduct(*this);	
 }
 
 
@@ -1014,7 +1025,7 @@ T matrix<T>::selfInnerProduct() const
 template <class T>
 T matrix<T>::normEuclidean()
 {
-	T innerProd = innerProduct(this);
+	T innerProd = selfInnerProduct();
 	return std::sqrt(innerProd);
 }
 

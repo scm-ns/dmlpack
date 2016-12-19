@@ -38,7 +38,14 @@ void data_source::add_py_feature_list(PyObject * container)
 				{
 					PyObject * temp = PyObject_CallFunction(get_pixl,(char *)"(ii)" , col,row); // they have col first, then row odering for some reason in berkely code
 
-					x_data_(sample + 1, idx  + 1) = PyFloat_AsDouble(temp);
+					float temp_val = PyFloat_AsDouble(temp);
+
+					if(temp_val > 0)
+					{
+						temp_val = 1;
+					}	
+
+					x_data_(sample + 1, idx  + 1) = temp_val;
 	
 //					dout << "IDX : " << idx << "DATA : " << x_data_(sample + 1 , idx + 1) << std::endl;
 

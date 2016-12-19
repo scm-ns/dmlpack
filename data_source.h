@@ -22,9 +22,9 @@
 #include <stdexcept>
 #include <iostream>
 
-#define DEBUG
+//#define DEBUG_P
 
-#ifdef DEBUG
+#ifdef DEBUG_P
 #define dout std::cout << __FILE__<< " (" << __LINE__ << ") " << "DEBUG : "
 #else
 #define dout 0 && std::cout
@@ -52,19 +52,19 @@ class data_source
 		data_source(const data_source& ) = delete;
 		data_source& operator=(const data_source& ) = delete;	
 
-		matrix<int> get_features()
+		matrix<double> get_features()
 		{
 			return x_data_;
 		}
 
-		matrix<int> get_labels()
+		matrix<double> get_labels()
 		{
 			return y_data_;
 		}
 
 	private:
-		matrix<int> x_data_;
-		matrix<int> y_data_;	
+		matrix<double> x_data_;
+		matrix<double> y_data_;	
 		void add_py_feature_list(PyObject * container);
 		// one hot encoding
 		void add_py_label_list(PyObject * container, const int num_classes);
