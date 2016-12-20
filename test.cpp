@@ -163,7 +163,7 @@ void test_nb_faces()
 
 int main()
 {
-	test_digit_nb();
+	test_perceptron();
 };
 
 

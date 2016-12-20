@@ -21,8 +21,8 @@ DIGIT_DATUM_HEIGHT=28
 FACE_TRAIN_SET_SIZE = 451
 FACE_TEST_SET_SIZE = 150
 FACE_VALID_SET_SIZE = 300
-FACE_DATUM_WIDTH=60
-FACE_DATUM_HEIGHT=70
+FACE_DATUM_WIDTH= 60
+FACE_DATUM_HEIGHT= 70
 
 
 ## Module Classes
@@ -153,7 +153,7 @@ def load_face_train_y():
 
 def load_face_valid_x():
   print "Loading valid feature data for face "
-  return  loadDataFile("facedata/facedatavalidation", FACE_VALID_SET_SIZE,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
+  return  loadDataFile("facedata/facedatavalidation", FACE_VALID_SET_SIZE,FACE_DATUM_WIDTH,FACE_DATUM_HEIGHT)
     
 def load_face_valid_y():
   print "Loading valid labels data for face "
@@ -161,7 +161,7 @@ def load_face_valid_y():
 
 def load_face_test_x():
   print "Loading test feature data for face "
-  return loadDataFile("facedata/facedatatest", FACE_TEST_SET_SIZE,DIGIT_DATUM_WIDTH,DIGIT_DATUM_HEIGHT)
+  return loadDataFile("facedata/facedatatest", FACE_TEST_SET_SIZE ,FACE_DATUM_WIDTH ,FACE_DATUM_HEIGHT)
 
 def load_face_test_y():
   print "Loading test labels for face "  

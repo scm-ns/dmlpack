@@ -2,17 +2,14 @@
 #define DMLPACK_H
 
 /*
- *
- *
  * Might end up being a header only class or namespace *
  * Provide functionality for : 
  * 	Naive Bayes
  * 	Perceptron
  * 	Simply Multi Layer Neural Network and Back Prop
- *
  */
 
-//#define DEBUG_D
+#define DEBUG_D
 
 #ifdef DEBUG_D
 #define dout std::cout << __FILE__<< " (" << __LINE__ << ") " << "DEBUG : "
