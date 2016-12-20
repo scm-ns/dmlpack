@@ -933,7 +933,7 @@ std::ostream& operator<<(std::ostream& out, const matrix<T>& temp)
 	{
 		for (long long j = 1; j <= temp.numCols(); j++)
 		{
-			out << std::setw(7) << temp(i, j);
+			out << std::setw(1) << temp(i, j);
 			if (j == temp.numCols()) out << std::endl;
 		}
 	}

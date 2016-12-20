@@ -9,7 +9,7 @@
  * 	Simply Multi Layer Neural Network and Back Prop
  */
 
-#define DEBUG_D
+//#define DEBUG_D
 
 #ifdef DEBUG_D
 #define dout std::cout << __FILE__<< " (" << __LINE__ << ") " << "DEBUG : "
@@ -195,8 +195,6 @@ class dmlpack
 
 		void single_layer_nn_train(double learning_rate = 0.0001, size_t iterations = 1);
 
-
-
 		//percetron internals
 	 	matrix<T> perceptron_weight_;
 		std::pair<bool,T> single_preceptron(const matrix<T>& feature , const matrix<T>& weight , T threshold  = 0 ) const;
@@ -205,7 +203,6 @@ class dmlpack
 
 		void multi_class_perceptron_train(perceptron_type type = perceptron_type::simple , float percentage = 100);
 		void multi_class_perceptron_train_iter(perceptron_type type , float percentage , int num_iter = 100);
-
 
 
 		// naive bayes //internals	------------------------------------
@@ -623,13 +620,13 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 template <typename T>
 std::pair<bool, T> dmlpack<T>::single_preceptron(const matrix<T>& feature , const matrix<T>& weight , T threshold ) const
 {
-	dout << "features : single perc " << feature ;
+	dout << "features give to single perc " << feature ;
 
-	dout << "weight : single perc " << weight ;
+	dout << "weight to  single perc " << weight ;
 
 	T res = feature.innerProduct(weight);
 
-	dout << "value " << res << std::endl;
+	dout << "value of inner prod in single perc " << res << std::endl;
 	if(res > threshold)
 	{
 		return std::make_pair(true , res);
@@ -648,20 +645,19 @@ std::pair<bool, T> dmlpack<T>::single_preceptron(const matrix<T>& feature , cons
 template <typename T>
 std::pair<matrix<T> , matrix<T>> perceptron_update(const matrix<T>& predicted_id_weight ,const matrix<T>& actual_id_weight ,const matrix<T>& feature_vec)
 {
-	dout << "features : perc update " << feature_vec;
+	dout << "features in perc update " << feature_vec;
 
-	dout << "weight : perc update " << predicted_id_weight ;
+	dout << "weight in class predicted for the feature || perc update " << predicted_id_weight ;
 
-
-	dout << "weight : perc update acual " << actual_id_weight ;
+	dout << "weight of actual class in training set || perc update" << actual_id_weight ;
 
 	matrix<T> predicted_id_weight_result = predicted_id_weight - feature_vec;
 
-	dout << "weight : prec weight update " << predicted_id_weight_result;
+	dout << "weight obtained after updated the predicted weight by subtracting features  || prec weight update " << predicted_id_weight_result;
 
 	matrix<T> actual_id_weight_result  = actual_id_weight + feature_vec;
 
-	dout << "weight : actual id result " << actual_id_weight_result; 
+	dout << "weight obtained after udpated the actualy wegiht by adding the feature vector || actual id result " << actual_id_weight_result; 
 
 	return std::make_pair(predicted_id_weight_result , actual_id_weight_result);	
 }	
@@ -795,7 +791,9 @@ void dmlpack<T>::multi_class_perceptron_train(perceptron_type type , float perce
 			}
 			
 		}
-	
+
+		dout << "actual pred " << actual_class_id << std::endl;
+
 		dout << "class pred " << class_pred << std::endl;	
 
 		auto predicted_class_idx = class_pred.arg_max();
@@ -867,8 +865,7 @@ std::pair<matrix<T> , matrix<T>> dmlpack<T>::multi_class_perceptron_inference()
 	for(size_t test_sample = 1; test_sample <= num_test_samples; ++test_sample) // each row in the matrices
 	{
 		// get the feature vector
-		matrix<T> feature_vec = train_x_.returnRow(test_sample);	
-
+		matrix<T> feature_vec = test_x_.returnRow(test_sample);	
 
 		// Append the +1 towards its end. 
 		feature_vec.resize(1 , feature_vec.numCols() + 1);
