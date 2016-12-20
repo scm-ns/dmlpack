@@ -13,6 +13,7 @@ debug: $(PROG_DEBUG)
 
 $(PROG_DEBUG) : $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIB) $(LIB_FLAGS) -o $@
+	./$(PROG_DEBUG)
 
 %.o: %.cpp matrix.h dmlpack.h
 	$(CC) $(DEBUG_FLAGS) $(OPTIMIZE_FLAG) $(LIB_FLAGS) $(CFLAGS) $<
