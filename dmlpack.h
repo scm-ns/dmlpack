@@ -234,7 +234,6 @@ class dmlpack
 		// TO DO : Move them into class memebers 
 		
 
-
 		// to compute p(y)
 		std::unordered_map<class_index,occurance , hash_fctor> map_class_occurance;  // maintain mapping between class and count of its occurances in the training set
 
@@ -624,7 +623,11 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 template <typename T>
 std::pair<bool, T> dmlpack<T>::single_preceptron(const matrix<T>& feature , const matrix<T>& weight , T threshold ) const
 {
+	dout << "features : single perc " << feature ;
+	dout << "weight : single perc " << weight ;
+
 	T res = feature.innerProduct(weight);
+
 	dout << "value " << res << std::endl;
 	if(res > threshold)
 	{
@@ -645,6 +648,7 @@ template <typename T>
 std::pair<matrix<T> , matrix<T>> perceptron_update(const matrix<T>& predicted_id_weight ,const matrix<T>& actual_id_weight ,const matrix<T>& feature_vec)
 {
 	matrix<T> predicted_id_weight_result = predicted_id_weight - feature_vec;
+
 	matrix<T> actual_id_weight_result  = actual_id_weight + feature_vec;
 
 	return std::make_pair(predicted_id_weight_result , actual_id_weight_result);	
@@ -681,9 +685,11 @@ void dmlpack<T>::multi_class_perceptron_train_iter(perceptron_type type , float 
 
 	perceptron_weight_(1 , num_features + 1) = 1 ; // set the bias for the class to be 1, so the tie can be broken for arg_max, when the algorithm starts are the weight vector is filled with 0
 
-	
+
+	dout << "WEIGHT MATRIX " <<  perceptron_weight_ << std::cout ; 
 	for(int i = 0; i < num_iter ; ++i)
 	{
+		dout << "WEIGHT MATRIX " <<  perceptron_weight_ << std::cout ; 
 		std::cout << " ITERATION : # " << i << std::endl;
 		multi_class_perceptron_train(type , percentage);
 	}
@@ -717,10 +723,7 @@ void dmlpack<T>::multi_class_perceptron_train(perceptron_type type , float perce
 {
 
 	const size_t num_train_samples = train_x_.numRows();
-
 	dout << train_x_.numRows() << " " ;
-
-
 
 
 	// Now go through the data set and fill in these values
@@ -740,7 +743,7 @@ void dmlpack<T>::multi_class_perceptron_train(perceptron_type type , float perce
 		feature_vec.resize(1 , feature_vec.numCols() + 1);
 		feature_vec(1 , feature_vec.numCols()) = 1;
 
-		dout << feature_vec << std::endl;
+		dout << "FEATURE VEC : " << feature_vec << std::endl;
 
 		// Okay two seperate ways to implement this. 
 		// Update the weight of all the classes. 
@@ -749,16 +752,23 @@ void dmlpack<T>::multi_class_perceptron_train(perceptron_type type , float perce
 	
 		matrix<T> class_pred(1,num_classes);
 
+		dout << " CLASS PRED : " << class_pred ; 
+
 		size_t actual_class_id = 0 ; 
 
-		// first go over the y portion of the data set to find the class
+		// first go over the y portion of the data set to find the actual class
 		for(size_t class_idx = 1  ; class_idx <= num_classes ; ++class_idx)
 		{
 			dout << class_idx << " " << num_classes << std::endl;
 			// get the weight vector for a particular class
 			matrix<T> weight_vec = perceptron_weight_.returnRow(class_idx);			
+			dout << " weight_actual_feature " << weight_vec ;
+
 			std::pair<bool, T> pred = single_preceptron(feature_vec , weight_vec);
 		
+			dout << " single _percrption " << pred.second <<std::endl;	
+
+
 			class_pred(1,class_idx) = pred.second;
 
 			dout << weight_vec << std::endl;

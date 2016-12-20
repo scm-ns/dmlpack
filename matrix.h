@@ -3,16 +3,13 @@
 
 
 /*
-Martirx
-Allocated in Heap
-Implement matrix as a single array for preventing chache misses
-Access to rows and col normal indexed , starts from 1 , not 0
-Maximum Number of Elements is 10^8 ie 10,000 rows and 10,000 cols ;; If higer gives std::length_error
-//Not Implemented , change _size , _col _row to long long for larger matrices.
+	Martirx
+	Implement matrix as a single array for preventing chache misses
+	Access to rows and col normal indexed , starts from 1 , not 0
+	Maximum Number of Elements is 10^8 ie 10,000 rows and 10,000 cols ;; If higer gives std::length_error
+	//Not Implemented , change _size , _col _row to long long for larger matrices.
 
-Total time Taken : 12
-Started April 4th
-End April 4th Night
+	TO DO : Write a tensor class. Which uses this as a base class and extended it 
 
 */
 
@@ -193,9 +190,6 @@ public:
 
 
 private:
-
-
-
 	void init(); // sets up _matirx 
 
 	// The size specifiers cannot be const as the matrix has the ability to resize	
@@ -203,23 +197,26 @@ private:
 	size_t  _cols;
 	size_t _size;
 
-
 	std::vector<T> _matrix;
 
+	// TO DO : Update the way to access an elemnet in a matrix. Right now it takes time to add and find the result. 
+	// 	 : Since get is usually used to iterate over a row, create an iteartor for this, so that, we do not compute the index all over again. each time
+
 	// GENERAL
-	void insert(size_t i, size_t j, T aVaule) 
+	inline void insert(size_t i, size_t j, T aVaule) 
 	{ 
 		_matrix[(i - 1)*_cols + (j - 1)] = aVaule; 
 	}
 
-	T& get(size_t i, size_t j) const 
+	inline T& get(size_t i, size_t j) const 
 	{ 
 		return const_cast<T &>( _matrix[(i - 1)*_cols + (j - 1)] ) ; 
 	}
 
 	static void error(const char* p)
 	{ 
-		std::string str = "matrix -> Error: "; std::cout << str << p << std::endl; 
+		static std::string str = "matrix -> Error: "; std::cout << str << p << std::endl; 
+		throw std::logic_error("error");
 	}
 };
 
@@ -985,7 +982,7 @@ T matrix<T>::innerProduct(const matrix<T>& B) const
 	{
 		for(size_t  i = 1 ; i <= numRows();i++)
 		{	
-			result += get(1,i)*B(i,1);
+			result += get(1,i) * B(i,1);
 		}
 		return result;
 	}
@@ -993,7 +990,7 @@ T matrix<T>::innerProduct(const matrix<T>& B) const
 	{
 		for(size_t i = 1 ; i <= numCols();i++)
 		{	
-			result += get(1,i)*B(1,i);
+			result += get(1,i) * B(1,i);
 		}
 		return result;
 	}
