@@ -769,6 +769,7 @@ void dmlpack<T>::multi_class_perceptron_train(perceptron_type type , float perce
 		size_t actual_class_id = 0 ; 
 
 		// first go over the y portion of the data set to find the actual class
+		// This for loop finds out what the predictied class is and also what the acutal class is
 		for(size_t class_idx = 1  ; class_idx <= num_classes ; ++class_idx)
 		{
 			dout << class_idx << " " << num_classes << std::endl;
