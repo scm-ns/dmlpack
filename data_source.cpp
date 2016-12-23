@@ -45,9 +45,7 @@ void data_source::add_py_feature_list(PyObject * container)
 						temp_val = 1;
 					}	
 
-					x_data_(sample + 1, idx  + 1) = temp_val;
-	
-//					dout << "IDX : " << idx << "DATA : " << x_data_(sample + 1 , idx + 1) << std::endl;
+					x_data_(sample + 1 , idx + 1 ) = temp_val;
 
 					++idx; // idx will hold the column to which the current feature is being added for this specific training examples (row = samples)
 				}
@@ -84,15 +82,8 @@ void data_source::add_py_label_list(PyObject * container, const int num_classes)
 			// from the value of int. determine which index should we marked as 1
 			int val_int = PyInt_AsLong(int_obj);
 
-			if(num_classes == 1)
-			{
-				y_data_(sample + 1 ,1) = val_int; 		
-			}
-			else
-			{
-				// val_int lies between 0 and 9 for digits, so mark the 1 to 10th position as 1 based on the result
-				y_data_(sample + 1, val_int + 1) = 1;
-			}
+			// val_int lies between 0 and 9 for digits, so mark the 1 to 10th position as 1 based on the result
+			y_data_(sample + 1, val_int + 1) = 1;
 
 			dout << "VAL :" << val_int << "SAMPLE # : " << sample + 1 << "STORED :" << y_data_.returnRow(sample + 1) <<  std::endl;
 
@@ -149,7 +140,7 @@ void data_source::read_store_berkely_data(BRKLY_DATA data , DATA_TYPE type)
 	}
 	else if(data == BRKLY_DATA::FACE)
 	{
-		num_classes = 1;
+		num_classes = 2;
 		switch(type)
 		{
 			case(DATA_TYPE::TRAIN):
@@ -178,8 +169,9 @@ void data_source::read_store_berkely_data(BRKLY_DATA data , DATA_TYPE type)
 	PyObject* load_data_func_x = PyObject_GetAttrString(data_loader_module , feature_func_to_call_str.c_str());
 	if(!load_data_func_x || !PyCallable_Check(load_data_func_x))
 		throw std::invalid_argument("function not found");
+	// obtain the list from the python code
 	PyObject* feature_list = PyObject_CallObject(load_data_func_x , NULL);
-
+	// Convert it into vectors
 	add_py_feature_list(feature_list);
 
 

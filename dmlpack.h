@@ -459,9 +459,7 @@ void dmlpack<T>::naive_bayes_train(float percentage)
 			/*
 			 * Why keep templates ? 
 			 * Because in a deep learning network, I will want to different data types.
-			 * 
 			 * If I use a short instead of a double, then it could lead to descritization of the search space ? Faster convergence ? 
-			 * 
 			 */
 
 			if(val == 1)
@@ -480,7 +478,7 @@ void dmlpack<T>::naive_bayes_train(float percentage)
 		for(size_t feature_idx = 1 ; feature_idx < num_features ; ++feature_idx)
 		{
 			T val = train_x_(train_sample , feature_idx); 
-
+				
 			if(val == 1)
 			{
 				map_feature_occurance[feature_idx] += 1; // occurance of a feature in the data set
@@ -497,7 +495,7 @@ void dmlpack<T>::naive_bayes_train(float percentage)
 
 
 }
-
+#
 
 
 /*
@@ -522,24 +520,18 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 		matrix<T> sub_mat(1, num_classes); // this row vector will be concatenated to the end of the res
 
 		// fill them with P(Y)
-
 		dout << test_sample << std::endl;
 
 		for(size_t class_idx = 1 ; class_idx <= num_classes ; ++class_idx)
 		{
-
 			dout << num_classes << " " << num_samples << " " << map_class_occurance[class_idx];
 			sub_mat(1,class_idx) =  normalize_laplace(map_class_occurance[class_idx] , num_classes , num_samples );  // number of occuracnes of the given clas
+
 			// convert to probability by normalizing
 		
 			dout << sub_mat  << std::endl;
-			//sub_mat(1 , class_idx) = std::log(sub_mat(1 , class_idx));
 
-			/*
-			 * Normalizing here, instead of when the insertion into the map happens, enables us to train in batches
-			 * the num_samples is updated when a new batch is added
-			 * and the occurances of each of the classes are also updated.
-			 */
+			//sub_mat(1 , class_idx) = std::log(sub_mat(1 , class_idx));
 		}
 	
 		dout << sub_mat  << std::endl;
@@ -583,14 +575,16 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 		// Use softMax and select max to do prediction on what is the best class to be taken
 
 		// normalize using softmax. squishes everything to lie in the 0,1 range and the total sum = 1. 
+		// std::max_element + distance to find the index of with the largest probaility . 
+		// Add one since the output of distance is 0 index, while the classes are 1 indexed 
+	
+
 		sub_mat = softmax(sub_mat);
 
 		dout << sub_mat  << std::endl;
 
 		res.addRow(sub_mat); // add the probabilities over the different classes 
 
-		// std::max_element + distance to find the index of with the largest probaility . 
-		// Add one since the output of distance is 0 index, while the classes are 1 indexed 
 		prediction(test_sample , 1) = sub_mat.arg_max();
 
 		dout << sub_mat << std::endl;
@@ -616,7 +610,7 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
  *
  * intput : the feature (row vector), the weight vector (column vector) , double threshould
  * output : 0 or 1 representing whether the neuroing has fired or not 
- */
+##### */
 template <typename T>
 std::pair<bool, T> dmlpack<T>::single_preceptron(const matrix<T>& feature , const matrix<T>& weight , T threshold ) const
 {
@@ -876,12 +870,14 @@ std::pair<matrix<T> , matrix<T>> dmlpack<T>::multi_class_perceptron_inference()
 		matrix<T> sub_res(1 , num_classes);
 
 		// compute the similiarty between the current feature and each of the classes
-		for(int class_idx = 1 ; class_idx < num_classes ; ++class_idx)
+		for(int class_idx = 1 ; class_idx <= num_classes ; ++class_idx)
 		{
 			sub_res(1,class_idx)  = perceptron_weight_.returnRow(class_idx).innerProduct(feature_vec);
 		}
 		
 		dout << " result matrix " << sub_res;
+
+		
 
 		res.addRow(sub_res); // add the probabilities over the different classes 
 	
@@ -890,6 +886,7 @@ std::pair<matrix<T> , matrix<T>> dmlpack<T>::multi_class_perceptron_inference()
 
 		// std::max_element + distance to find the index of with the largest probaility . 
 		// Add one since the output of distance is 0 index, while the classes are 1 indexed 
+	
 		prediction(test_sample , 1) = sub_res.arg_max();
 
 		dout << " prediction udpates " << prediction;

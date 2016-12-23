@@ -5,7 +5,7 @@
 
 
 
-void test(CLASSIFIER_TYPE type, BRKLY_DATA data_f )
+void test(CLASSIFIER_TYPE type, BRKLY_DATA data_f , float train_percen = 1)
 {	
 	std::cout << " ####################################### TRAINING ##################################" << std::endl;
 	data_source a{};
@@ -14,11 +14,12 @@ void test(CLASSIFIER_TYPE type, BRKLY_DATA data_f )
 	matrix<double> data = a.get_features(); 	
 	matrix<double> label = a.get_labels();
 
+
 	dmlpack<double> K{type};
 	
 	K.feed_train_data(std::move(data) , std::move(label));
 		
-	K.train();
+	K.train(train_percen);
 
 	std::cout << " ###################################### VALIDATION SET ACCURACY #######################" << std::endl;
 	data_source digit_valid{};
@@ -51,15 +52,20 @@ void test(CLASSIFIER_TYPE type, BRKLY_DATA data_f )
 
 int main()
 {
-	std::cout << " RUN THE 3 CLASSIFIERS ON THE DIGIT DATA SET " << std::endl;
-	test(CLASSIFIER_TYPE::NAIVE_BAYES , BRKLY_DATA::DIGIT);
-	test(CLASSIFIER_TYPE::PERCEPTRON , BRKLY_DATA::DIGIT);
-	test(CLASSIFIER_TYPE::PERCEPTRON_MIRA , BRKLY_DATA::DIGIT);
-
+//	std::cout << " RUN THE 3 CLASSIFIERS ON THE DIGIT DATA SET " << std::endl;	
+	for(int i = 1 ; i <= 10 ; ++i)
+	{
+		std::cout << std::endl << std::endl << std::endl << " Run algo with percent data " << i * 0.1 << std::endl << std::endl ;
+		test(CLASSIFIER_TYPE::PERCEPTRON_MIRA , BRKLY_DATA::FACE , i * 0.1);
+	}
+	//test(CLASSIFIER_TYPE::PERCEPTRON , BRKLY_DATA::DIGIT);
+	//test(CLASSIFIER_TYPE::PERCEPTRON_MIRA , BRKLY_DATA::DIGIT);
+/*'
 	std::cout << " RUN THE 3 CLASSIFIERS ON THE FACES DATA SET " << std::endl;
 	test(CLASSIFIER_TYPE::NAIVE_BAYES , BRKLY_DATA::FACE);
 	test(CLASSIFIER_TYPE::PERCEPTRON , BRKLY_DATA::FACE);
 	test(CLASSIFIER_TYPE::PERCEPTRON_MIRA , BRKLY_DATA::FACE);
+	*/
 
 };
 
