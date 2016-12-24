@@ -56,7 +56,7 @@ int main()
 	for(int i = 1 ; i <= 10 ; ++i)
 	{
 		std::cout << std::endl << std::endl << std::endl << " Run algo with percent data " << i * 0.1 << std::endl << std::endl ;
-		test(CLASSIFIER_TYPE::PERCEPTRON_MIRA , BRKLY_DATA::FACE , i * 0.1);
+		test(CLASSIFIER_TYPE::NAIVE_BAYES , BRKLY_DATA::FACE , i * 0.1);
 	}
 	//test(CLASSIFIER_TYPE::PERCEPTRON , BRKLY_DATA::DIGIT);
 	//test(CLASSIFIER_TYPE::PERCEPTRON_MIRA , BRKLY_DATA::DIGIT);

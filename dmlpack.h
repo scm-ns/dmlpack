@@ -74,7 +74,13 @@ struct hash_fctor // functor
 		// http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx for good hash algorithms
 		
 		unsigned int hash = 0 ; 
-		
+	
+		h1 = h1 * 2654435761 % (2^17);
+		h2 = h2 * 2654435761 % (2^17);
+
+		h1 >> 13;
+		h2 >> 3;
+
 		// SHIFT ADD XOR HASH
 		hash ^= (hash << 5) + (hash >> 2) + h1 + h2;
 		
@@ -111,6 +117,11 @@ class dmlpack
 		// diable the copy cstor and copy assignment cstor
 		dmlpack(const dmlpack& ) = delete ;
 		dmlpack& operator=(const dmlpack& ) = delete;
+
+		~dmlpack()
+		{
+			std::cout << "dmlpack destroyed " << std::endl;
+		}
 
 
 		// feed the entire training data
@@ -443,6 +454,7 @@ void dmlpack<T>::naive_bayes_train(float percentage)
 
 		if(percentage * train_x_.numRows() < train_sample)
 		{
+			num_samples = percentage * train_x_.numRows();
 			break;
 		}
 
@@ -453,9 +465,8 @@ void dmlpack<T>::naive_bayes_train(float percentage)
 		for(class_idx = 1  ; class_idx <= num_classes ; ++class_idx)
 		{
 			T val = train_y_(train_sample , class_idx );		 // the matrix is 1 indexed, this is odd for cs. But is standard in math > what is better ? 
-
 			dout << val << std::endl;
-
+			
 			/*
 			 * Why keep templates ? 
 			 * Because in a deep learning network, I will want to different data types.
@@ -473,9 +484,8 @@ void dmlpack<T>::naive_bayes_train(float percentage)
 		}
 
 
-
 		// Go over all the features and count of occurances of a feature and feature given class
-		for(size_t feature_idx = 1 ; feature_idx < num_features ; ++feature_idx)
+		for(size_t feature_idx = 1 ; feature_idx <= num_features ; ++feature_idx)
 		{
 			T val = train_x_(train_sample , feature_idx); 
 				
@@ -490,12 +500,9 @@ void dmlpack<T>::naive_bayes_train(float percentage)
 			}	
 		}
 
-
 	}
 
-
 }
-#
 
 
 /*
@@ -518,22 +525,20 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 	{
 
 		matrix<T> sub_mat(1, num_classes); // this row vector will be concatenated to the end of the res
-
 		// fill them with P(Y)
 		dout << test_sample << std::endl;
 
 		for(size_t class_idx = 1 ; class_idx <= num_classes ; ++class_idx)
 		{
 			dout << num_classes << " " << num_samples << " " << map_class_occurance[class_idx];
+
 			sub_mat(1,class_idx) =  normalize_laplace(map_class_occurance[class_idx] , num_classes , num_samples );  // number of occuracnes of the given clas
 
-			// convert to probability by normalizing
-		
 			dout << sub_mat  << std::endl;
 
 			//sub_mat(1 , class_idx) = std::log(sub_mat(1 , class_idx));
 		}
-	
+
 		dout << sub_mat  << std::endl;
 		size_t num_features = test_x_.numCols(); 
 		/*
@@ -542,27 +547,23 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 		for(size_t feature_idx = 1 ; feature_idx <=  num_features; ++feature_idx)
 		{
 			T val = test_x_(test_sample , feature_idx); 
-			dout << val  << std::endl;
-			dout << feature_idx << std::endl;
 
 			if(val == 1) // The feature is present and we will have to compute the p(f_i | y)
 			{
 			// if the feature is not present, then it does not give up any way to update the probability of which class to choose from
-				// we have to compute for each class. That is given this feature, what is the probability of seeeing a partucular class	
+			// we have to compute for each class. That is given this feature, what is the probability of seeeing a partucular class	
 				
 				for(size_t class_idx = 1 ; class_idx <= num_classes ; ++class_idx)
 				{
 					// compute p(f_i / y) , by counting the occurance of a feature for the partucular class and dividing it by the total occurance of that feature
 				
-					dout << class_idx << map_feature_in_class_occurance[std::make_pair(feature_idx , class_idx)]  << " " << num_features << " " << map_feature_occurance[feature_idx]  << std::endl;
+					dout << class_idx << " " << map_feature_in_class_occurance[std::make_pair(feature_idx , class_idx)]  << " " << num_features << " " << map_feature_occurance[feature_idx]  << std::endl;
 
 					T temp = normalize_laplace( map_feature_in_class_occurance[std::make_pair(feature_idx , class_idx)] ,
 						       	        	num_features , 
 									map_feature_occurance[feature_idx] ); 
 
-					dout << temp << std::endl	;
 					sub_mat(1, class_idx) += temp ;// std::log(temp);
-					dout << sub_mat << std::endl;
 				}
 
 			}
@@ -572,18 +573,19 @@ std::pair<matrix<T> , matrix<T> > dmlpack<T>::naive_bayes_inference()
 		
 		dout << sub_mat  << std::endl;
 
+
 		// Use softMax and select max to do prediction on what is the best class to be taken
 
 		// normalize using softmax. squishes everything to lie in the 0,1 range and the total sum = 1. 
 		// std::max_element + distance to find the index of with the largest probaility . 
 		// Add one since the output of distance is 0 index, while the classes are 1 indexed 
 	
-
 		sub_mat = softmax(sub_mat);
 
 		dout << sub_mat  << std::endl;
 
 		res.addRow(sub_mat); // add the probabilities over the different classes 
+
 
 		prediction(test_sample , 1) = sub_mat.arg_max();
 
