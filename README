@@ -1,3 +1,11 @@
 directory where all dp related things are implemented 
 
 
+
+TESTING : 
+	testing will be done by using catch. The user should not have to 
+	worry about testing. So keep it seperate. dmlpack.h will not have 
+	any dependence on testing. It will all be code in another
+
+
+
