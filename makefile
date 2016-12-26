@@ -7,6 +7,7 @@ LIB= -lpython2.7
 OBJECTS= data_source.o
 PROG= dml.exe
 PROG_DEBUG= dml_debug.exe
+TEST= test.exe
 
 $(PROG) : $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIB) $(LIB_FLAGS) -o $@
@@ -18,9 +19,9 @@ debug:
 	$(CC) $(OBJECTS) $(LIB) $(LIB_FLAGS) -o $@
 
 clean:
-	rm $(PROG_DEBUG) $(OBJECTS) *.gch test
+	rm $(OBJECTS) *.gch *.exe
 run:
 	./$(PROG_DEBUG)
 
-test: $(OBJECTS)
-	$(CC) $(OBJECTS) $(LIB_FLAGS) $(LIB) $(CFLAGS) test.cpp -o $@
+test : $(OBJECTS)
+	$(CC) $(OBJECTS) $(LIB_FLAGS) $(LIB) $(CFLAGS) test.cpp -o $(TEST)
