@@ -1,0 +1,9 @@
+I want the whole class to be a single header include class. 
+	But I also want the class to be properly designed. 
+
+Create an abstract class : Which supports the following methods : 
+	train  : Either single example or a batch 
+	inference  : Take in a single example and see the result 
+	
+
+
