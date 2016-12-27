@@ -131,15 +131,18 @@ TEST_CASE("testing the matrix class")
 	SECTION("test the initialzier list ctor")
 	{
 		matrix<double> K { 1 , 2 , 3 , 4 , 5 , 6};
-		CHECK(K.size() == 6);
+		const int size = 6;
+		CHECK(K.size() == size);
 		CHECK_FALSE(K.isColVector());
 		CHECK(K.isRowVector());
 
-
 		SECTION("test vector size conversions")
 		{
+			K.resize(size , 1);
+			CHECK(K.size() == size);
 
-
+			CHECK_FALSE(K.isRowVector());
+			CHECK(K.isColVector());
 		}
 	}
 	
