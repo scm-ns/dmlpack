@@ -1,8 +1,14 @@
+#include <iostream>
+
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
 #include "dmlpack.h"
+#include "matrix.h"
 #include "data_source.h"
+
+
+
 
 
 TEST_CASE("testing different parts of dmlpack", "[dmlpack]")
@@ -54,5 +60,72 @@ TEST_CASE("testing different parts of dmlpack", "[dmlpack]")
 	}	
 
 }
+
+
+TEST_CASE("testing the matrix class")
+{
+	SECTION("Create matrix ")
+	{
+		matrix<int> A(1,100);
+		A.setAllNum(5);
+		
+		CHECK_THROWS( A(100,100));
+
+		matrix<int> B(100,1);
+		B.setAllNum(10);
+
+		CHECK_THROWS( A + B );
+		CHECK_THROWS( A - B );
+
+		matrix<int> C(B * A);
+
+		CHECK(C.size() == 100 * 100);
+
+		CHECK_THROWS( C * A);
+
+		matrix<int> D = C * (B * A);
+		
+		CHECK(D.size() == 100 * 100 );
+
+		CHECK(D.isSquare());
+
+		matrix<int> L(A*B);
+		CHECK(L.size() == 1);
+
+
+	}
+
+
+	SECTION("test uniform rand fill")
+	{
+		matrix<int> rand_val(1,100);
+		rand_val.randFillUniform(0,5);
+
+		REQUIRE( rand_val.size() == 100);
+	
+		auto iter_beg = rand_val.begin();
+		auto iter_end = rand_val.end();		
+
+		for(auto itr = iter_beg ; itr != iter_end ; ++itr)
+		{
+
+			REQUIRE(*itr >= 0); 
+		       	REQUIRE(*itr <= 5);
+		}			
+
+	}
+	
+
+	SECTION("test the linspace row and col")
+	{
+		matrix<double> K ; 
+		K.resizeLinSpaceCol(1,100,0.1);		
+		
+
+	}
+
+}
+
+
 
 

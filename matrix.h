@@ -23,22 +23,13 @@
 #include <stdlib.h> //randFill
 #include <stdio.h>  //randFill
 #include <cstdlib>
+#include <random>
+
 
 #include <stdexcept>
 #include <algorithm>
 #include <functional>
 
-
-template <class T>
-class matrix;
-
-
-//OPERATORS
-template<typename T>	
-std::ostream& operator<<(std::ostream& out, const matrix<T>& temp); // Not working 
-
-
-//------------------------------------------------------------------------------------------------
 
 template <class T>
 class matrix
@@ -57,13 +48,13 @@ public:
 	{
 
 	}
+
 	matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._size)
 	{
 		_matrix = rhs._matrix;
 	};
 
 	
-	//GENERAL
 	// resize the matrix	
 	void resize(size_t rows , size_t cols , T val = 0)
 	{
@@ -84,22 +75,30 @@ public:
 	{
 		return _matrix.end();
 	}
-
+	
+	/*
+	 * Iterator at the begining of each of the rows
+	 */
 	typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx)
 	{
 		typename std::vector<T>::iterator it = begin();
 		std::advance(it , (row_idx * _cols));
-		//begin() + (row_idx * _cols); 
 		return it;
 	}
 
 
-	void print();
 	size_t  numRows() const { return (_rows); }; // Implicit inline 
 	size_t numCols() const { return  (_cols); };
 	size_t size() const { return (_size) ; };
-	void randFill(T start = 0, T end = 1000); // Will only work for simple data types
-	void symetricRandFill(T start = 0, T end = 1000); // Will only work for simple data types
+
+
+	void randFillUniform(T start = 0 , T end = 1000);
+	void randFill(T start = 0, T end = 1000); 
+	void symetricRandFill(T start = 0, T end = 1000); 
+
+	void resizeLinSpaceRow(T start , T end,T interval);
+	void resizeLinSpaceCol(T start , T end,T interval);
+
 	void setAllNum(T aNum);
 
 	matrix<T> returnRow(size_t aRow) const;
@@ -162,35 +161,12 @@ public:
 
 	T normEuclidean();
 
-	matrix<T> transform_create(std::size_t rows , std::size_t cols , std::function<T(std::size_t , std::size_t , matrix<T>)> lam) // create a new matrix of specified rows and cols and applies the lambda function to each of them
-	{
-		matrix<T> res(rows , cols);
-		for(std::size_t idx = 0 ; idx < rows ; ++idx)
-		{
-			for(std::size_t  jdx = 0 ; jdx < cols ; ++jdx)
-			{
-				res(idx , jdx) =  lam(idx , jdx , res);	
-			}
-		}	
-		return res;
-	}
+	matrix<T> transform_create(std::size_t rows , std::size_t cols , std::function<T(std::size_t , std::size_t , matrix<T>)> lam);
 
-
-	matrix<T> transform_inplace(std::function<T(std::size_t , std::size_t , T)> lam) // apply the lambda function ot each element of the vector. 
-	{
-		for(std::size_t idx = 0 ; idx < _rows ; ++idx)
-		{
-			for(std::size_t  jdx = 0 ; jdx < _cols ; ++jdx)
-			{
-				insert(idx , jdx , lam(idx , jdx , get(idx, jdx) ) );	 // highly inefficeint code. Make it simpler
-			}
-		}	
-	}
-
-
+	matrix<T> transform_inplace(std::function<T(std::size_t , std::size_t , T)> lam) ;
+	
 
 private:
-	void init(); // sets up _matirx 
 
 	// The size specifiers cannot be const as the matrix has the ability to resize	
 	size_t  _rows;
@@ -221,12 +197,75 @@ private:
 };
 
 
+//OPERATORS
+template<typename T>	
+std::ostream& operator<<(std::ostream& out, const matrix<T>& temp); 
+
 
 
 // TYPEDEF's 
 
 typedef matrix<double> matDouble; 
 typedef matrix<int> matInt;
+
+
+template <class T >
+matrix<T>::~matrix(void)
+{
+	_matrix.clear();
+}
+
+
+/*
+Copy Assignment Operator
+Only Support Single Type Copy
+Eg: int to int , long long  to long long
+*/
+template <class T>
+matrix<T>& matrix<T>::operator=(const matrix<T>& rhs)
+{
+	// Check if same 
+	if (&rhs == this)
+		return *this;
+
+	//Copy rows and cols
+	_rows = rhs._rows;
+	_cols = rhs._cols;
+	_size = rhs._size; 
+	_matrix = rhs._matrix; 
+	//std::swap(_matrix ,rhs._matrix);
+	//_matrix.swap(rhs._matrix);
+
+	return *this;
+}
+
+template <class T>
+matrix<T> matrix<T>::transform_create(std::size_t rows , std::size_t cols , std::function<T(std::size_t , std::size_t , matrix<T>)> lam) // create a new matrix of specified rows and cols and applies the lambda function to each of them
+{
+	matrix<T> res(rows , cols);
+	for(std::size_t idx = 0 ; idx < rows ; ++idx)
+	{
+		for(std::size_t  jdx = 0 ; jdx < cols ; ++jdx)
+		{
+			res(idx , jdx) =  lam(idx , jdx , res);	
+		}
+	}	
+	return res;
+}
+
+
+template <class T>
+matrix<T> matrix<T>::transform_inplace(std::function<T(std::size_t , std::size_t , T)> lam) // apply the lambda function ot each element of the vector. 
+{
+	for(std::size_t idx = 0 ; idx < _rows ; ++idx)
+	{
+		for(std::size_t  jdx = 0 ; jdx < _cols ; ++jdx)
+		{
+			insert(idx , jdx , lam(idx , jdx , get(idx, jdx) ) );	 // highly inefficeint code. Make it simpler
+		}
+	}	
+}
+
 
 //  0 indexed
 template <class T>
@@ -692,21 +731,21 @@ a new matrix
 	}
 	else
 	{
-		error("M*M -> Rows And Col Does Not Match");
+		throw std::invalid_argument("M*M -> Rows And Col Does Not Match");
 	}
 
 	return result;
 }
 
 
-
-template <typename T>
-template <typename P>
-matrix<T> matrix<T>::operator*(const P rhs)
 /*
 Multiply by scalar
 DoesNot Modify Input Matrix
 */
+template <typename T>
+template <typename P>
+matrix<T> matrix<T>::operator*(const P rhs)
+
 {
 	matrix<T> result(_rows, _cols);// rhs is a T 
 	for (long long i = 1; i <= _rows; i++)
@@ -738,37 +777,7 @@ DoesNot Modify Input Matrix
 	return result;
 }
 
-//------------------------------------------------------------------------------------------------
-// 
 
-
-
-//------------------------------------------------------------------------------------------------
-
-template <class T>
-matrix<T>& matrix<T>::operator=(const matrix<T>& rhs)
-{
-	/*
-	Copy Assignment Operator
-	Only Support Single Type Copy
-	Eg: int to int , long long  to long long
-	*/
-	// Check if same 
-	if (&rhs == this)
-		return *this;
-
-	//Copy rows and cols
-	_rows = rhs._rows;
-	_cols = rhs._cols;
-	_size = rhs._size; 
-	_matrix = rhs._matrix; 
-	//std::swap(_matrix ,rhs._matrix);
-	//_matrix.swap(rhs._matrix);
-
-	return *this;
-}
-
-//------------------------------------------------------------------------------------------------
 
 template <class T>
 matrix<T> matrix<T>::operator+(const  matrix<T> &rhs) const
@@ -788,8 +797,7 @@ matrix<T> matrix<T>::operator+(const  matrix<T> &rhs) const
 	}
 	else
 	{
-		error("Not of same size ");
-		return R;
+		throw std::invalid_argument(" Not of same size ");
 	}
 }
 
@@ -814,30 +822,8 @@ matrix<T> matrix<T>::operator-(const matrix<T> &rhs) const
 	}
 	else
 	{
-		error("Not of same size ");
-		return R;
+		throw std::invalid_argument(" Not of same size ");
 	}
-}
-
-
-//------------------------------------------------------------------------------------------------
-
-
-
-template <class T>
-void matrix<T>::print()
-{
-	std::cout << std::endl << std::endl;
-	for (long long i = 1; i <= _rows; i++)
-	{
-		for (long long j = 1; j <= _cols; j++)
-		{
-			//out << temp.get(i,j);
-			std::cout << std::setw(15) << get(i, j);
-			if (j == _cols) std::cout << std::endl;
-		}
-	}
-	std::cout << std::endl;
 }
 
 
@@ -858,7 +844,6 @@ T& matrix<T>::operator()(const long long  rows, const long long  cols) const
 }
 
 
-//------------------------------------------------------------------------------------------------
 template <class T>
 void matrix<T>::randFill(T start, T end)
 {
@@ -872,23 +857,59 @@ void matrix<T>::randFill(T start, T end)
 	}
 }
 
-//------------------------------------------------------------------------------------------------
-
-template <class T >
-matrix<T>::~matrix(void)
-{
-	_matrix.clear();
-}
-
-
-//------------------------------------------------------------------------------------------------
-
 template <class T>
-void matrix<T>::init(){
-	// Initlializer called by the matrix(row,col)
-	_matrix = std::vector<T>(_rows*_cols , 0 ); // Fills in the vector with zeros
+void matrix<T>::randFillUniform(T start, T end)
+{
+	std::random_device rd; 
+	std::mt19937 eng(rd());
+	std::uniform_real_distribution<> distr(start, end);	
 
+	std::srand(time(0));
+	for (long long i = 1; i <= _rows; i++)
+	{
+		for (long long j = 1; j <= _cols; j++)
+		{
+			_matrix[(i - 1)*_cols + (j - 1)] = static_cast<T>( distr(eng) );
+		}
+	}
 }
+
+/*
+	Creates rowVector with numbers begining at start , ending at end with interval interval ; 
+	Inclusive Inclusive range 
+*/
+template <class T>
+void matrix<T>::resizeLinSpaceRow(T start , T end,T interval)
+	
+{	
+	double size = (end - start) / interval;
+	resize(1 , size + 1);
+	auto iter = begin();
+	for(double i = start ; i <= end ; i+= interval ) // Condition only depend on start and end 
+	{
+		 *iter = i ; 
+		 ++iter;
+	}
+}
+
+/*
+	Creates a colVector with numbers begining at start , ending at end with interval interval ; 
+	Inclusive Inclusive range 
+*/
+template <class T>
+void matrix<T>::resizeLinSpaceCol(T start , T end,T interval)
+	
+{	
+	std::size_t size = (end - start) / interval;
+	resize(size + 1,1); 
+	auto iter = begin();
+	for(double i = start ; i <= end ; i+= interval ) // Condition only depend on start and end 
+	{
+		 *iter = i ; 
+		 ++iter;
+	}
+}
+
 
 template <class T>
 T matrix<T>::sum()
