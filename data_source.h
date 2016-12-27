@@ -16,7 +16,7 @@
  *  	The library will be generalized later on
  */
 
-#include "matrix.h"
+#include "matrix.hpp"
 #include <Python.h>
 #include <string>
 #include <stdexcept>

@@ -12,7 +12,7 @@ TEST= test.exe
 $(PROG) : $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIB) $(LIB_FLAGS) -o $@
 
-%.o: %.cpp matrix.h dmlpack.h data_source.cpp
+%.o: %.cpp matrix.hpp dmlpack.h data_source.cpp
 	$(CC) $(OPTIMIZE_FLAG) $(DEBUG_FLAGS) $(LIB_FLAGS) $(LIB) $(CFLAGS) -c $<
 
 debug: 

@@ -27,7 +27,7 @@
 #include <queue>
 
 
-#include "matrix.h"
+#include "matrix.hpp"
 #include "debug.h"
 
 

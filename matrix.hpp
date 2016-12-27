@@ -26,6 +26,7 @@
 #include <random>
 
 
+
 #include <stdexcept>
 #include <algorithm>
 #include <functional>
@@ -54,7 +55,24 @@ public:
 		_matrix = rhs._matrix;
 	};
 
+
+	// creates a row vector
+	matrix(std::initializer_list<T> l)
+	{
+		const T*   it = l.begin();
+		const T* const end = l.end();
 	
+		_rows = 1 ; 
+		_cols = l.size();
+		_size = _rows * _cols;
+		_matrix.reserve(_size);
+
+		std::copy(l.begin() , l.end() , std::back_inserter(_matrix));
+	
+	}
+
+	// TO DO : Functionality to convert a row vec to col vise-versa. Also to convert row/col vec into 2d matrix
+	// this resize method seems to do it. But check.
 	// resize the matrix	
 	void resize(size_t rows , size_t cols , T val = 0)
 	{
@@ -65,6 +83,8 @@ public:
 		_matrix.resize(_size , val);
 
 	}	
+
+
 
 	inline typename std::vector<T>::iterator begin() 
 	{
@@ -89,7 +109,7 @@ public:
 
 	size_t  numRows() const { return (_rows); }; // Implicit inline 
 	size_t numCols() const { return  (_cols); };
-	size_t size() const { return (_size) ; };
+	size_t size() const { return _matrix.size() ; };
 
 
 	void randFillUniform(T start = 0 , T end = 1000);

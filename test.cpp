@@ -4,7 +4,7 @@
 #include "catch.hpp"
 
 #include "dmlpack.h"
-#include "matrix.h"
+#include "matrix.hpp"
 #include "data_source.h"
 
 
@@ -102,7 +102,10 @@ TEST_CASE("testing the matrix class")
 		rand_val.randFillUniform(0,5);
 
 		REQUIRE( rand_val.size() == 100);
-	
+
+		CHECK(rand_val.isRowVector());
+
+
 		auto iter_beg = rand_val.begin();
 		auto iter_end = rand_val.end();		
 
@@ -123,6 +126,24 @@ TEST_CASE("testing the matrix class")
 		
 
 	}
+
+	
+	SECTION("test the initialzier list ctor")
+	{
+		matrix<double> K { 1 , 2 , 3 , 4 , 5 , 6};
+		CHECK(K.size() == 6);
+		CHECK_FALSE(K.isColVector());
+		CHECK(K.isRowVector());
+
+
+		SECTION("test vector size conversions")
+		{
+
+
+		}
+	}
+	
+
 
 }
 
