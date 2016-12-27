@@ -147,7 +147,16 @@ TEST_CASE("testing the matrix class")
 		}
 	}
 	
+	SECTION("test scalar multiply")
+	{
+		matrix<double> K(100,100,5);
+		K *= 0;
 
+		CHECK(K.size() == 100*100);
+		CHECK(K(1,1) == 0);
+		K(1,1) = 5;	
+		CHECK(K(1,1) == 5);
+	}
 
 }
 

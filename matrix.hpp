@@ -119,8 +119,8 @@ public:
 	
 	template <class P>
 	matrix<T> operator*(const P rhs) const;
-	//template <class P>
-	//void operator*(const P rhs) ;
+	template <class P>
+	void operator*=(const P rhs) ;
 	matrix<T> operator/(const T rhs) const;
 	matrix<T> operator*(const matrix<T> &rhs) const;
 	matrix<T> operator+(const matrix<T> &rhs) const;
@@ -835,20 +835,20 @@ matrix<T> matrix<T>::operator*(const P rhs) const
 	return result;
 }
 
-/*
+// Inplace scalar multiply
+// TO DO : Restrict P to scalar values 
 template <typename T>
 template <typename P>
-void matrix<T>::operator*(const P rhs) 
+void matrix<T>::operator*=(const P rhs) 
 {
 	for (long long i = 1; i <= _rows; i++)
 	{
 		for (long long j = 1; j <= _cols; j++)
 		{
-			 get(i, j) *= rhs;
+			 get_ref(i, j) *= rhs;
 		}
 	}
 }
-*/
 
 
 /*
