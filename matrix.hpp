@@ -1,13 +1,9 @@
 #ifndef MATRIX_H
 #define MATRIX_H
-
-
 /*
 	Martirx
-	Implement matrix as a single array for preventing chache misses
 	Access to rows and col normal indexed , starts from 1 , not 0
 	Maximum Number of Elements is 10^8 ie 10,000 rows and 10,000 cols ;; If higer gives std::length_error
-	//Not Implemented , change _size , _col _row to long long for larger matrices.
 
 	TO DO : Write a tensor class. Which uses this as a base class and extended it 
 
@@ -19,14 +15,11 @@
 #include <string>  // Error Handling 
 #include <vector>  // Internal DS 
 #include <iomanip> // Output 
-#include <time.h>  // randFill
-#include <stdlib.h> //randFill
-#include <stdio.h>  //randFill
+#include <time.h>  
+#include <stdlib.h> 
+#include <stdio.h>  
 #include <cstdlib>
 #include <random>
-
-
-
 #include <stdexcept>
 #include <algorithm>
 #include <functional>
@@ -56,61 +49,26 @@ public:
 	};
 
 
+	matrix<T>& operator=(const matrix<T>& rhs);
+
+
 	// creates a row vector
-	matrix(std::initializer_list<T> l)
-	{
-		const T*   it = l.begin();
-		const T* const end = l.end();
+	matrix(std::initializer_list<T> l);
 	
-		_rows = 1 ; 
-		_cols = l.size();
-		_size = _rows * _cols;
-		_matrix.reserve(_size);
 
-		std::copy(l.begin() , l.end() , std::back_inserter(_matrix));
+	// TO DO : Functionality to convert a row vec to col vise-versa. Also to convert row/col vec into 2d matrix // this resize method seems to do it. But check.
+	void resize(size_t rows , size_t cols , T val = 0);
 	
-	}
 
-	// TO DO : Functionality to convert a row vec to col vise-versa. Also to convert row/col vec into 2d matrix
-	// this resize method seems to do it. But check.
-	// resize the matrix	
-	void resize(size_t rows , size_t cols , T val = 0)
-	{
-		_rows = rows; 
-		_cols = cols;
-		_size = rows * cols;		
-	
-		_matrix.resize(_size , val);
-
-	}	
+	inline typename std::vector<T>::iterator begin();
+	inline typename std::vector<T>::iterator end();
+	typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx);
 
 
 
-	inline typename std::vector<T>::iterator begin() 
-	{
-		return _matrix.begin();
-	}
-
-	inline typename std::vector<T>::iterator end() 
-	{
-		return _matrix.end();
-	}
-	
-	/*
-	 * Iterator at the begining of each of the rows
-	 */
-	typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx)
-	{
-		typename std::vector<T>::iterator it = begin();
-		std::advance(it , (row_idx * _cols));
-		return it;
-	}
-
-
-	size_t  numRows() const { return (_rows); }; // Implicit inline 
-	size_t numCols() const { return  (_cols); };
-	size_t size() const { return _matrix.size() ; };
-
+	size_t  numRows() const ;
+	size_t numCols() const ;
+	size_t size() const ;
 
 	void randFillUniform(T start = 0 , T end = 1000);
 	void randFill(T start = 0, T end = 1000); 
@@ -130,59 +88,52 @@ public:
 	void replaceCol(matrix<T> colVec,int aCol) ;
 	void replaceRow(matrix<T> rowVec, int aRow)  ;
 
-	void swap(int aRow, int aCol, int bRow, int bCol) 
-	{ 
-		T temp = get(aRow, aCol); 
-	  	insert(aRow, aCol, get(bRow, bCol));
-		insert(bRow, bCol, temp); 
-	};
+	void swap(int aRow, int aCol, int bRow, int bCol) ;
 
 	matrix<T> getDiagonalVector() const;
 	matrix<T> getDiagonalMatrix() const;
 
-
-	matrix<T> addCol( matrix<T>& col);
 	void addRow( matrix<T>& row);
-	bool isSquare() const { return ((_rows == _cols) ? true : false); }
-	bool isRowVector()const { return ((_rows == 1) ? true : false); }
-	bool isColVector() const { return ((_cols == 1) ? true : false); }
-	bool isDiagonal() const;
+	// To do : Add Col. 
+	
+
+	bool isSquare()		 const;
+	bool isRowVector()       const;
+	bool isColVector() 	 const;
+	bool isDiagonal() 	 const;
 	bool isEqual(matrix<T> rhs) const;
-	bool isUpperTriangular() const ;
-	bool isLowerTriangular() const;
+	bool isUpperTriangular()    const;
+	bool isLowerTriangular()    const;
 	bool isDiagonallyDominant() const;
 
 
-	matrix<T> getIdentity(long long  aRow);
-	T sum();
+	void createIdentity(long long  aRow);
 	matrix<T> transpose() const;
 	T innerProduct(const matrix<T>& B) const;
-	
+	T sum();
+
 	T selfInnerProduct();
 
-	// returns the index which has the maximum value in the vector
-	// onlys works on row or column vectors, not on matrix
+	// returns the index which has the maximum value in the vector // onlys works on row or column vectors, not on matrix
 	size_t arg_max();
-
-	matrix<T>& operator=(const matrix<T>& rhs);
-	
 	
 	template <class P>
-	matrix<T> operator*(const P rhs);
-	matrix<T> operator/(const T rhs);
-	matrix<T> operator*(const matrix<T> &rhs);
+	matrix<T> operator*(const P rhs) const;
+	//template <class P>
+	//void operator*(const P rhs) ;
+	matrix<T> operator/(const T rhs) const;
+	matrix<T> operator*(const matrix<T> &rhs) const;
 	matrix<T> operator+(const matrix<T> &rhs) const;
 	matrix<T> operator-(const matrix<T> &rhs) const;
 	
-	bool operator==(const matrix<T> & rhs);
-	bool operator!=(const matrix<T> & rhs){ return !(*this == rhs); }
+	bool operator==(const matrix<T> & rhs) const ;
+	bool operator!=(const matrix<T> & rhs) const { return !(*this == rhs); }
 
-	T& operator()(const long long  rows, const long long  cols) const;
+	T& operator()(const long long  rows, const long long  cols); // not a const operation as this can be used to change the value
+	T operator()(const long long  rows, const long long  cols)  const;
 
 	T normEuclidean();
-
 	matrix<T> transform_create(std::size_t rows , std::size_t cols , std::function<T(std::size_t , std::size_t , matrix<T>)> lam);
-
 	matrix<T> transform_inplace(std::function<T(std::size_t , std::size_t , T)> lam) ;
 	
 
@@ -198,36 +149,40 @@ private:
 	// TO DO : Update the way to access an elemnet in a matrix. Right now it takes time to add and find the result. 
 	// 	 : Since get is usually used to iterate over a row, create an iteartor for this, so that, we do not compute the index all over again. each time
 
-	// GENERAL
-	inline void insert(size_t i, size_t j, T aVaule) 
-	{ 
-		_matrix[(i - 1)*_cols + (j - 1)] = aVaule; 
-	}
-
-	inline T& get(size_t i, size_t j) const 
-	{ 
-		return const_cast<T &>( _matrix[(i - 1)*_cols + (j - 1)] ) ; 
-	}
-
-	static void error(const char* p)
-	{ 
-		static std::string str = "matrix -> Error: "; std::cout << str << p << std::endl; 
-		throw std::logic_error("error");
-	}
+	inline void insert(size_t i, size_t j, T aVaule) ;
+	inline T get(size_t i, size_t j) const;
+	inline T& get_ref(size_t i, size_t j);
+	
 };
 
 
-//OPERATORS
 template<typename T>	
 std::ostream& operator<<(std::ostream& out, const matrix<T>& temp); 
 
+// Create a row vector, by specificying the items the vector is to be filled it
+// Discussion : 	
+// 	Inefficinet as a copy of the value is created by the compiler ( a temporary ) 
+// 	then it is copied into the std::vector
+//	So use for small vectors outside of a for loop
+template<typename T>	
+matrix<T>::matrix(std::initializer_list<T> l)
+{
+	// itereators into list
+	const T*   it = l.begin();
+	const T* const end = l.end();
+	
+	// create a row vector
+	_rows = 1 ;  
+	_cols = l.size();
+	_size = _rows * _cols;
 
-
-// TYPEDEF's 
-
-typedef matrix<double> matDouble; 
-typedef matrix<int> matInt;
-
+	// reserve might be redundant. ?? Copy might call it ? 
+	// allocates memory of required size, prevents reallocations and deallocation during addintion of new values
+	_matrix.reserve(_size);
+	
+	// copy the values in the init.. list into the vector 
+	std::copy(l.begin() , l.end() , std::back_inserter(_matrix));
+}
 
 template <class T >
 matrix<T>::~matrix(void)
@@ -236,11 +191,9 @@ matrix<T>::~matrix(void)
 }
 
 
-/*
-Copy Assignment Operator
-Only Support Single Type Copy
-Eg: int to int , long long  to long long
-*/
+// Copy Assignment Operator
+// 	Only Support Single Type Copy
+// Eg: int to int , long long  to long long
 template <class T>
 matrix<T>& matrix<T>::operator=(const matrix<T>& rhs)
 {
@@ -259,8 +212,134 @@ matrix<T>& matrix<T>::operator=(const matrix<T>& rhs)
 	return *this;
 }
 
+// HANDLE SIZE OF THE MATRIX
+
+template<typename T>	
+size_t  matrix<T>::numRows() const 
+{ 
+	return (_rows); 
+}; 
+
+template<typename T>	
+size_t matrix<T>::numCols() const 
+{
+       	return  (_cols); 
+};
+
+template<typename T>	
+size_t matrix<T>::size() const 
+{ 
+	return _matrix.size() ; 
+};
+
+template<typename T>	
+inline typename std::vector<T>::iterator matrix<T>::begin() 
+{
+	return _matrix.begin();
+}
+
+template<typename T>	
+inline typename std::vector<T>::iterator matrix<T>::end() 
+{
+	return _matrix.end();
+}
+	
+ //Iterator at the begining of each of the rows
+template<typename T>	
+typename std::vector<T>::iterator matrix<T>::iterAtRowBegin(const size_t row_idx)
+{
+	typename std::vector<T>::iterator it = begin();
+	std::advance(it , (row_idx * _cols));
+	return it;
+}
+
+// insert value in a particular position in the vector
+template<typename T>	
+inline void matrix<T>::insert(size_t i, size_t j, T aVaule) 
+{ 
+	_matrix[(i - 1)*_cols + (j - 1)] = aVaule; 
+}
+
+// just returns the value.
+// mutating
+template<typename T>	
+inline T matrix<T>::get(size_t i, size_t j) const
+{ 
+	return ( _matrix[(i - 1)*_cols + (j - 1)] ) ; 
+}
+
+// returns reference.
+// mutating
+template<typename T>	
+inline T& matrix<T>::get_ref(size_t i, size_t j)
+{
+	return ( _matrix[(i - 1)*_cols + (j - 1)] ) ; 
+}
+
+// Helpers to check if the matrix if of a common type
+
+template<typename T>	
+bool matrix<T>::isSquare() const 
+{ 
+	if(_rows == _cols )
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+template<typename T>	
+bool matrix<T>::isRowVector()const 
+{ 
+	if(_rows == 1)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+template<typename T>	
+bool matrix<T>::isColVector() const 
+{ 
+	if(_cols == 1)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+template<typename T>	
+void matrix<T>::swap(int aRow, int aCol, int bRow, int bCol) 
+{ 
+	T temp = get(aRow, aCol); 
+	insert(aRow, aCol, get(bRow, bCol));
+	insert(bRow, bCol, temp); 
+};
+
+
+
+// Resize the vector into any shape you want. Keep the old items, pads new items to full fill new size requirement
+template<typename T>	
+void matrix<T>::resize(size_t rows , size_t cols , T val )
+{
+	_rows = rows; 
+	_cols = cols;
+	_size = rows * cols;		
+	_matrix.resize(_size , val);
+}	
+
+// create a new matrix of specified rows and cols and applies the lambda function to each of them
 template <class T>
-matrix<T> matrix<T>::transform_create(std::size_t rows , std::size_t cols , std::function<T(std::size_t , std::size_t , matrix<T>)> lam) // create a new matrix of specified rows and cols and applies the lambda function to each of them
+matrix<T> matrix<T>::transform_create(std::size_t rows , std::size_t cols , std::function<T(std::size_t , std::size_t , matrix<T>)> lam) 
 {
 	matrix<T> res(rows , cols);
 	for(std::size_t idx = 0 ; idx < rows ; ++idx)
@@ -274,8 +353,9 @@ matrix<T> matrix<T>::transform_create(std::size_t rows , std::size_t cols , std:
 }
 
 
+// apply the lambda function ot each element of the vector. 
 template <class T>
-matrix<T> matrix<T>::transform_inplace(std::function<T(std::size_t , std::size_t , T)> lam) // apply the lambda function ot each element of the vector. 
+matrix<T> matrix<T>::transform_inplace(std::function<T(std::size_t , std::size_t , T)> lam) 
 {
 	for(std::size_t idx = 0 ; idx < _rows ; ++idx)
 	{
@@ -286,7 +366,7 @@ matrix<T> matrix<T>::transform_inplace(std::function<T(std::size_t , std::size_t
 	}	
 }
 
-
+// Get the maximum element in a row or col vector
 //  0 indexed
 template <class T>
 size_t matrix<T>::arg_max()
@@ -304,9 +384,7 @@ size_t matrix<T>::arg_max()
 
 
 
-/*
- * add support to add a row at the end of the current matrix.
- */
+ // add support to add a row at the end of the current matrix.
 template <class T>
 void matrix<T>::addRow( matrix<T>& row)
 {
@@ -343,28 +421,21 @@ void matrix<T>::addRow( matrix<T>& row)
 
 // Fills in with 1. Make sure 1 can be casted into your template class
 template <class T>
-matrix<T> matrix<T>::getIdentity(long long  aRow)
+void matrix<T>::createIdentity(long long  aRow)
 {
-	matrix<T> A(aRow,aRow);
 	for(long long  i = 1 ; i <= aRow ; i++)
 	{
 		for(long long  j = 1 ; j <= aRow ; j++)
 		{
 			if(i == j )
 			{
-				A(i,j) = 1 ; 
+				insert(i,j,1);
 			}
 		}
 	}
-	return A; 
 }
 
 
-template <class T>
-bool matrix<T>::operator==(const matrix<T> & rhs)
-{
-	return this->isEqual(rhs);
-}
 
 
 template <class T>
@@ -397,14 +468,12 @@ void matrix<T>::symetricRandFill(T start , T end )
 	}
 	else
 	{
-		error("Non Square matrix Cannot be square "); 
+		throw std::logic_error("Non Square matrix Cannot be square "); 
 	}
 }
 
-/*
-Replaces the specified column of matrix with a given column
-Index as always starts at 1
-*/
+// Replaces the specified column of matrix with a given column
+//Index as always starts at 1
 template <class T>
 void matrix<T>::replaceCol(matrix<T> colVec, int aCol) 
 {
@@ -418,14 +487,12 @@ void matrix<T>::replaceCol(matrix<T> colVec, int aCol)
 	}
 	else
 	{
-		error("replaceCol : input Vector is not Col Vec");
+		throw std::logic_error("replaceCol : input Vector is not Col Vec");
 	}
 }
 
-/*
-	Replaces the specified row of matrix with a given row
-	Index as always starts at 1
-*/
+// 	Replaces the specified row of matrix with a given row
+//	Index as always starts at 1
 template <class T>
 void matrix<T>::replaceRow(matrix<T> rowVec, int aRow) 
 {
@@ -439,7 +506,7 @@ void matrix<T>::replaceRow(matrix<T> rowVec, int aRow)
 	}
 	else
 	{
-		error("replaceRow : input Vector is not Row Vec");
+		throw std::logic_error("replaceRow : input Vector is not Row Vec");
 	}
 }
 
@@ -480,10 +547,6 @@ matrix<T> matrix<T>::getDiagonalMatrix() const
 	return diagMatrix;
 }
 
-
-
-
-
 template <class T>
 bool matrix<T>::isEqual(matrix<T> rhs) const
 {
@@ -516,7 +579,7 @@ void matrix<T>::setAllNum(T aNum)
 	{
 		for (long long j = 1; j <= _cols; j++)
 		{
-			get(i, j) = aNum;
+			get_ref(i, j) = aNum;
 		}
 	}
 }
@@ -637,13 +700,11 @@ bool matrix<T>::isDiagonal() const
 		return false;
 }
 
-//------------------------------------------------------------------------------------------------
-
-template <class T>
-matrix<T> matrix<T>::returnRow(size_t aRow) const
 /*
 Create a new matrix with same number of cols , but only a single row
 */
+template <class T>
+matrix<T> matrix<T>::returnRow(size_t aRow) const
 {
 	matrix<T> result(1, _cols);
 	for (long long i = 1; i <= _rows; i++)
@@ -659,12 +720,10 @@ Create a new matrix with same number of cols , but only a single row
 	return result;
 }
 
+//No operation is done on the input matrix , the matrix returned is a new matrix
+//remove a col and returns a matrix of same size but without the specified col
 template <class T>
 matrix<T> matrix<T>::removeCol(size_t aCol)
-/*
-No operation is done on the input matrix , the matrix returned is a new matrix
-remove a col and returns a matrix of same size but without the specified col
-*/
 {
 	matrix<T> R(_rows, _cols - 1);
 	for (long long i = 1; i <= R._rows; i++)
@@ -680,12 +739,10 @@ remove a col and returns a matrix of same size but without the specified col
 	return R;
 }
 
+//No operation is done on the input matrix , the matrix returned is a new matrix
+//remove a col and returns a matrix of same size but without the specified col
 template <class T>
 matrix<T> matrix<T>::removeRow(size_t aRow)
-/*
-No operation is done on the input matrix , the matrix returned is a new matrix
-remove a col and returns a matrix of same size but without the specified col
-*/
 {
 	matrix<T> R(_rows - 1, _cols);
 	for (long long i = 1; i <= R._rows; i++)
@@ -701,13 +758,10 @@ remove a col and returns a matrix of same size but without the specified col
 	return R;
 }
 
-//----------------------------------------------------------------------------------------------------------------------------------------------
 
+//Create a new matrix with same number of cols , but only a single row
 template <class T>
 matrix<T> matrix<T>::returnCol(size_t aCol) const
-/*
-Create a new matrix with same number of cols , but only a single row
-*/
 {
 	matrix<T> result(_rows, 1);
 	for (long long i = 1; i <= _rows; i++)
@@ -724,15 +778,19 @@ Create a new matrix with same number of cols , but only a single row
 }
 
 
-
-
-
 template <class T>
-matrix<T>  matrix<T>::operator*(const matrix<T> & rhs)
+bool matrix<T>::operator==(const matrix<T> & rhs) const
+{
+	return this->isEqual(rhs);
+}
+
+
 /*
 if takes the current matrix , multiplies it by the matrix on the right , and returns
 a new matrix
 */
+template <class T>
+matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const
 {
 	matrix<T> result(_rows, rhs._cols);
 
@@ -764,8 +822,7 @@ DoesNot Modify Input Matrix
 */
 template <typename T>
 template <typename P>
-matrix<T> matrix<T>::operator*(const P rhs)
-
+matrix<T> matrix<T>::operator*(const P rhs) const
 {
 	matrix<T> result(_rows, _cols);// rhs is a T 
 	for (long long i = 1; i <= _rows; i++)
@@ -778,13 +835,28 @@ matrix<T> matrix<T>::operator*(const P rhs)
 	return result;
 }
 
+/*
+template <typename T>
+template <typename P>
+void matrix<T>::operator*(const P rhs) 
+{
+	for (long long i = 1; i <= _rows; i++)
+	{
+		for (long long j = 1; j <= _cols; j++)
+		{
+			 get(i, j) *= rhs;
+		}
+	}
+}
+*/
 
-template <class T>
-matrix<T> matrix<T>::operator/(const T rhs)
+
 /*
 Divide by scalar
 DoesNot Modify Input Matrix
 */
+template <class T>
+matrix<T> matrix<T>::operator/(const T rhs) const
 {
 	matrix<T> result(_rows, _cols);// rhs is a T 
 	for (long long i = 1; i <= _rows; i++)
@@ -850,7 +922,7 @@ matrix<T> matrix<T>::operator-(const matrix<T> &rhs) const
 //------------------------------------------------------------------------------------------------
 
 template <class T>
-T& matrix<T>::operator()(const long long  rows, const long long  cols) const
+T& matrix<T>::operator()(const long long  rows, const long long  cols) 
 {
 	/*std::cout << "Safdsad";
 	_matrix will have _rows and _cols // Do not worry about 0 index , that is handled
@@ -860,7 +932,23 @@ T& matrix<T>::operator()(const long long  rows, const long long  cols) const
 		throw std::invalid_argument(" index out of range ");
 	}
 	else
-		return get(rows, cols);
+		return  get_ref(rows, cols) ; 
+}
+
+
+
+template <class T>
+T matrix<T>::operator()(const long long  rows, const long long  cols)  const
+{
+	/*std::cout << "Safdsad";
+	_matrix will have _rows and _cols // Do not worry about 0 index , that is handled
+	-----------------------------------*/
+	if (rows > _rows || cols > _cols)
+	{
+		throw std::invalid_argument(" index out of range ");
+	}
+	else
+		return  get(rows, cols) ; 
 }
 
 
@@ -1045,7 +1133,7 @@ T matrix<T>::innerProduct(const matrix<T>& B) const
 	}
 	else
 	{
-		error("innerProduct -> A and B are not in proper format ");
+		throw std::logic_error("innerProduct -> A and B are not in proper format ");
 		return result*(0);
 	}
 }
