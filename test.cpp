@@ -156,6 +156,11 @@ TEST_CASE("testing the matrix class")
 		CHECK(K(1,1) == 0);
 		K(1,1) = 5;	
 		CHECK(K(1,1) == 5);
+		K(1,1) *= 5;	
+		CHECK(K(1,1) == 25);
+
+
+
 	}
 
 }
