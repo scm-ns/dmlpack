@@ -1,6 +1,10 @@
 directory where all dp related things are implemented 
 
 
+TO DO : 
+	> Impelement better structure for organizing the code into seperate classes. Make an abstract class make everything inherit from it ? 
+	> Add CUDA and SSE support to the matrix lib	
+	> Implement covnets
 
 TESTING : 
 	testing will be done by using catch. The user should not have to 
