@@ -632,8 +632,6 @@ inline void matrix<int>::setAllNum(int aNum)
 
 
 
-
-
 }
 
 

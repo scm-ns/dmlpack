@@ -146,6 +146,35 @@ TEST_CASE("testing the matrix class")
 
 	}
 
+	SECTION("test : setAllZero func ")
+	{
+
+
+		matrix<double> K(100,100,5);
+
+		measure_exec_time([&K]() ->void 
+		{
+			K *= 0;
+		});
+
+		CHECK(K(20,20) == 0);
+
+		K.setAllNum(5);
+
+		CHECK(K(20,20) == 5);
+
+		measure_exec_time([&K]() ->void 
+		{
+			K.setAllZero();
+		});
+
+		CHECK(K(20,20) == 0);
+
+
+	}
+
+
+
 }
 
 
