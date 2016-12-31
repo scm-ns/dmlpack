@@ -8,58 +8,20 @@
 #include "data_source.h"
 
 
+// For code timming.
+#include <chrono>
 
 
-
-TEST_CASE("testing different parts of dmlpack", "[dmlpack]")
+void measure_exec_time(std::function<void(void)> lam)
 {
-	SECTION("testing using berkely data set")
-	{
-		SECTION("test using faces data set")
-		{
-			data_source data{};
-			const BRKLY_DATA data_set = BRKLY_DATA::FACE;
-			data.read_store_berkely_data( data_set , DATA_TYPE::TRAIN);
+	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+	lam();
+	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 
-			matrix<double> featu = data.get_features();
-			REQUIRE( featu(1,1) == 0 );
-
-			matrix<double> label = data.get_labels();
-			REQUIRE( label.numRows() == featu.numRows() );
-
-			SECTION("train using data set")
-			{
-				dmlpack<double> K{CLASSIFIER_TYPE::PERCEPTRON};
-				K.feed_train_data(std::move(featu) , std::move(label));
-				K.train();
-
-				
-				SECTION("validate using faces")
-				{
-
-					data_source digit_valid{};
-					digit_valid.read_store_berkely_data(data_set , DATA_TYPE::VALID);
-
-					matrix<double> data_valid = digit_valid.get_features(); 	
-					matrix<double> label_valid = digit_valid.get_labels();
-
-					K.feed_test_data(std::move(data_valid), std::move(label_valid));
-					auto res = K.inference();
-
-					K.test_accuracy();
-
-				}
-
-
-			}
-
-
-
-		}
-
-	}	
-
+	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+	std::cout << "time taken : " << duration << "\n";
 }
+
 
 
 TEST_CASE("testing the matrix class")
@@ -149,17 +111,38 @@ TEST_CASE("testing the matrix class")
 	
 	SECTION("test scalar multiply")
 	{
-		matrix<double> K(100,100,5);
-		K *= 0;
 
-		CHECK(K.size() == 100*100);
-		CHECK(K(1,1) == 0);
-		K(1,1) = 5;	
-		CHECK(K(1,1) == 5);
-		K(1,1) *= 5;	
-		CHECK(K(1,1) == 25);
+		measure_exec_time([]() ->void 
+		{
 
+			matrix<double> K(100,100,5);
 
+			K *= 0;
+			CHECK(K.size() == 100*100);
+			CHECK(K(1,1) == 0);
+			K(1,1) = 5;	
+			CHECK(K(1,1) == 5);
+			K(1,1) *= 5;	
+			CHECK(K(1,1) == 25);
+
+		});
+
+		measure_exec_time([]() ->void 
+		{
+
+			matrix<double> K(100,100,5);
+			K *= 0;
+
+		});
+
+		/* Profiling without the function call leads to 3 milisecond speed boost. 
+			std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+			matrix<double> K(100,100,5);
+				K *= 0;
+			std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+			auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+			std::cout << "time taken : " << duration << std::endl;
+		*/
 
 	}
 
@@ -167,4 +150,55 @@ TEST_CASE("testing the matrix class")
 
 
 
+
+
+TEST_CASE("testing different parts of dmlpack", "[dmlpack]")
+{
+	SECTION("testing using berkely data set")
+	{
+		SECTION("test using faces data set")
+		{
+			data_source data{};
+			const BRKLY_DATA data_set = BRKLY_DATA::FACE;
+			data.read_store_berkely_data( data_set , DATA_TYPE::TRAIN);
+
+			matrix<double> featu = data.get_features();
+			REQUIRE( featu(1,1) == 0 );
+
+			matrix<double> label = data.get_labels();
+			REQUIRE( label.numRows() == featu.numRows() );
+
+			SECTION("train using data set")
+			{
+				dmlpack<double> K{CLASSIFIER_TYPE::PERCEPTRON};
+				K.feed_train_data(std::move(featu) , std::move(label));
+				K.train();
+
+				
+				SECTION("validate using faces")
+				{
+
+					data_source digit_valid{};
+					digit_valid.read_store_berkely_data(data_set , DATA_TYPE::VALID);
+
+					matrix<double> data_valid = digit_valid.get_features(); 	
+					matrix<double> label_valid = digit_valid.get_labels();
+
+					K.feed_test_data(std::move(data_valid), std::move(label_valid));
+					auto res = K.inference();
+
+					K.test_accuracy();
+
+				}
+
+
+			}
+
+
+
+		}
+
+	}	
+
+}
 

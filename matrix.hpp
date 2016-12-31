@@ -25,6 +25,14 @@
 #include <functional>
 
 
+#ifdef DEBUG_D
+#define dout std::cout << __FILE__<< " (" << __LINE__ << ") " << "DEBUG : "
+#else
+#define dout 0 && std::cout
+#endif
+
+
+
 template <class T>
 class matrix
 {
@@ -217,9 +225,7 @@ matrix<T>& matrix<T>::operator=(const matrix<T>& rhs)
 template<typename T>	
 size_t  matrix<T>::numRows() const 
 { 
-	return (_rows); 
-}; 
-
+	return (_rows); }; 
 template<typename T>	
 size_t matrix<T>::numCols() const 
 {
@@ -881,6 +887,36 @@ matrix<T> matrix<T>::operator+(const  matrix<T> &rhs) const
 		for (long long i = 1; i <= _rows; i++)
 		{
 			for (long long j = 1; j <= _cols; j++)
+			{
+				R(i, j) = get(i, j) + rhs(i, j);
+			}
+		}
+		return R;
+	}
+	else
+	{
+		throw std::invalid_argument(" Not of same size ");
+	}
+}
+
+// inline required to follow the one definition rule. 
+// ODR means that a definition for a class / function should only be done once in a  compilation unit or entire program
+// One of practical implications of this is that if you provide defenition for a function within the header file, then the funtion/class will have multiple definitons in
+// all the different files which includes the header. 
+//	The special cases when this does not apply are 
+//		1. the function/class is a template, then you can provide definitions within the header
+//		2. the function is inlined. { can be done by including the funcion within the class or marking with inline property.
+// So for explict tempate specializtion, inline it.
+template <>
+inline matrix<float> matrix<float>::operator+(const  matrix<float> &rhs) const 
+{
+
+	matrix<float> R(_rows, _cols);
+	if (_rows == rhs._rows && _cols == rhs._cols)
+	{
+		for (std::size_t i = 1; i <= _rows; i++)
+		{
+			for (std::size_t j = 1; j <= _cols; j++)
 			{
 				R(i, j) = get(i, j) + rhs(i, j);
 			}
