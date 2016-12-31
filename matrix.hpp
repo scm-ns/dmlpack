@@ -24,6 +24,10 @@
 #include <algorithm>
 #include <functional>
 
+// Intrsincis for sse
+#include <xmmintrin.h>
+
+
 
 #ifdef DEBUG_D
 #define dout std::cout << __FILE__<< " (" << __LINE__ << ") " << "DEBUG : "
@@ -82,10 +86,15 @@ public:
 	void randFill(T start = 0, T end = 1000); 
 	void symetricRandFill(T start = 0, T end = 1000); 
 
+
+
 	void resizeLinSpaceRow(T start , T end,T interval);
 	void resizeLinSpaceCol(T start , T end,T interval);
 
 	void setAllNum(T aNum);
+	void setAllZero(); 
+	void set_all_num(T aNum);
+
 
 	matrix<T> returnRow(size_t aRow) const;
 	matrix<T> returnCol(size_t aCol) const;
@@ -197,6 +206,8 @@ matrix<T>::~matrix(void)
 {
 	_matrix.clear();
 }
+
+
 
 
 // Copy Assignment Operator
@@ -589,6 +600,42 @@ void matrix<T>::setAllNum(T aNum)
 		}
 	}
 }
+
+template <class T>
+void matrix<T>::setAllZero()
+{
+	setAllNum(0);
+}
+
+template <>
+inline void matrix<int>::setAllZero()
+{
+	__m128i zero_128_int = _mm_setzero_si128(); // 128i is int
+
+	__m128i* vec_beg = reinterpret_cast<__m128i *>(_matrix.data());
+	__m128i* vec_end = reinterpret_cast<__m128i *>(_matrix.data() + _size );
+		
+	// write zero to entire vector
+	for(__m128i * vec_itr = vec_beg ; vec_itr < vec_end ; ++vec_itr )
+	{
+		_mm_store_si128(vec_itr , zero_128_int);
+	}
+}
+
+
+
+
+template <>
+inline void matrix<int>::setAllNum(int aNum)
+{
+	int * vec_beg = _matrix.data();
+
+
+
+
+
+}
+
 
 // Diagonal element is greater than the other elements in row
 template <class T>
