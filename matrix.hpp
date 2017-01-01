@@ -35,7 +35,7 @@
 #define dout 0 && std::cout
 #endif
 
-
+/*
 // custom allocator for alligned std::vector for sse
 //
 // Is this required ? new and new[] is supposed to give alligned memory blocks
@@ -65,7 +65,7 @@ class aligned_vec_alloc : public std::allocator<T>
 		}	
 }
 
-
+*/
 
 
 template <class T>
@@ -673,44 +673,72 @@ inline void matrix<int>::setAllZero()
 {
 	__m128i zero_128_int = _mm_setzero_si128(); // 128i is int
 
-	__m128i* vec_beg = reinterpret_cast<__m128i *>(_matrix.data());
-	__m128i* vec_end = reinterpret_cast<__m128i *>(_matrix.data() + _size );
+	__m128i* const vec_beg = reinterpret_cast<__m128i *>(_matrix.data());
 
-
-
+	// Two loops are required. 
+	// 	1. To handle till the last of 4 elements which are alligned
+	// 	2. Handle the last <=3 elements
+	//
+	// Ex : 
+	// 	11 element vec
+	//	[0 - 3]  [4 - 7]  8 9 10
+	//	   1        1      2
+	//
+	// 	12 element vec
+	//	[0 - 3]  [4 - 7]  [8 9 10 11]
+	//	   1        1          1
+	//
 	// write zero to entire vector
-	for(__m128i * vec_itr = vec_beg ; vec_itr < vec_end ; ++vec_itr )
+	
+	//  idx alligement refers to the property that there is enough 4 alligned index 
+	//  TO : DO find better wording
+		
+	int idx_alligned_end = (_size - (_size % 4));	
+	__m128i* const vec_idx_alligned_end = reinterpret_cast<__m128i *>(_matrix.data() + idx_alligned_end);
+
+
+	__m128i * vec_itr = vec_beg ;
+
+	// sse compute
+	for(; vec_itr < vec_idx_alligned_end ; ++vec_itr )
 	{
 		_mm_store_si128(vec_itr , zero_128_int);
 	}
-}
+	
+	// non sse compute
+	int* ptr = reinterpret_cast<int *>(vec_itr);
+	for(std::size_t idx = 0 ; idx < (_size % 4) ; ++idx)
+	{
+		*ptr = 0 ; ++ptr;
+	}		
 
+}
 
 template <>
 inline void matrix<float>::setAllZero()
 {
 	__m128 zero_128_float = _mm_setzero_ps(); 
 
-	float* vec_beg = (_matrix.data());
-	float* vec_end = (_matrix.data() + _size );
+	float* const vec_beg = (_matrix.data());
 		
-	// write zero to entire vector
-	for(float * vec_itr = vec_beg ; vec_itr < vec_end ; ++vec_itr )
+	// find end of non alligend part of vec
+	int idx_alligned_end = (_size - (_size % 4));	
+	float* const vec_idx_alligned_end = ( _matrix.data() + idx_alligned_end );
+
+	float* vec_itr = vec_beg ;
+
+	// sse compute
+	for(; vec_itr < vec_idx_alligned_end ; ++vec_itr )
 	{
 		_mm_store_ss(vec_itr , zero_128_float);
 	}
+	
+	// non sse compute
+	for(std::size_t idx = 0 ; idx < (_size % 4) ; ++idx)
+	{
+		*vec_itr = 0 ; ++vec_itr;
+	}		
 }
-
-
-//emplate <>
-//nline void matrix<int>::setAllNum(int aNum)
-//
-//       int * vec_beg = _matrix.data();
-//
-//
-//
-//
-
 
 // Diagonal element is greater than the other elements in row
 template <class T>
@@ -735,7 +763,6 @@ bool matrix<T>::isDiagonallyDominant() const
 	}
 	return isDominant;
 }
-
 
 template <class T>
 bool matrix<T>::isUpperTriangular() const

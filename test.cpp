@@ -188,7 +188,7 @@ TEST_CASE("testing the matrix class")
 	{
 
 		{
-			matrix<int> K(100,100,5);
+			matrix<int> K(101,103,5);
 
 			measure_exec_time([&K]() ->void 
 			{
@@ -214,6 +214,12 @@ TEST_CASE("testing the matrix class")
 			});
 
 			CHECK(K(20,20) == 0);
+			CHECK(K(101,103) == 0);
+			CHECK(K(101,102) == 0);
+			CHECK(K(101,101) == 0);
+			CHECK(K(101,99) == 0);
+			CHECK(K(100,102) == 0);
+			CHECK(K(100,102) == 0);
 		}
 
 
@@ -224,7 +230,7 @@ TEST_CASE("testing the matrix class")
 	{
 
 		{
-			matrix<float> K(100,100,5);
+			matrix<float> K(101,103,5);
 
 			measure_exec_time([&K]() ->void 
 			{
@@ -250,6 +256,16 @@ TEST_CASE("testing the matrix class")
 			});
 
 			CHECK(K(20,20) == 0);
+
+
+			CHECK(K(20,20) == 0);
+			CHECK(K(101,103) == 0);
+			CHECK(K(101,102) == 0);
+			CHECK(K(101,101) == 0);
+			CHECK(K(101,99) == 0);
+			CHECK(K(100,102) == 0);
+			CHECK(K(100,102) == 0);
+
 		}
 
 
