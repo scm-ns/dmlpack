@@ -115,6 +115,7 @@ TEST_CASE("testing the matrix class")
 		measure_exec_time([]() ->void 
 		{
 
+			std::cout << __LINE__ << " : " ;
 			matrix<double> K(100,100,5);
 
 			K *= 0;
@@ -130,6 +131,7 @@ TEST_CASE("testing the matrix class")
 		measure_exec_time([]() ->void 
 		{
 
+			std::cout << __LINE__ << " : " ;
 			matrix<double> K(100,100,5);
 			K *= 0;
 
@@ -146,34 +148,121 @@ TEST_CASE("testing the matrix class")
 
 	}
 
-	SECTION("test : setAllZero func ")
+	SECTION("test : setAllZero func double ")
 	{
 
-
-		matrix<double> K(100,100,5);
-
-		measure_exec_time([&K]() ->void 
 		{
-			K *= 0;
-		});
+			matrix<double> K(100,100,5);
 
-		CHECK(K(20,20) == 0);
+			measure_exec_time([&K]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				K *= 0;
+			});
 
-		K.setAllNum(5);
+			CHECK(K(20,20) == 0);
 
-		CHECK(K(20,20) == 5);
+			measure_exec_time([&K]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				K.setAllNum(5);
+			});
 
-		measure_exec_time([&K]() ->void 
+
+			CHECK(K(20,20) == 5);
+
+			measure_exec_time([&K]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				K.setAllZero();
+			});
+
+			CHECK(K(20,20) == 0);
+		}
+
+
+
+	}
+
+	SECTION("test : setAllZero func int ")
+	{
+
 		{
-			K.setAllZero();
-		});
+			matrix<int> K(100,100,5);
 
-		CHECK(K(20,20) == 0);
+			measure_exec_time([&K]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				K *= 0;
+			});
+
+			CHECK(K(20,20) == 0);
+
+			measure_exec_time([&K]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				K.setAllNum(5);
+			});
+
+
+			CHECK(K(20,20) == 5);
+
+			measure_exec_time([&K]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				K.setAllZero();
+			});
+
+			CHECK(K(20,20) == 0);
+		}
 
 
 	}
 
 
+	SECTION("test : setAllZero func float")
+	{
+
+		{
+			matrix<float> K(100,100,5);
+
+			measure_exec_time([&K]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				K *= 0;
+			});
+
+			CHECK(K(20,20) == 0);
+
+			measure_exec_time([&K]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				K.setAllNum(5);
+			});
+
+
+			CHECK(K(20,20) == 5);
+
+			measure_exec_time([&K]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				K.setAllZero();
+			});
+
+			CHECK(K(20,20) == 0);
+		}
+
+
+	}
+
+
+	SECTION("check allignment of std::vector memory")
+	{
+		matrix<int> K(97,97,5);
+		
+		CHECK(K.check_sse_allignment());
+
+	}
 
 }
 

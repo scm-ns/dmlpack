@@ -26,7 +26,7 @@
 
 // Intrsincis for sse
 #include <xmmintrin.h>
-
+#include <memory>
 
 
 #ifdef DEBUG_D
@@ -34,6 +34,37 @@
 #else
 #define dout 0 && std::cout
 #endif
+
+
+// custom allocator for alligned std::vector for sse
+//
+// Is this required ? new and new[] is supposed to give alligned memory blocks
+//
+//
+//
+template <typename T, std::size_t ALIGN = 16 , std::size_t BLOCK = 8>
+class aligned_vec_alloc : public std::allocator<T>
+{
+	public:
+		aligned_vec_alloc() 
+		{
+
+		}
+
+		aligned_vec_alloc& operator=(const aligned_vec_alloc& rhs)
+		{
+			std::allocator<T>::operator=(rhs);
+			return *this;
+		}
+		
+		T* allocate(std::size_t n , const void* hint)
+		{
+
+
+
+		}	
+}
+
 
 
 
@@ -152,7 +183,8 @@ public:
 	T normEuclidean();
 	matrix<T> transform_create(std::size_t rows , std::size_t cols , std::function<T(std::size_t , std::size_t , matrix<T>)> lam);
 	matrix<T> transform_inplace(std::function<T(std::size_t , std::size_t , T)> lam) ;
-	
+
+	bool check_sse_allignment();	
 
 private:
 
@@ -592,6 +624,20 @@ bool matrix<T>::isEqual(matrix<T> rhs) const
 template <class T>
 void matrix<T>::setAllNum(T aNum)
 {
+	auto vec_beg = _matrix.begin();
+	auto vec_end = _matrix.end();
+		
+	for(auto vec_itr = vec_beg ; vec_itr < vec_end ; ++vec_itr)
+	{
+		*vec_itr = aNum;	
+
+	}
+}
+
+/*
+template <>
+inline void matrix<int>::setAllNum(int aNum)
+{
 	for (long long i = 1; i <= _rows; i++)
 	{
 		for (long long j = 1; j <= _cols; j++)
@@ -600,11 +646,26 @@ void matrix<T>::setAllNum(T aNum)
 		}
 	}
 }
+*/
 
 template <class T>
 void matrix<T>::setAllZero()
 {
 	setAllNum(0);
+}
+
+template <class T>
+bool matrix<T>::check_sse_allignment()
+{
+	return false;
+}
+
+
+template <>
+inline bool matrix<int>::check_sse_allignment()
+{
+	int* ptr = _matrix.data();
+	return *ptr % __alignof__(__m128);
 }
 
 template <>
@@ -614,7 +675,9 @@ inline void matrix<int>::setAllZero()
 
 	__m128i* vec_beg = reinterpret_cast<__m128i *>(_matrix.data());
 	__m128i* vec_end = reinterpret_cast<__m128i *>(_matrix.data() + _size );
-		
+
+
+
 	// write zero to entire vector
 	for(__m128i * vec_itr = vec_beg ; vec_itr < vec_end ; ++vec_itr )
 	{
@@ -623,16 +686,30 @@ inline void matrix<int>::setAllZero()
 }
 
 
-
-
 template <>
-inline void matrix<int>::setAllNum(int aNum)
+inline void matrix<float>::setAllZero()
 {
-	int * vec_beg = _matrix.data();
+	__m128 zero_128_float = _mm_setzero_ps(); 
 
-
-
+	float* vec_beg = (_matrix.data());
+	float* vec_end = (_matrix.data() + _size );
+		
+	// write zero to entire vector
+	for(float * vec_itr = vec_beg ; vec_itr < vec_end ; ++vec_itr )
+	{
+		_mm_store_ss(vec_itr , zero_128_float);
+	}
 }
+
+
+//emplate <>
+//nline void matrix<int>::setAllNum(int aNum)
+//
+//       int * vec_beg = _matrix.data();
+//
+//
+//
+//
 
 
 // Diagonal element is greater than the other elements in row
@@ -758,9 +835,9 @@ template <class T>
 matrix<T> matrix<T>::returnRow(size_t aRow) const
 {
 	matrix<T> result(1, _cols);
-	for (long long i = 1; i <= _rows; i++)
+	for (std::size_t i = 1; i <= _rows; i++)
 	{
-		for (long long j = 1; j <= _cols; j++)
+		for (std::size_t j = 1; j <= _cols; j++)
 		{
 			if (aRow == i)
 			{
@@ -777,9 +854,9 @@ template <class T>
 matrix<T> matrix<T>::removeCol(size_t aCol)
 {
 	matrix<T> R(_rows, _cols - 1);
-	for (long long i = 1; i <= R._rows; i++)
+	for (std::size_t i = 1; i <= R._rows; i++)
 	{
-		for (long long j = 1; j <= R._cols; j++)
+		for (std::size_t j = 1; j <= R._cols; j++)
 		{
 			if (aCol <= j)
 				R(i, j) = get(i, j + 1);
@@ -796,9 +873,9 @@ template <class T>
 matrix<T> matrix<T>::removeRow(size_t aRow)
 {
 	matrix<T> R(_rows - 1, _cols);
-	for (long long i = 1; i <= R._rows; i++)
+	for (std::size_t i = 1; i <= R._rows; i++)
 	{
-		for (long long j = 1; j <= R._cols; j++)
+		for (std::size_t j = 1; j <= R._cols; j++)
 		{
 			if (aRow <= i)
 				R(i, j) = get(i + 1, j);
@@ -815,9 +892,9 @@ template <class T>
 matrix<T> matrix<T>::returnCol(size_t aCol) const
 {
 	matrix<T> result(_rows, 1);
-	for (long long i = 1; i <= _rows; i++)
+	for (std::size_t i = 1; i <= _rows; i++)
 	{
-		for (long long j = 1; j <= _cols; j++)
+		for (std::size_t j = 1; j <= _cols; j++)
 		{
 			if (aCol == j)
 			{
@@ -847,11 +924,11 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const
 
 	if (_cols == rhs._rows)
 	{
-		for (long long i = 1; i <= _rows; i++)
+		for (std::size_t i = 1; i <= _rows; i++)
 		{
-			for (long long j = 1; j <= rhs._cols; j++)
+			for (std::size_t j = 1; j <= rhs._cols; j++)
 			{
-				for (long long k = 1; k <= _cols; k++)
+				for (std::size_t k = 1; k <= _cols; k++)
 				{
 					result(i, j) += get(i, k) * rhs(k, j);
 				}
