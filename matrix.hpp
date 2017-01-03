@@ -23,6 +23,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <functional>
+#include <iterator>
 
 // Intrsincis for sse
 #include <xmmintrin.h>
@@ -104,7 +105,9 @@ public:
 	
 
 	inline typename std::vector<T>::iterator begin();
+	inline typename std::vector<T>::iterator cbegin();
 	inline typename std::vector<T>::iterator end();
+	inline typename std::vector<T>::iterator cend();
 	typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx);
 
 
@@ -185,7 +188,6 @@ public:
 	matrix<T> transform_inplace(std::function<T(std::size_t , std::size_t , T)> lam) ;
 
 	bool check_sse_allignment();	
-
 private:
 
 	// The size specifiers cannot be const as the matrix has the ability to resize	
@@ -204,9 +206,10 @@ private:
 	
 };
 
-
 template<typename T>	
 std::ostream& operator<<(std::ostream& out, const matrix<T>& temp); 
+
+
 
 // Create a row vector, by specificying the items the vector is to be filled it
 // Discussion : 	
@@ -288,11 +291,24 @@ inline typename std::vector<T>::iterator matrix<T>::begin()
 }
 
 template<typename T>	
+inline typename std::vector<T>::iterator matrix<T>::cbegin() 
+{
+	return _matrix.cbegin();
+}
+
+
+template<typename T>	
 inline typename std::vector<T>::iterator matrix<T>::end() 
 {
 	return _matrix.end();
 }
 	
+template<typename T>	
+inline typename std::vector<T>::iterator matrix<T>::cend() 
+{
+	return _matrix.cend();
+}
+
  //Iterator at the begining of each of the rows
 template<typename T>	
 typename std::vector<T>::iterator matrix<T>::iterAtRowBegin(const size_t row_idx)
@@ -1243,6 +1259,10 @@ template <class T>
 std::ostream& operator<<(std::ostream& out, const matrix<T>& temp)
 {
 	out << std::endl;
+	
+//	std::copy(temp.cbegin() , temp.cend() , std::ostreambuf_iterator<T>(out , " "));
+
+
 	for (long long i = 1; i <= temp.numRows(); i++)
 	{
 		for (long long j = 1; j <= temp.numCols(); j++)
@@ -1285,7 +1305,6 @@ matrix<T> matrix<T>::transpose() const
 
 	Allows the user to be sloppy
 	Here A is the current matrix
-
 */
 template <class T>
 T matrix<T>::innerProduct(const matrix<T>& B) const

@@ -48,7 +48,7 @@ TEST_CASE("testing the matrix class")
 		matrix<int> D = C * (B * A);
 		
 		CHECK(D.size() == 100 * 100 );
-
+	
 		CHECK(D.isSquare());
 
 		matrix<int> L(A*B);
@@ -57,6 +57,12 @@ TEST_CASE("testing the matrix class")
 
 	}
 
+
+	SECTION("print matrix")
+	{
+		matrix<int> A(10 , 10);
+		std::cout << A ;		
+	}
 
 	SECTION("test uniform rand fill")
 	{
