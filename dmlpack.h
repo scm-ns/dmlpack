@@ -34,15 +34,11 @@
 /* * Start : Dec 10 th: 
  * Memory Strategy : As long as I am not doing any real threading or cuda issues. I am going to make the C++ lib handle all the memory. 
  * 	> That is I will not explicitly allocate memory, but use the start contrainers to do the dirty work for me.
- *
  */
-
 
 enum class CLASSIFIER_TYPE { NAIVE_BAYES , PERCEPTRON , PERCEPTRON_MIRA , SINGLE_LAYER_NN , MULTI_LAYER_NN };
 
-
 enum class perceptron_type {simple, mira};
-
 
 const double MIRA_CAP = 0.001;
 
@@ -56,11 +52,21 @@ const double MIRA_CAP = 0.001;
  *		 : Implement an abstract base class 
  *
  *
+ *	Set the Parameters in a struct : Not in a single contrcutor as then the function becomes terrible
+ *	Each classfier will have its own param_struct. Which has to be passed in with the train command.
+ *
  *	The template has to be a basic type for things to work out properly.
  *
  */
 
-
+/*
+ * Jan 20th : Design Descisions : How to offer a better interface. 
+ *      Factory Pattern :
+ *  	Base Class Inheritance : 
+ *	
+ *	Avoid Pointers In the interface.
+ *	
+ */
 
 // Contains the operators used to create the hash functions
 struct hash_fctor // functor
@@ -87,7 +93,6 @@ struct hash_fctor // functor
 		return hash;
 	}
 
-
 	template <class T>
 	std::size_t operator() (const T& p) const 
 	{
@@ -103,6 +108,74 @@ struct hash_fctor // functor
 	}
 
 };
+
+struct param_base
+{
+
+
+};
+
+template <typename T>
+class classifier_base
+{
+	public:
+		virtual void train();
+		virtual void test();
+
+		// feed the entire training data
+		// keep reference to the class, instead of copying the data set
+		// This means that the data should outlive the class
+		void feed_train_data( matrix<T> train_x ,  matrix<T> train_y);
+		
+		// feed the entire test data 
+		void feed_test_data(matrix<T> test_x );
+		
+		// train on the percentage of the data set provided
+		void train(float percentage = 1, int iter = 4);	
+
+
+
+	
+	private:
+		// training data
+		matrix<T> train_x_;			
+		matrix<T> train_y_;			
+
+		// testing data
+		matrix<T> test_x_;			
+		matrix<T> prediction_;
+
+
+
+
+};
+
+template <typename T>
+void classifier_base<T>::feed_train_data( matrix<T> train_x ,  matrix<T> train_y) 
+{
+	train_x_ = train_x; 
+	train_y_ = train_y;	
+
+	num_classes = train_y_.numCols();
+	num_features = train_x_.numCols();
+	num_samples = train_x_.numRows();
+
+}
+
+template <typename T>
+void classifier_base<T>::feed_test_data(matrix<T> test_x )
+{
+	test_x_ = test_x;	
+}
+
+template <typename T>
+class temp : public classifier_base<T>
+{
+
+	void train();
+	void test();
+};
+
 
 
 template <typename T>
