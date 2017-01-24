@@ -128,13 +128,24 @@ class classifier_base
 		void feed_train_data( matrix<T> train_x ,  matrix<T> train_y);
 		
 		// feed the entire test data 
-		void feed_test_data(matrix<T> test_x );
+		void feed_test_data(matrix<T> test_x , matrix<T> test_y);
+
+		virtual void test_accuracy();
 		
+		// Set the parameters for the algorithm to run
+		// Each algorithm will have its own parameter struct
+		// This is much better than algorithms having many many parameters in the function
+		virtual void set_param( param_base& x);
+
 		// train on the percentage of the data set provided
-		void train(float percentage = 1, int iter = 4);	
+		virtual void train(float percentage = 1, int iter = 4);	
 
+		// run inference , take in data point and see what the model predicts
+		virtual matrix<T> inference(matrix<T>& test_x);
 
-
+		// test set already set
+		virtual std::pair<matrix<T>,matrix<T>> inference();
+	
 	
 	private:
 		// training data
@@ -143,9 +154,13 @@ class classifier_base
 
 		// testing data
 		matrix<T> test_x_;			
+		matrix<T> test_y_;			
+
 		matrix<T> prediction_;
 
-
+		std::size_t num_samples;  // in a multi batch train scenario ne need to keep track of the number of samples we have seen
+		std::size_t num_classes;
+		std::size_t num_features ;
 
 
 };
@@ -163,18 +178,90 @@ void classifier_base<T>::feed_train_data( matrix<T> train_x ,  matrix<T> train_y
 }
 
 template <typename T>
-void classifier_base<T>::feed_test_data(matrix<T> test_x )
+void classifier_base<T>::feed_test_data(matrix<T> test_x , matrix<T> test_y)
 {
 	test_x_ = test_x;	
+	test_y_ = test_y;
 }
 
-template <typename T>
-class temp : public classifier_base<T>
-{
 
-	void train();
-	void test();
-};
+
+template <typename T>
+void classifier_base<T>::test_accuracy()
+{
+	const int num_test_samples = test_y_.numRows();
+	
+	if(prediction_.empty())
+	{
+		throw std::runtime_error("The prediction matrix has not been built. Run inference first");
+	}
+
+
+	dout << prediction_ << std::endl;
+
+	if(prediction_.numRows() != num_test_samples)
+	{
+		dout << "error" ;
+		throw std::invalid_argument("number of sampels do not match");
+	}
+		
+	int correct  = 0 ;
+	if(num_classes == 1)
+	{
+		for(size_t idx = 1 ; idx <= num_test_samples ; ++idx)
+		{
+			if(prediction_(idx, 1) == test_y_(idx,1))
+			{
+				correct++;
+			}
+		}
+
+	}		
+	else
+	{
+		for(size_t idx = 1 ; idx <= num_test_samples ; ++idx)
+		{
+			int actual_val = 0 ; 
+			for(size_t class_idx = 1 ; class_idx <= num_classes ; ++class_idx)
+			{
+				if(test_y_(idx , class_idx) == 1)
+				{
+					actual_val = class_idx - 1;
+					break;
+				}
+			}
+			dout << actual_val << std::endl;	
+			if(prediction_(idx, 1) == actual_val)
+			{
+				correct++;
+			}
+		}
+
+	}
+
+
+	std::cout << " NUMBER OF CORRECT PREDICTIONS = " << correct << " OUT OF " << num_test_samples << std::endl;
+	std::cout << " Accurary % " << ( (correct) / (double) num_test_samples ) * 100 << std::endl;
+
+}
+
+
+
+
+// naive bayes class which conforms to the 
+
+//
+//template <typename T>
+//class temp : public classifier_base<T>
+//{
+//
+//	
+//	void train();
+//	void test();
+//};
+
+
+
 
 
 
@@ -292,6 +379,7 @@ class dmlpack
 		// naive bayes //internals	------------------------------------
 		void naive_bayes_train(float percentage);
 		std::pair<matrix<T> , matrix<T> > naive_bayes_inference();
+
 		std::size_t num_samples;  // in a multi batch train scenario ne need to keep track of the number of samples we have seen
 					      //------------------------------------
 		std::size_t num_classes;
