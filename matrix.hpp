@@ -147,7 +147,7 @@ public:
 	void addRow( matrix<T>& row);
 	// To do : Add Col. 
 	
-
+	bool empty() 		 const;
 	bool isSquare()		 const;
 	bool isRowVector()       const;
 	bool isColVector() 	 const;
@@ -340,6 +340,14 @@ inline T& matrix<T>::get_ref(size_t i, size_t j)
 {
 	return ( _matrix[(i - 1)*_cols + (j - 1)] ) ; 
 }
+
+
+template<typename T>
+bool matrix<T>::empty() const
+{
+	return (_matrix.empty());
+}
+
 
 // Helpers to check if the matrix if of a common type
 
