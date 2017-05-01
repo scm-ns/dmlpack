@@ -26,8 +26,10 @@ void measure_exec_time(std::function<void(void)> lam)
 
 TEST_CASE("testing the matrix class")
 {
-	SECTION("Create matrix ")
+	auto test1 =  "Create matrix ";
+	SECTION(test1)
 	{
+		std::cout << test1 << std::endl;
 		matrix<int> A(1,100);
 		A.setAllNum(5);
 		
@@ -57,15 +59,17 @@ TEST_CASE("testing the matrix class")
 
 	}
 
-
-	SECTION("print matrix")
+	auto test2 ="print matrix";
+	SECTION(test2)
 	{
+		std::cout << test2 << std::endl;
 		matrix<int> A(10 , 10);
 		std::cout << A ;		
 	}
-
-	SECTION("test uniform rand fill")
+	auto test3 ="test uniform rand fill" ;
+	SECTION(test3)
 	{
+		std::cout << test3 << std::endl;
 		matrix<int> rand_val(1,100);
 		rand_val.randFillUniform(0,5);
 
@@ -86,18 +90,20 @@ TEST_CASE("testing the matrix class")
 
 	}
 	
-
-	SECTION("test the linspace row and col")
+	auto test4 = "test the linspace row and col";
+	SECTION(test4)
 	{
+		std::cout << test4 << std::endl;
 		matrix<double> K ; 
 		K.resizeLinSpaceCol(1,100,0.1);		
 		
 
 	}
 
-	
-	SECTION("test the initialzier list ctor")
+ 	auto test5 = "test the initialzier list ctor";
+	SECTION(test5)
 	{
+		std::cout << test5 << std::endl;
 		INFO("TESTING INIT LIST");
 		matrix<double> K { 1 , 2 , 3 , 4 , 5 , 6};
 		const int size = 6;
@@ -115,9 +121,11 @@ TEST_CASE("testing the matrix class")
 		}
 	}
 	
-	SECTION("test scalar multiply")
+	auto test6 = "test scalar multiply";
+	SECTION(test6)
 	{
-
+		std::cout << test6 << std::endl;
+		SCOPED_INFO("TESTING INIT LIST");
 		measure_exec_time([]() ->void 
 		{
 
@@ -153,10 +161,10 @@ TEST_CASE("testing the matrix class")
 		*/
 
 	}
-
-	SECTION("test : setAllZero func double ")
+	auto test7 = "test : setAllZero func double ";
+	SECTION(test7)
 	{
-
+		std::cout << test7 << std::endl;
 		{
 			matrix<double> K(100,100,5);
 
@@ -262,8 +270,6 @@ TEST_CASE("testing the matrix class")
 			});
 
 			CHECK(K(20,20) == 0);
-
-
 			CHECK(K(20,20) == 0);
 			CHECK(K(101,103) == 0);
 			CHECK(K(101,102) == 0);
@@ -281,13 +287,13 @@ TEST_CASE("testing the matrix class")
 	SECTION("check allignment of std::vector memory")
 	{
 		matrix<int> K(97,97,5);
-		
+		std::cout << "SSE ALLIGNMENT " << K.check_sse_allignment() << "/n";
 		CHECK(K.check_sse_allignment());
 
 	}
 
 }
-
+/*
 
 
 
@@ -341,4 +347,4 @@ TEST_CASE("testing different parts of dmlpack", "[dmlpack]")
 	}	
 
 }
-
+*/
