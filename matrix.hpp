@@ -96,9 +96,9 @@ public:
 	
 
 	inline typename std::vector<T>::iterator begin();
-	inline typename std::vector<T>::iterator cbegin();
+	inline typename std::vector<T>::iterator cbegin() const;
 	inline typename std::vector<T>::iterator end();
-	inline typename std::vector<T>::iterator cend();
+	inline typename std::vector<T>::iterator cend() const;
 	typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx);
 
 
@@ -302,7 +302,7 @@ inline typename std::vector<T>::iterator matrix<T>::begin()
 }
 
 template<typename T>	
-inline typename std::vector<T>::iterator matrix<T>::cbegin() 
+inline typename std::vector<T>::iterator matrix<T>::cbegin() const
 {
 	return _matrix.cbegin();
 }
@@ -315,7 +315,7 @@ inline typename std::vector<T>::iterator matrix<T>::end()
 }
 	
 template<typename T>	
-inline typename std::vector<T>::iterator matrix<T>::cend() 
+inline typename std::vector<T>::iterator matrix<T>::cend() const
 {
 	return _matrix.cend();
 }
@@ -1087,10 +1087,10 @@ matrix<T> matrix<T>::operator+(const  matrix<T> &rhs) const
 	{
 		// Rather than indexing using idices, which takes up time due to having to calculate the index again for each iter of the loop.
 		// use pointers, so that on each iter of the loop, a single +1 increment only needs to be done
-		auto rhs_ptr =  rhs.begin();
+		auto rhs_ptr =  rhs.cbegin();
 		auto ptr = R.begin();
 
-		for (; ptr != end() ; ++ptr , ++rhs_ptr)
+		for (; ptr != R.end() ; ++ptr , ++rhs_ptr)
 		{
 			*ptr = *ptr + *rhs_ptr;		
 		}
