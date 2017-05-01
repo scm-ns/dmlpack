@@ -1057,6 +1057,27 @@ matrix<T> matrix<T>::operator/(const T rhs) const
 
 
 
+template <class T>
+matrix<T> matrix<T>::add(const  matrix<T> &rhs) const
+{
+	matrix<T> R(_rows, _cols);
+	if (_rows == rhs._rows && _cols == rhs._cols)
+	{
+		for (long long i = 1; i <= _rows; i++)
+		{
+			for (long long j = 1; j <= _cols; j++)
+			{
+				R(i, j) = get(i, j) + rhs(i, j);
+			}
+		}
+		return R;
+	}
+	else
+	{
+		throw std::invalid_argument(" Not of same size ");
+	}
+}
+
 
 template <class T>
 matrix<T> matrix<T>::operator+(const  matrix<T> &rhs) const
