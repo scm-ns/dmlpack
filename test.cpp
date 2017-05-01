@@ -197,10 +197,11 @@ TEST_CASE("testing the matrix class")
 
 
 	}
-
-	SECTION("test : setAllZero func int ")
+	
+	auto test8 = "test : setAllZero func int ";
+	SECTION(test8)
 	{
-
+		std::cout << test8 << std::endl;
 		{
 			matrix<int> K(101,103,5);
 
@@ -239,10 +240,10 @@ TEST_CASE("testing the matrix class")
 
 	}
 
-
-	SECTION("test : setAllZero func float")
+	auto test9 = "test : setAllZero func float";
+	SECTION(test9)
 	{
-
+		std::cout << test9 << std::endl;
 		{
 			matrix<float> K(101,103,5);
 
@@ -283,8 +284,8 @@ TEST_CASE("testing the matrix class")
 
 	}
 
-
-	SECTION("check allignment of std::vector memory")
+	auto test10 = "check allignment of std::vector memory";
+	SECTION(test10)
 	{
 		matrix<int> K(97,97,5);
 		std::cout << "SSE ALLIGNMENT " << K.check_sse_allignment() << "/n";
