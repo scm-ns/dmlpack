@@ -96,9 +96,9 @@ public:
 	
 
 	inline typename std::vector<T>::iterator begin();
-	inline typename std::vector<T>::iterator cbegin() const;
+	inline typename std::vector<T>::const_iterator cbegin() const;
 	inline typename std::vector<T>::iterator end();
-	inline typename std::vector<T>::iterator cend() const;
+	inline typename std::vector<T>::const_iterator cend() const;
 	typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx);
 
 
@@ -302,7 +302,7 @@ inline typename std::vector<T>::iterator matrix<T>::begin()
 }
 
 template<typename T>	
-inline typename std::vector<T>::iterator matrix<T>::cbegin() const
+inline typename std::vector<T>::const_iterator matrix<T>::cbegin() const
 {
 	return _matrix.cbegin();
 }
@@ -315,7 +315,7 @@ inline typename std::vector<T>::iterator matrix<T>::end()
 }
 	
 template<typename T>	
-inline typename std::vector<T>::iterator matrix<T>::cend() const
+inline typename std::vector<T>::const_iterator matrix<T>::cend() const
 {
 	return _matrix.cend();
 }
