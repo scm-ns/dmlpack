@@ -165,6 +165,7 @@ public:
 	void operator*=(const P rhs) ;
 	matrix<T> operator/(const T rhs) const;
 	matrix<T> operator*(const matrix<T> &rhs) const;
+	matrix<T> add(const  matrix<T> &rhs) const;
 	matrix<T> operator+(const matrix<T> &rhs) const;
 	matrix<T> operator-(const matrix<T> &rhs) const;
 	
@@ -1056,19 +1057,23 @@ matrix<T> matrix<T>::operator/(const T rhs) const
 
 
 
+
 template <class T>
 matrix<T> matrix<T>::operator+(const  matrix<T> &rhs) const
 {
 	matrix<T> R(_rows, _cols);
 	if (_rows == rhs._rows && _cols == rhs._cols)
 	{
-		for (long long i = 1; i <= _rows; i++)
+		// Rather than indexing using idices, which takes up time due to having to calculate the index again for each iter of the loop.
+		// use pointers, so that on each iter of the loop, a single +1 increment only needs to be done
+		auto rhs_ptr =  rhs.begin();
+		auto ptr = R.begin();
+
+		for (; ptr != end() ; ++ptr , ++rhs_ptr)
 		{
-			for (long long j = 1; j <= _cols; j++)
-			{
-				R(i, j) = get(i, j) + rhs(i, j);
-			}
+			*ptr = *ptr + *rhs_ptr;		
 		}
+
 		return R;
 	}
 	else
@@ -1076,6 +1081,8 @@ matrix<T> matrix<T>::operator+(const  matrix<T> &rhs) const
 		throw std::invalid_argument(" Not of same size ");
 	}
 }
+
+
 
 // inline required to follow the one definition rule. 
 // ODR means that a definition for a class / function should only be done once in a  compilation unit or entire program
