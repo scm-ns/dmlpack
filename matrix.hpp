@@ -74,32 +74,23 @@ class matrix
 {
 public:
 	//CONSTRUCTORS
-	matrix(void)  : _rows(0) , _cols(0) , _size(0)
-	{
-
-	};
-       
+	matrix(void);
 	~matrix(void);
+	matrix(size_t rows , size_t cols , T val = 0);
 
-
-	matrix(size_t rows , size_t cols , T val = 0) : _rows(rows) , _cols(cols) , _matrix(_rows * _cols, val), _size(_rows * _cols)
-	{
-
-	}
-
+  	// Copy ctor and copy assignment ctor	
 	matrix(const matrix<T>& rhs) : _rows(rhs._rows) , _cols(rhs._cols) , _size(rhs._size)
 	{
 		_matrix = rhs._matrix;
 	};
-
-
+	
 	matrix<T>& operator=(const matrix<T>& rhs);
+	// TO DO : add move ctor and move assignemnt ctor
 
 
 	// creates a row vector
 	matrix(std::initializer_list<T> l);
 	
-
 	// TO DO : Functionality to convert a row vec to col vise-versa. Also to convert row/col vec into 2d matrix // this resize method seems to do it. But check.
 	void resize(size_t rows , size_t cols , T val = 0);
 	
@@ -209,6 +200,19 @@ private:
 template<typename T>	
 std::ostream& operator<<(std::ostream& out, const matrix<T>& temp); 
 
+
+template<typename T>
+matrix<T>::matrix(size_t rows , size_t cols , T val) : _rows(rows) , _cols(cols) , _matrix(_rows * _cols, val), _size(_rows * _cols)
+{
+
+};
+
+
+template<typename T>
+matrix<T>::matrix(void) : _rows(0) , _cols(0) , _size(0)
+{
+
+};
 
 
 // Create a row vector, by specificying the items the vector is to be filled it
@@ -1045,7 +1049,6 @@ matrix<T> matrix<T>::operator/(const T rhs) const
 template <class T>
 matrix<T> matrix<T>::operator+(const  matrix<T> &rhs) const
 {
-
 	matrix<T> R(_rows, _cols);
 	if (_rows == rhs._rows && _cols == rhs._cols)
 	{
