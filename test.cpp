@@ -271,6 +271,23 @@ TEST_CASE("testing the matrix class")
 			});
 
 			CHECK(K(20,20) == 0);
+
+			measure_exec_time([&K]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				K.setAllNum(5);
+			});
+
+			CHECK(K(20,20) == 5);
+
+			measure_exec_time([&K]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				K.setAllNum(0);
+			});
+
+
+			CHECK(K(20,20) == 0);
 			CHECK(K(20,20) == 0);
 			CHECK(K(101,103) == 0);
 			CHECK(K(101,102) == 0);
