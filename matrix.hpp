@@ -201,12 +201,19 @@ template<typename T>
 std::ostream& operator<<(std::ostream& out, const matrix<T>& temp); 
 
 
+/*
+ * Pattern to handle providing of SSE instructions
+ * If the data type is something that supports sse. Then use sse. 
+ * For this better allignment of std::vector is required and this can be done by specializing the ctros for the supported types and then writing our on allocator
+ *
+ *
+ */
+
 template<typename T>
 matrix<T>::matrix(size_t rows , size_t cols , T val) : _rows(rows) , _cols(cols) , _matrix(_rows * _cols, val), _size(_rows * _cols)
 {
 
 };
-
 
 template<typename T>
 matrix<T>::matrix(void) : _rows(0) , _cols(0) , _size(0)
@@ -245,7 +252,6 @@ matrix<T>::~matrix(void)
 {
 	_matrix.clear();
 }
-
 
 
 
