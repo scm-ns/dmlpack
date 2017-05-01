@@ -162,26 +162,26 @@ template <typename T>
 class classifier_base
 {
 	public:
-		virtual void train();
-		virtual void test();
+		virtual void train() = 0 ;
+		virtual void test() = 0;
 		
 		// Set the parameters for the algorithm to run
 		// Each algorithm will have its own parameter struct
 		// This is much better than algorithms having many many parameters in the function
-		virtual void set_param( param_base& x);
+		virtual void set_param( param_base& x) = 0;
 
-		virtual void train(float percentage); // override this is subclass
+		virtual void train(float percentage) = 0 ; // override this is subclass
 
 		// train on the percentage of the data set provided
-		virtual void train(float percentage = 1, int iter = 4);	 // do all class have iterations. I need to specialize this function on the type of the algorithm
+		virtual void train(float percentage = 1, int iter = 4) = 0 ;	 // do all class have iterations. I need to specialize this function on the type of the algorithm
 			// I cannot ask that all the subclass implement this fuinction as they might not need the iter. How to handle this ? 
 
 
 		// run inference , take in data point and see what the model predicts
-		virtual matrix<T> inference(matrix<T>& test_x);
+		virtual matrix<T> inference(matrix<T>& test_x) = 0;
 
 		// test set already set
-		virtual std::pair<matrix<T>,matrix<T>> inference();
+		virtual std::pair<matrix<T>,matrix<T>> inference() = 0 ;
 
 
 		// feed the entire training data
@@ -301,8 +301,8 @@ class naive_bayes : public classifier_base<T> // Should the base class also have
 
 		}
 
-		void train(float percentage) override;
-		std::pair<matrix<T> , matrix<T> > inference() override;
+		void train(float percentage) override final;
+		std::pair<matrix<T> , matrix<T> > inference() override final;
 
 	private : 
 		using occurance = std::size_t;
@@ -338,7 +338,7 @@ void naive_bayes<T>::train(float percentage)
 	// check number of traning samples are consistent
 	if(classifier_base<T>::train_x_.numRows() != classifier_base<T>::train_y_.numRows())
 	{
-		std::invalid_argument(std::string("mismatch ; Make sure the training set has equal number of smaples in x and y ") + std::string( " in ") + std::string("naive_bayes_train() ") + std::string( __FILE__) + std::string(" : ") + std::to_string(__LINE__) );
+		std::invalid_argument(std::string("ex is dead : mismatch ; Make sure the training set has equal number of smaples in x and y ") + std::string( " in ") + std::string("naive_bayes_train() ") + std::string( __FILE__) + std::string(" : ") + std::to_string(__LINE__) );
 	}
 
 	/*
@@ -501,38 +501,13 @@ std::pair<matrix<T> , matrix<T> > naive_bayes<T>::inference()
 	return std::make_pair( res , prediction );
 }
 
+/*
+	How to architect this  ?
+	pass in the paramter struct. call train on object and the parameters will be set and 
+	calls will be routed in the proper manner ? 
 
 
-template <typename T>
-class perceptron<T> : public classifier_base<T>
-{
-
-	public : 
-
-
-
-
-
-
-
-
-
-	private : 
-
-		//percetron internals
-	 	matrix<T> perceptron_weight_;
-		std::pair<bool,T> single_preceptron(const matrix<T>& feature , const matrix<T>& weight , T threshold  = 0 ) const;
-
-		std::pair<matrix<T> , matrix<T>> multi_class_perceptron_inference();
-
-		void multi_class_perceptron_train(perceptron_type type = perceptron_type::simple , float percentage = 100);
-		void multi_class_perceptron_train_iter(perceptron_type type , float percentage , int num_iter = 100);
-
-
-
-
-
-};
+*/
 
 
 
@@ -558,7 +533,348 @@ class perceptron<T> : public classifier_base<T>
  * The training set's y should be in one-shot encoding
  *
  */
-t
+
+
+
+template <typename T>
+class perceptron : public classifier_base<T>
+{
+
+	public : 
+
+		void train(float percentage) override final;
+		void train(float percentage , int iter) override final;
+
+		void inference() override final;
+
+
+
+
+	private : 
+
+		//percetron internals
+	 	matrix<T> perceptron_weight_;
+
+		std::pair<bool,T> single_preceptron(const matrix<T>& feature , const matrix<T>& weight , T threshold  = 0 ) const;
+
+		std::pair<matrix<T> , matrix<T>> multi_class_perceptron_inference();
+
+		std::pair<matrix<T> , matrix<T>> perceptron_update(const matrix<T>& predicted_id_weight ,const matrix<T>& actual_id_weight ,const matrix<T>& feature_vec);
+		std::pair<matrix<T> , matrix<T>> mira_perceptron_update(const matrix<T>& predicted_id_weight , const matrix<T>& actual_id_weight , matrix<T>& feature_vec , double cap = MIRA_CAP);
+
+		void train(perceptron_type type = perceptron_type::simple , float percentage = 100);
+		void multi_class_perceptron_train_iter(perceptron_type type , float percentage , int num_iter = 100);
+
+
+
+};
+
+
+
+
+/*
+ * A single percetron model 
+ * Plug this model into others to obtain better results.
+ *
+ * if feauture * weight >= threshold then 1 else 0
+ *
+ * intput : the feature (row vector), the weight vector (column vector) , double threshould
+ * output : 0 or 1 representing whether the neuroing has fired or not 
+##### */
+template <typename T>
+std::pair<bool, T> perceptron<T>::single_preceptron(const matrix<T>& feature , const matrix<T>& weight , T threshold ) const
+{
+	dout << "features give to single perc " << feature ;
+
+	dout << "weight to  single perc " << weight ;
+
+	T res = feature.innerProduct(weight);
+
+	dout << "value of inner prod in single perc " << res << std::endl;
+	if(res > threshold)
+	{
+		return std::make_pair(true , res);
+	}
+	else
+	{
+		return std::make_pair(false, res);
+	}
+}
+
+
+
+/*
+ * simple perceptron update rule
+ */
+template <typename T>
+std::pair<matrix<T> , matrix<T>> perceptron<T>::perceptron_update(const matrix<T>& predicted_id_weight ,const matrix<T>& actual_id_weight ,const matrix<T>& feature_vec)
+{
+	dout << "features in perc update " << feature_vec;
+
+	dout << "weight in class predicted for the feature || perc update " << predicted_id_weight ;
+
+	dout << "weight of actual class in training set || perc update" << actual_id_weight ;
+
+	matrix<T> predicted_id_weight_result = predicted_id_weight - feature_vec;
+
+	dout << "weight obtained after updated the predicted weight by subtracting features  || prec weight update " << predicted_id_weight_result;
+
+	matrix<T> actual_id_weight_result  = actual_id_weight + feature_vec;
+
+	dout << "weight obtained after udpated the actualy wegiht by adding the feature vector || actual id result " << actual_id_weight_result; 
+
+	return std::make_pair(predicted_id_weight_result , actual_id_weight_result);	
+}	
+
+/*
+ * perceptron update with mira
+ */
+template <typename T>
+std::pair<matrix<T> , matrix<T>> perceptron<T>::mira_perceptron_update(const matrix<T>& predicted_id_weight , const matrix<T>& actual_id_weight , matrix<T>& feature_vec , double cap )
+{
+
+	T tau = (predicted_id_weight - actual_id_weight).innerProduct(feature_vec.transpose());
+
+	tau += 1;
+	tau /= 2 * feature_vec.normEuclidean();
+
+	tau = std::min(cap , tau);
+
+	matrix<T> predicted_id_weight_result = predicted_id_weight - feature_vec * tau;
+	matrix<T> actual_id_weight_result  = actual_id_weight + feature_vec * tau;
+
+	return std::make_pair(predicted_id_weight_result , actual_id_weight_result);	
+}
+
+template <typename T>
+void perceptron<T>::multi_class_perceptron_train_iter(perceptron_type type , float percentage , int num_iter)
+{
+	//Resize the weight vector to hold # classes rows and #features columns
+	// A weight vector for each of the classes 
+	// the weight vector will be used to determine how much the neuron will look at each feature
+	// Initially all the weights are 0
+	perceptron_weight_.resize(classifier_base<T>::num_classes , classifier_base<T>::num_features + 1 , 0 ); // + 1 for the biases 
+
+	perceptron_weight_(1 , classifier_base<T>::num_features + 1) = 1 ; // set the bias for the class to be 1, so the tie can be broken for arg_max, when the algorithm starts are the weight vector is filled with 0
+
+
+	dout << "WEIGHT MATRIX " <<  perceptron_weight_ << std::cout ; 
+	for(int i = 0; i < num_iter ; ++i)
+	{
+		dout << "WEIGHT MATRIX " <<  perceptron_weight_ << std::cout ; 
+		std::cout << " ITERATION : # " << i << std::endl;
+		train(type , percentage);
+	}
+}
+
+
+/*
+ * Perceptron algorithm
+ * For each output class there should be a particular weight vector that can recognize it.
+ * The number of items in the weight vector will be equal to the number of features that we choose.
+ * 
+ * So how will training work ? 
+ * 	 The weight vector for each class will be modified for each training sample.
+ *	 so a training sample has class 1
+ *	 we will update the class 0 weight vector so that it will not be activated on seeing this feature vector
+ * 	 we will update the class 1 weight vector so that it will be activated on the next occurance of a similar feature.
+ *
+ *
+ * 	 For each feature a bias has to be added to ensure that the descision can move away from the origin 
+ *	 Will the bias addition be done with when the data source does the conversion or will it added / simulated with in this function ? 
+ *		Simulated within this function. 
+ *		The bias is anyways going to be +1 in the feature set
+ *		The weight vector will determine what the magnitude of the bias will be 
+ *
+ * Before calling the function set the training set 
+ * The training set's y should be in one-shot encoding
+ *
+ */
+template <typename T>
+void dmlpack<T>::multi_class_perceptron_train(perceptron_type type , float percentage)
+{
+
+	const size_t num_train_samples = train_x_.numRows();
+	dout << train_x_.numRows() << " " ;
+
+
+	// Now go through the data set and fill in these values
+	for(size_t train_sample = 1; train_sample <= num_train_samples ; ++train_sample) // each row in the matrices
+	{
+		dout << train_sample << std::endl;
+
+		if(percentage * train_x_.numRows() < train_sample)
+		{
+			break;
+		}
+
+		// get the feature vector
+		matrix<T> feature_vec = train_x_.returnRow(train_sample);	
+
+		// Append the +1 towards its end. 
+		feature_vec.resize(1 , feature_vec.numCols() + 1);
+		feature_vec(1 , feature_vec.numCols()) = 1;
+
+		dout << "FEATURE VEC : " << feature_vec << std::endl;
+
+		// Okay two seperate ways to implement this. 
+		// Update the weight of all the classes. 
+		// Update the weight of the class with the max weight
+		// and also the class that was predicted .
+	
+		matrix<T> class_pred(1,num_classes);
+
+		dout << " CLASS PRED : " << class_pred ; 
+
+		size_t actual_class_id = 0 ; 
+
+		// first go over the y portion of the data set to find the actual class
+		// This for loop finds out what the predictied class is and also what the acutal class is
+		for(size_t class_idx = 1  ; class_idx <= num_classes ; ++class_idx)
+		{
+			dout << class_idx << " " << num_classes << std::endl;
+			// get the weight vector for a particular class
+			matrix<T> weight_vec = perceptron_weight_.returnRow(class_idx);			
+
+			dout << " weight_actual_feature " << weight_vec ;
+
+			std::pair<bool, T> pred = single_preceptron(feature_vec , weight_vec);
+		
+			dout << " single _percrption " << pred.second <<std::endl;	
+
+			class_pred(1,class_idx) = pred.second;
+
+
+			dout << weight_vec << std::endl;
+
+			bool actual = train_y_(train_sample , class_idx); 	
+
+			if(actual)
+			{
+				actual_class_id = class_idx - 1;
+			}
+			
+		}
+
+		dout << "actual pred " << actual_class_id << std::endl;
+
+		dout << "class pred " << class_pred << std::endl;	
+
+		auto predicted_class_idx = class_pred.arg_max();
+
+		dout << "class pred arg " << predicted_class_idx << std::endl;	
+
+		// update the weight vectors
+		// if the predicted class and the acutal class are not the same,
+		// then we reduce the weight vector for the predicted class 
+		// and increase the weight vector for the actual class .
+		if(predicted_class_idx != actual_class_id)
+		{
+
+			dout << "error in prediction updating the weight vectors " << std::endl;
+
+			dout << "actual perceptron weight " << perceptron_weight_ ;
+
+			// reduce the weight vector for the predicted class 
+			matrix<T> reduced_weight = perceptron_weight_.returnRow(predicted_class_idx + 1);		
+		
+			dout << "reduced weight before " << reduced_weight ;
+			
+			// increase the weight vector for the actual class .
+			matrix<T> increase_weight = perceptron_weight_.returnRow(actual_class_id + 1);		
+
+			dout << "increased weight before " << increase_weight ;
+
+			// different update rules based on choice 	
+			if(type == perceptron_type::simple)
+			{
+				auto res = perceptron_update(reduced_weight , increase_weight , feature_vec);
+				reduced_weight = res.first;
+				increase_weight = res.second;	
+			}
+			else
+			{
+				auto res = mira_perceptron_update(reduced_weight , increase_weight , feature_vec);
+				reduced_weight = res.first;
+				increase_weight = res.second;	
+			}
+
+			dout << "reduced weight after " << reduced_weight ;
+
+			dout << "increased weight afer " << increase_weight ;
+
+			perceptron_weight_.replaceRow(reduced_weight , predicted_class_idx + 1);
+			perceptron_weight_.replaceRow(increase_weight, actual_class_id + 1);
+			
+			dout << "weigth matrix after " << perceptron_weight_ << std::endl;
+
+		}	
+	}	
+}
+
+
+
+
+template <typename T>
+std::pair<matrix<T> , matrix<T>> dmlpack<T>::multi_class_perceptron_inference()
+{
+	matrix<T> res; // the matrix will be of size # test samples * num classes
+
+	size_t num_test_samples = test_x_.numRows();
+
+	// Now compute the class prediction for each test sample
+	matrix<T> prediction(num_test_samples , 1);  
+
+	// Go through each element in the features of x and from compuute the probabilites
+	for(size_t test_sample = 1; test_sample <= num_test_samples; ++test_sample) // each row in the matrices
+	{
+		// get the feature vector
+		matrix<T> feature_vec = test_x_.returnRow(test_sample);	
+
+		// Append the +1 towards its end. 
+		feature_vec.resize(1 , feature_vec.numCols() + 1);
+		feature_vec(1 , feature_vec.numCols()) = 1;
+
+		dout << " inference " << feature_vec;
+
+		matrix<T> sub_res(1 , num_classes);
+
+		// compute the similiarty between the current feature and each of the classes
+		for(int class_idx = 1 ; class_idx <= num_classes ; ++class_idx)
+		{
+			sub_res(1,class_idx)  = perceptron_weight_.returnRow(class_idx).innerProduct(feature_vec);
+		}
+		
+		dout << " result matrix " << sub_res;
+
+		
+
+		res.addRow(sub_res); // add the probabilities over the different classes 
+	
+		dout << " total result " << res ;
+		// Use softMax and select max to do prediction on what is the best class to be taken
+
+		// std::max_element + distance to find the index of with the largest probaility . 
+		// Add one since the output of distance is 0 index, while the classes are 1 indexed 
+	
+		prediction(test_sample , 1) = sub_res.arg_max();
+
+		dout << " prediction udpates " << prediction;
+
+	}
+
+	prediction_ = prediction; // keep track of the prediciton that was made to test the accuracy
+
+	return std::make_pair( res , prediction );
+}
+
+
+
+
+
+
+
+
 
 template <typename T>
 class perceptron<T>::train
@@ -1012,304 +1328,6 @@ matrix<T> dmlpack<T>::softmax(matrix<T>& prob) const // has to be applied on a c
  * RUn the tained model on the given test data and gives back the accuracyt . 
  * 	How to measure accuracy ? For now just count the number of times the prediction and the actual y matches. 
  */
-
-
-/*
- * A single percetron model 
- * Plug this model into others to obtain better results.
- *
- * if feauture * weight >= threshold then 1 else 0
- *
- * intput : the feature (row vector), the weight vector (column vector) , double threshould
- * output : 0 or 1 representing whether the neuroing has fired or not 
-##### */
-template <typename T>
-std::pair<bool, T> dmlpack<T>::single_preceptron(const matrix<T>& feature , const matrix<T>& weight , T threshold ) const
-{
-	dout << "features give to single perc " << feature ;
-
-	dout << "weight to  single perc " << weight ;
-
-	T res = feature.innerProduct(weight);
-
-	dout << "value of inner prod in single perc " << res << std::endl;
-	if(res > threshold)
-	{
-		return std::make_pair(true , res);
-	}
-	else
-	{
-		return std::make_pair(false, res);
-	}
-}
-
-
-
-/*
- * simple perceptron update rule
- */
-template <typename T>
-std::pair<matrix<T> , matrix<T>> perceptron_update(const matrix<T>& predicted_id_weight ,const matrix<T>& actual_id_weight ,const matrix<T>& feature_vec)
-{
-	dout << "features in perc update " << feature_vec;
-
-	dout << "weight in class predicted for the feature || perc update " << predicted_id_weight ;
-
-	dout << "weight of actual class in training set || perc update" << actual_id_weight ;
-
-	matrix<T> predicted_id_weight_result = predicted_id_weight - feature_vec;
-
-	dout << "weight obtained after updated the predicted weight by subtracting features  || prec weight update " << predicted_id_weight_result;
-
-	matrix<T> actual_id_weight_result  = actual_id_weight + feature_vec;
-
-	dout << "weight obtained after udpated the actualy wegiht by adding the feature vector || actual id result " << actual_id_weight_result; 
-
-	return std::make_pair(predicted_id_weight_result , actual_id_weight_result);	
-}	
-
-/*
- * perceptron update with mira
- */
-template <typename T>
-std::pair<matrix<T> , matrix<T>> mira_perceptron_update(const matrix<T>& predicted_id_weight , const matrix<T>& actual_id_weight , matrix<T>& feature_vec , double cap = MIRA_CAP)
-{
-
-	T tau = (predicted_id_weight - actual_id_weight).innerProduct(feature_vec.transpose());
-
-	tau += 1;
-	tau /= 2 * feature_vec.normEuclidean();
-
-	tau = std::min(cap , tau);
-
-	matrix<T> predicted_id_weight_result = predicted_id_weight - feature_vec * tau;
-	matrix<T> actual_id_weight_result  = actual_id_weight + feature_vec * tau;
-
-	return std::make_pair(predicted_id_weight_result , actual_id_weight_result);	
-}
-
-template <typename T>
-void dmlpack<T>::multi_class_perceptron_train_iter(perceptron_type type , float percentage , int num_iter)
-{
-	//Resize the weight vector to hold # classes rows and #features columns
-	// A weight vector for each of the classes 
-	// the weight vector will be used to determine how much the neuron will look at each feature
-	// Initially all the weights are 0
-	perceptron_weight_.resize(num_classes , num_features + 1 , 0 ); // + 1 for the biases 
-
-	perceptron_weight_(1 , num_features + 1) = 1 ; // set the bias for the class to be 1, so the tie can be broken for arg_max, when the algorithm starts are the weight vector is filled with 0
-
-
-	dout << "WEIGHT MATRIX " <<  perceptron_weight_ << std::cout ; 
-	for(int i = 0; i < num_iter ; ++i)
-	{
-		dout << "WEIGHT MATRIX " <<  perceptron_weight_ << std::cout ; 
-		std::cout << " ITERATION : # " << i << std::endl;
-		multi_class_perceptron_train(type , percentage);
-	}
-}
-
-
-/*
- * Perceptron algorithm
- * For each output class there should be a particular weight vector that can recognize it.
- * The number of items in the weight vector will be equal to the number of features that we choose.
- * 
- * So how will training work ? 
- * 	 The weight vector for each class will be modified for each training sample.
- *	 so a training sample has class 1
- *	 we will update the class 0 weight vector so that it will not be activated on seeing this feature vector
- * 	 we will update the class 1 weight vector so that it will be activated on the next occurance of a similar feature.
- *
- *
- * 	 For each feature a bias has to be added to ensure that the descision can move away from the origin 
- *	 Will the bias addition be done with when the data source does the conversion or will it added / simulated with in this function ? 
- *		Simulated within this function. 
- *		The bias is anyways going to be +1 in the feature set
- *		The weight vector will determine what the magnitude of the bias will be 
- *
- * Before calling the function set the training set 
- * The training set's y should be in one-shot encoding
- *
- */
-template <typename T>
-void dmlpack<T>::multi_class_perceptron_train(perceptron_type type , float percentage)
-{
-
-	const size_t num_train_samples = train_x_.numRows();
-	dout << train_x_.numRows() << " " ;
-
-
-	// Now go through the data set and fill in these values
-	for(size_t train_sample = 1; train_sample <= num_train_samples ; ++train_sample) // each row in the matrices
-	{
-		dout << train_sample << std::endl;
-
-		if(percentage * train_x_.numRows() < train_sample)
-		{
-			break;
-		}
-
-		// get the feature vector
-		matrix<T> feature_vec = train_x_.returnRow(train_sample);	
-
-		// Append the +1 towards its end. 
-		feature_vec.resize(1 , feature_vec.numCols() + 1);
-		feature_vec(1 , feature_vec.numCols()) = 1;
-
-		dout << "FEATURE VEC : " << feature_vec << std::endl;
-
-		// Okay two seperate ways to implement this. 
-		// Update the weight of all the classes. 
-		// Update the weight of the class with the max weight
-		// and also the class that was predicted .
-	
-		matrix<T> class_pred(1,num_classes);
-
-		dout << " CLASS PRED : " << class_pred ; 
-
-		size_t actual_class_id = 0 ; 
-
-		// first go over the y portion of the data set to find the actual class
-		// This for loop finds out what the predictied class is and also what the acutal class is
-		for(size_t class_idx = 1  ; class_idx <= num_classes ; ++class_idx)
-		{
-			dout << class_idx << " " << num_classes << std::endl;
-			// get the weight vector for a particular class
-			matrix<T> weight_vec = perceptron_weight_.returnRow(class_idx);			
-
-			dout << " weight_actual_feature " << weight_vec ;
-
-			std::pair<bool, T> pred = single_preceptron(feature_vec , weight_vec);
-		
-			dout << " single _percrption " << pred.second <<std::endl;	
-
-			class_pred(1,class_idx) = pred.second;
-
-
-			dout << weight_vec << std::endl;
-
-			bool actual = train_y_(train_sample , class_idx); 	
-
-			if(actual)
-			{
-				actual_class_id = class_idx - 1;
-			}
-			
-		}
-
-		dout << "actual pred " << actual_class_id << std::endl;
-
-		dout << "class pred " << class_pred << std::endl;	
-
-		auto predicted_class_idx = class_pred.arg_max();
-
-		dout << "class pred arg " << predicted_class_idx << std::endl;	
-
-		// update the weight vectors
-		// if the predicted class and the acutal class are not the same,
-		// then we reduce the weight vector for the predicted class 
-		// and increase the weight vector for the actual class .
-		if(predicted_class_idx != actual_class_id)
-		{
-
-			dout << "error in prediction updating the weight vectors " << std::endl;
-
-			dout << "actual perceptron weight " << perceptron_weight_ ;
-
-			// reduce the weight vector for the predicted class 
-			matrix<T> reduced_weight = perceptron_weight_.returnRow(predicted_class_idx + 1);		
-		
-			dout << "reduced weight before " << reduced_weight ;
-			
-			// increase the weight vector for the actual class .
-			matrix<T> increase_weight = perceptron_weight_.returnRow(actual_class_id + 1);		
-
-			dout << "increased weight before " << increase_weight ;
-
-			// different update rules based on choice 	
-			if(type == perceptron_type::simple)
-			{
-				auto res = perceptron_update(reduced_weight , increase_weight , feature_vec);
-				reduced_weight = res.first;
-				increase_weight = res.second;	
-			}
-			else
-			{
-				auto res = mira_perceptron_update(reduced_weight , increase_weight , feature_vec);
-				reduced_weight = res.first;
-				increase_weight = res.second;	
-			}
-
-			dout << "reduced weight after " << reduced_weight ;
-
-			dout << "increased weight afer " << increase_weight ;
-
-			perceptron_weight_.replaceRow(reduced_weight , predicted_class_idx + 1);
-			perceptron_weight_.replaceRow(increase_weight, actual_class_id + 1);
-			
-			dout << "weigth matrix after " << perceptron_weight_ << std::endl;
-
-		}	
-	}	
-}
-
-
-
-
-template <typename T>
-std::pair<matrix<T> , matrix<T>> dmlpack<T>::multi_class_perceptron_inference()
-{
-	matrix<T> res; // the matrix will be of size # test samples * num classes
-
-	size_t num_test_samples = test_x_.numRows();
-
-	// Now compute the class prediction for each test sample
-	matrix<T> prediction(num_test_samples , 1);  
-
-	// Go through each element in the features of x and from compuute the probabilites
-	for(size_t test_sample = 1; test_sample <= num_test_samples; ++test_sample) // each row in the matrices
-	{
-		// get the feature vector
-		matrix<T> feature_vec = test_x_.returnRow(test_sample);	
-
-		// Append the +1 towards its end. 
-		feature_vec.resize(1 , feature_vec.numCols() + 1);
-		feature_vec(1 , feature_vec.numCols()) = 1;
-
-		dout << " inference " << feature_vec;
-
-		matrix<T> sub_res(1 , num_classes);
-
-		// compute the similiarty between the current feature and each of the classes
-		for(int class_idx = 1 ; class_idx <= num_classes ; ++class_idx)
-		{
-			sub_res(1,class_idx)  = perceptron_weight_.returnRow(class_idx).innerProduct(feature_vec);
-		}
-		
-		dout << " result matrix " << sub_res;
-
-		
-
-		res.addRow(sub_res); // add the probabilities over the different classes 
-	
-		dout << " total result " << res ;
-		// Use softMax and select max to do prediction on what is the best class to be taken
-
-		// std::max_element + distance to find the index of with the largest probaility . 
-		// Add one since the output of distance is 0 index, while the classes are 1 indexed 
-	
-		prediction(test_sample , 1) = sub_res.arg_max();
-
-		dout << " prediction udpates " << prediction;
-
-	}
-
-	prediction_ = prediction; // keep track of the prediciton that was made to test the accuracy
-
-	return std::make_pair( res , prediction );
-}
-
 
 /*
  * Create a single layer neural network. 
