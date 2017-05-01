@@ -695,7 +695,7 @@ inline bool matrix<int>::check_sse_allignment()
 }
 
 template <>
-inline void matrix<int>::setAllZero()
+inline void matrix<int>::setAllZero() 
 {
 	__m128i zero_128_int = _mm_setzero_si128(); // 128i is int
 
@@ -725,13 +725,15 @@ inline void matrix<int>::setAllZero()
 
 	__m128i * vec_itr = vec_beg ;
 
-	// sse compute
+	// sse compute 
+	// Zero out the alligned data
 	for(; vec_itr < vec_idx_alligned_end ; ++vec_itr )
 	{
 		_mm_store_si128(vec_itr , zero_128_int);
 	}
 	
 	// non sse compute
+	// Zero out the non alligned last 4 data
 	int* ptr = reinterpret_cast<int *>(vec_itr);
 	for(std::size_t idx = 0 ; idx < (_size % 4) ; ++idx)
 	{
@@ -754,12 +756,14 @@ inline void matrix<float>::setAllZero()
 	float* vec_itr = vec_beg ;
 
 	// sse compute
+	// Zero out the alligned data
 	for(; vec_itr < vec_idx_alligned_end ; ++vec_itr )
 	{
 		_mm_store_ss(vec_itr , zero_128_float);
 	}
 	
 	// non sse compute
+	// Zero out the non alligned last 4 data
 	for(std::size_t idx = 0 ; idx < (_size % 4) ; ++idx)
 	{
 		*vec_itr = 0 ; ++vec_itr;
