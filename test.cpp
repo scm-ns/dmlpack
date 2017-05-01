@@ -310,6 +310,18 @@ TEST_CASE("testing the matrix class")
 
 	}
 
+	auto test11 = "check if new operator+ works ";
+	SECTION(test11)
+	{
+		matrix<int> K(97,97,5);
+		matrix<int> P(97,97,-5);
+		auto L = K + P;
+	 	CHECK(L(20,20) == 0);	
+	 	CHECK(L(70,80) == 0);	
+	 	CHECK(L(10,50) == 0);	
+	 	CHECK(L(90,30) == 0);	
+	}
+
 }
 /*
 
