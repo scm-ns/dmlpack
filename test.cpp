@@ -305,7 +305,7 @@ TEST_CASE("testing the matrix class")
 	SECTION(test10)
 	{
 		matrix<int> K(97,97,5);
-		std::cout << "SSE ALLIGNMENT " << K.check_sse_allignment() << "/n";
+		std::cout << "SSE ALLIGNMENT " << K.check_sse_allignment() << "\n";
 		CHECK(K.check_sse_allignment());
 
 	}
@@ -321,6 +321,53 @@ TEST_CASE("testing the matrix class")
 	 	CHECK(L(70,80) == 0);	
 	 	CHECK(L(10,50) == 0);	
 	 	CHECK(L(90,30) == 0);	
+	}
+
+
+
+	auto test12 = "check new operator+ vs old speed";
+	SECTION(test12)
+	{
+		{
+			matrix<int> K(97,97,5);
+			matrix<int> P(97,97,-5);
+			matrix<int> L;
+
+			measure_exec_time([&]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				L = K + P;
+			});
+
+			CHECK(L(20,20) == 0);	
+			CHECK(L(70,80) == 0);	
+			CHECK(L(10,50) == 0);	
+			CHECK(L(90,30) == 0);	
+
+			
+		}
+
+		{
+			matrix<int> K(97,97,5);
+			matrix<int> P(97,97,-5);
+			matrix<int> L;
+
+			measure_exec_time([&]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				L = K.add(P);
+			});
+
+			CHECK(L(20,20) == 0);	
+			CHECK(L(70,80) == 0);	
+			CHECK(L(10,50) == 0);	
+			CHECK(L(90,30) == 0);	
+
+			
+		}
+
+
+
 	}
 
 }
