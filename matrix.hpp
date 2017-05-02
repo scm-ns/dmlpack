@@ -1088,11 +1088,12 @@ matrix<T> matrix<T>::operator+(const  matrix<T> &rhs) const
 		// Rather than indexing using idices, which takes up time due to having to calculate the index again for each iter of the loop.
 		// use pointers, so that on each iter of the loop, a single +1 increment only needs to be done
 		auto rhs_ptr =  rhs.cbegin();
-		auto ptr = R.begin();
+		auto ptr = cbegin();
+		auto ret_ptr = R.begin();
 
-		for (; ptr != R.end() ; ++ptr , ++rhs_ptr)
+		for (; ret_ptr != R.end() ; ++ptr , ++rhs_ptr, ++ret_ptr)
 		{
-			*ptr = *ptr + *rhs_ptr;		
+			*ret_ptr = *ptr + *rhs_ptr;		
 		}
 
 		return R;
