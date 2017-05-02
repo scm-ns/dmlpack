@@ -1002,6 +1002,47 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const
 }
 
 
+template <>
+matrix<int>  matrix<int>::operator*(const matrix<int> & rhs) const
+{
+	matrix<int> result(_rows, rhs._cols);
+
+	if (_cols == rhs._rows)
+	{
+		for (std::size_t i = 1; i <= _rows; i++)
+		{
+			for (std::size_t j = 1; j <= rhs._cols; j++)
+			{
+				for (std::size_t k = 1; k <= _cols; k++)
+				{
+					result(i, j) += get(i, k) * rhs(k, j);
+				}
+			}
+		}
+	}
+	else
+	{
+		throw std::invalid_argument("M*M -> Rows And Col Does Not Match");
+	}
+
+	return result;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 	Multiply by scalar
 	DoesNot Modify Input Matrix
