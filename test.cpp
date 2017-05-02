@@ -328,6 +328,7 @@ TEST_CASE("testing the matrix class")
 	auto test12 = "check new operator+ vs old speed";
 	SECTION(test12)
 	{
+		std::cout << test12 << std::endl;
 		{
 			matrix<int> K(97,97,5);
 			matrix<int> P(97,97,-5);
@@ -370,6 +371,11 @@ TEST_CASE("testing the matrix class")
 
 	}
 
+	auto test13 = "check new see op+ vs old";
+	SECTION(test12)
+	{
+	
+	}
 }
 /*
 

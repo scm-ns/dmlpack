@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS= -std=c++11 
 DEBUG_FLAGS= -ggdb
-OPTIMIZE_FLAG= 
+OPTIMIZE_FLAG= -O2
 LIB_FLAGS= -I/usr/include/python2.7
 LIB= -lpython2.7
 OBJECTS= data_source.o
