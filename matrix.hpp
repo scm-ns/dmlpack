@@ -1114,28 +1114,27 @@ inline matrix<int> matrix<int>::operator+(const  matrix<int> &rhs) const
 		// Rather than indexing using idices, which takes up time due to having to calculate the index again for each iter of the loop.
 		// use pointers, so that on each iter of the loop, a single +1 increment only needs to be done
 		
-		// get the start address of rhs			
+		// get the start address of rhs	memory block
 		int* rhs_mem_ptr = const_cast<int*>(rhs._matrix.data()); // cast away const for simplicity. Guarantee to make sure rhs is not modified
-
+		// get start addr of `this` matrix memory block
 		int* mem_ptr = const_cast<int*>(_matrix.data());
 
+		// cast to __m128i* to allow looping over the data with the sizeof(__m128i) and also for loading the data. 
 		__m128i* rhs_ptr =  reinterpret_cast<__m128i*>(rhs_mem_ptr);
 		__m128i* ptr = reinterpret_cast<__m128i*>(mem_ptr);
+	
+		// pointers into R, where data will be stored	
+		__m128i* itr = reinterpret_cast<__m128i*>(R._matrix.data()); // used to loop over data
+		auto vec_end_itr = R._matrix.end(); // pointer after the last element
+	 	--vec_end_itr; // point to the last element
 
-
-		__m128i l = _mm_load_si128();
-
-
-		for (; ret_ptr != R.end() ; ++ptr , ++rhs_ptr, ++ret_ptr)
-		{
-			*ret_ptr = *ptr + *rhs_ptr;		
-		}
+		__m128i* itr_end = reinterpret_cast<__m128i*>(*vec_end_itr);
 
 		return R;
 	}
 	else
 	{
-		throw std::invalid_argument(" Not of same size ");
+		throw std::invalid_argument("MATRICES NOT OF SAME SIZE");
 	}
 }
 
