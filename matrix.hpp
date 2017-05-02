@@ -1130,6 +1130,14 @@ inline matrix<int> matrix<int>::operator+(const  matrix<int> &rhs) const
 
 		__m128i* itr_end = reinterpret_cast<__m128i*>(*vec_end_itr);
 
+		for (; itr <= itr_end  ; ++itr , ++rhs_ptr , ++ptr)
+		{
+			// load the data from buffer to variable. Due to loop 4 32 bit / 1 128 bit at a time
+			__m128i ld = _mm_load_si128(ptr); 
+			__m128i rd = _mm_load_si128(rhs_ptr);
+			_mm_store_si128(itr ,  _mm_add_epi32(ld , rd));
+		}
+
 		return R;
 	}
 	else
