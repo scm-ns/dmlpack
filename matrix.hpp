@@ -165,7 +165,7 @@ public:
 	void operator*=(const P rhs) ;
 	matrix<T> operator/(const T rhs) const;
 	matrix<T> operator*(const matrix<T> &rhs) const;
-	matrix<T> add(const  matrix<T> &rhs) const;
+	matrix<T> add(const  matrix<T> &rhs) const; // NOT FOR RELEASE
 	matrix<T> operator+(const matrix<T> &rhs) const;
 	matrix<T> operator-(const matrix<T> &rhs) const;
 	
