@@ -1105,6 +1105,33 @@ matrix<T> matrix<T>::operator+(const  matrix<T> &rhs) const
 }
 
 
+template <>
+inline matrix<int> matrix<int>::operator+(const  matrix<int> &rhs) const
+{
+	matrix<int> R(_rows, _cols);
+	if (_rows == rhs._rows && _cols == rhs._cols)
+	{
+		// Rather than indexing using idices, which takes up time due to having to calculate the index again for each iter of the loop.
+		// use pointers, so that on each iter of the loop, a single +1 increment only needs to be done
+		auto rhs_ptr =  rhs.cbegin();
+		auto ptr = cbegin();
+		auto ret_ptr = R.begin();
+
+		for (; ret_ptr != R.end() ; ++ptr , ++rhs_ptr, ++ret_ptr)
+		{
+			*ret_ptr = *ptr + *rhs_ptr;		
+		}
+
+		return R;
+	}
+	else
+	{
+		throw std::invalid_argument(" Not of same size ");
+	}
+}
+
+
+
 
 // inline required to follow the one definition rule. 
 // ODR means that a definition for a class / function should only be done once in a  compilation unit or entire program
