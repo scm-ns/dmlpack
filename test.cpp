@@ -313,13 +313,22 @@ TEST_CASE("testing the matrix class")
 	auto test11 = "check if new operator+ works ";
 	SECTION(test11)
 	{
-		matrix<int> K(97,97,5);
-		matrix<int> P(97,97,-5);
+		matrix<int> K(7,7,5);
+		matrix<int> P(7,7,-5);
+
+		std::cout << K << std::endl;	
+		std::cout << P << std::endl;	
+
 		auto L = K + P;
-	 	CHECK(L(20,20) == 0);	
-	 	CHECK(L(70,80) == 0);	
-	 	CHECK(L(10,50) == 0);	
-	 	CHECK(L(90,30) == 0);	
+	
+		std::cout << K << std::endl;	
+		std::cout << P << std::endl;	
+		std::cout << L << std::endl;
+		std::cout << K(2,2) + P(2,2) << std::endl;
+
+	 	CHECK(L(2,2) == 0);	
+	 	CHECK(L(7,7) == 0);	
+	 	CHECK(L(1,5) == 0);	
 	}
 
 }
