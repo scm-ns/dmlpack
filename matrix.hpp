@@ -1135,7 +1135,10 @@ inline matrix<int> matrix<int>::operator+(const  matrix<int> &rhs) const
 			// load the data from buffer to variable. Due to loop 4 32 bit / 1 128 bit at a time
 			__m128i ld = _mm_load_si128(ptr); 
 			__m128i rd = _mm_load_si128(rhs_ptr);
-			_mm_store_si128(itr ,  _mm_add_epi32(ld , rd));
+
+			// _mm_add_epi32 adds the bits stored in the two 128 bit registers, as 4 32 bit intergers
+			// _mm_store_si128(*p , a) stores a into 16 bit alligned mem location p
+			_mm_store_si128(itr ,  _mm_add_epi32(ld , rd)); 
 		}
 
 		return R;
