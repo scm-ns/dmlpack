@@ -972,7 +972,7 @@ bool matrix<T>::operator==(const matrix<T> & rhs) const
 
 
 /*
-if takes the current matrix , multiplies it by the matrix on the right , and returns
+it takes the current matrix , multiplies it by the matrix on the right , and returns
 a new matrix
 */
 template <class T>
@@ -1003,8 +1003,8 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const
 
 
 /*
-Multiply by scalar
-DoesNot Modify Input Matrix
+	Multiply by scalar
+	DoesNot Modify Input Matrix
 */
 template <typename T>
 template <typename P>
