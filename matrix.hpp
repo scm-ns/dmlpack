@@ -1113,9 +1113,18 @@ inline matrix<int> matrix<int>::operator+(const  matrix<int> &rhs) const
 	{
 		// Rather than indexing using idices, which takes up time due to having to calculate the index again for each iter of the loop.
 		// use pointers, so that on each iter of the loop, a single +1 increment only needs to be done
-		auto rhs_ptr =  rhs.cbegin();
-		auto ptr = cbegin();
-		auto ret_ptr = R.begin();
+		
+		// get the start address of rhs			
+		int* rhs_mem_ptr = const_cast<int*>(rhs._matrix.data()); // cast away const for simplicity. Guarantee to make sure rhs is not modified
+
+		int* mem_ptr = const_cast<int*>(_matrix.data());
+
+		__m128i* rhs_ptr =  reinterpret_cast<__m128i*>(rhs_mem_ptr);
+		__m128i* ptr = reinterpret_cast<__m128i*>(mem_ptr);
+
+
+		__m128i l = _mm_load_si128();
+
 
 		for (; ret_ptr != R.end() ; ++ptr , ++rhs_ptr, ++ret_ptr)
 		{
