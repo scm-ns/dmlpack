@@ -102,6 +102,7 @@ public:
 	inline typename std::vector<T>::const_iterator cend() const;
 	inline typename std::vector<T>::const_iterator constIterAtRowBegin(const size_t row_idx) const;
 	inline typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx);
+	inline T* ptrAtRowBegin(const size_t row_idx);
 
 
 
@@ -326,15 +327,24 @@ inline typename std::vector<T>::const_iterator matrix<T>::cend() const
 
  //Iterator at the begining of each of the rows
 template<typename T>	
-typename std::vector<T>::iterator matrix<T>::iterAtRowBegin(const size_t row_idx) 
+inline typename std::vector<T>::iterator matrix<T>::iterAtRowBegin(const size_t row_idx) 
 {
 	typename std::vector<T>::iterator it = cbegin();
 	std::advance(it , (row_idx * _cols));
 	return it;
 }
 
+
 template<typename T>	
-typename std::vector<T>::const_iterator matrix<T>::constIterAtRowBegin(const size_t row_idx) const
+inline T* matrix<T>::ptrAtRowBegin(const size_t row_idx)
+{
+	T* beg_ptr = _matrix.data();	
+	return beg_ptr 	+ (_cols * row_idx);
+}
+
+
+template<typename T>	
+inline typename std::vector<T>::const_iterator matrix<T>::constIterAtRowBegin(const size_t row_idx) const
 {
 	typename std::vector<T>::const_iterator it = cbegin();
 	std::advance(it , (row_idx * _cols));
