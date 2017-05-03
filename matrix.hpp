@@ -5,8 +5,10 @@
 	Access to rows and col normal indexed , starts from 1 , not 0
 	Maximum Number of Elements is 10^8 ie 10,000 rows and 10,000 cols ;; If higer gives std::length_error
 
-	TO DO : Write a tensor class. Which uses this as a base class and extended it 
+	Memory ordering : The memory is stored by filling up one 1 row before going to the next
+			: ROW major 
 
+	TO DO : Write a tensor class. Which uses this as a base class and extended it 
 */
 
 //System Include 
@@ -98,7 +100,7 @@ public:
 	inline typename std::vector<T>::const_iterator cbegin() const;
 	inline typename std::vector<T>::iterator end();
 	inline typename std::vector<T>::const_iterator cend() const;
-	typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx);
+	typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx) const;
 
 
 
@@ -969,14 +971,12 @@ bool matrix<T>::operator==(const matrix<T> & rhs) const
 }
 
 
-/*
-it takes the current matrix , multiplies it by the matrix on the right , and returns
-a new matrix
-*/
-template <class T>
-matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const
+
+template <>
+matrix<int>  matrix<int>::operator*(const matrix<int> & rhs) const
 {
-	matrix<T> result(_rows, rhs._cols);
+	matrix<int> result(_rows, rhs._cols);
+
 
 		// cast to __m128i* to allow looping over the data with the sizeof(__m128i) and also for loading the data. 
 		//__m128i* rhs_ptr =  reinterpret_cast<__m128i*>(rhs_mem_ptr);
@@ -1006,47 +1006,43 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const
 	// Rather than indexing using idices, which takes up time due to having to calculate the index again for each iter of the loop.
 	// use pointers, so that on each iter of the loop, a single +1 increment only needs to be done
 	
-	// get the start address of rhs	memory block
-	int* rhs_mem_ptr = const_cast<int*>(rhs._matrix.data()); // cast away const for simplicity. Guarantee to make sure rhs is not modified
-	// get start addr of `this` matrix memory block
-	int* mem_ptr = const_cast<int*>(_matrix.data());
-	int* ptr = result._matrix.data();
+	std::vector<int>::iterator res__along_row_ptr = result.begin();
 
-	// get end address of rhs mem block
-	auto rhs_mat_end_itr = rhs.cend();	
-	--rhs_mat_end_itr;	
-	int* rhs_mem_ptr_end = const_cast<int*>(rhs_mat_end_itr);
+	for (std::size_t i = 1; i <= _rows; i++)
+	{
+		std::vector<int>::iterator curr_row_iter = iterAtRowBegin(i);
 
-	auto mat_end_itr = cend();	
-	--mat_end_itr;	
-	int* mem_ptr_end = const_cast<int*>(mat_end_itr);
-
-
-
-
-
-		for (std::size_t i = 1; i <= _rows; i++)
+		for (std::size_t j = 1; j <= rhs._cols; j++)
 		{
-			for (std::size_t j = 1; j <= rhs._cols; j++)
+			for (std::size_t k = 1; k <= _cols; k++)
 			{
-				for (std::size_t k = 1; k <= _cols; k++)
-				{
-					result(i, j) += get(i, k) * rhs(k, j);
-					*ptr = 
-				}
-				++ptr;
+				// increment of k leads to increment of pointers into the two memory blocks in different ways
+				
+				std::vector<int>::iterator rhs_row_begin_iter = rhs.iterAtRowBegin(k);
+				// get the jth item in the row of rhs	
+				rhs_row_begin_iter += j;		
+
+				//result(i, j) += get(i, k) * rhs(k, j);
+				*res__along_row_ptr += *curr_row_iter  + * rhs_row_begin_iter;
+				++curr_row_iter; // move along the current row k times
 			}
+			++res__along_row_ptr; // fills up the first column before moving to the next
 		}
+	}
 
 	return result;
 }
 
 
-template <>
-matrix<int>  matrix<int>::operator*(const matrix<int> & rhs) const
-{
-	matrix<int> result(_rows, rhs._cols);
 
+/*
+it takes the current matrix , multiplies it by the matrix on the right , and returns
+a new matrix
+*/
+template <class T>
+matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const
+{
+	matrix<T> result(_rows, rhs._cols);
 	if (_cols == rhs._rows)
 	{
 		for (std::size_t i = 1; i <= _rows; i++)
