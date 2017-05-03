@@ -403,6 +403,20 @@ TEST_CASE("testing the matrix class")
 
 			
 		}
+		
+		{
+			matrix<int> K(97,97,5);
+			matrix<int> P(97,97,-5);
+			matrix<int> L;
+
+			measure_exec_time([&]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				L = K.mul_iter(P);
+			});
+
+			
+		}
 
 
 		{
@@ -432,6 +446,19 @@ TEST_CASE("testing the matrix class")
 			
 		}
 
+		{
+			matrix<int> K(9,9,5);
+			matrix<int> P(9,9,-5);
+			matrix<int> L;
+
+			measure_exec_time([&]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				L = K.mul_iter(P);
+			});
+
+			
+		}
 
 
 		{
@@ -460,6 +487,20 @@ TEST_CASE("testing the matrix class")
 
 			
 		}
+		
+		{
+			matrix<float> K(97,97,5);
+			matrix<float> P(97,97,-5);
+			matrix<float> L;
+
+			measure_exec_time([&]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				L = K.mul_iter(P);
+			});
+
+			
+		}
 
 
 		{
@@ -469,7 +510,7 @@ TEST_CASE("testing the matrix class")
 
 			measure_exec_time([&]() ->void 
 			{
-				std::cout << __LINE__ << " : " ;
+			std::cout << __LINE__ << " : " ;
 				L = K * P;
 			});
 			
@@ -488,6 +529,21 @@ TEST_CASE("testing the matrix class")
 
 			
 		}
+
+		{
+			matrix<float> K(9,9,5);
+			matrix<float> P(9,9,-5);
+			matrix<float> L;
+
+			measure_exec_time([&]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				L = K.mul_iter(P);
+			});
+
+			
+		}
+
 
 
 	}
