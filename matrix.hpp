@@ -1079,12 +1079,11 @@ matrix<T>  matrix<T>::mul(const matrix<T> & rhs) const
 template <class T>
 matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const // NOT FOR RELEASE
 {
+	if(_cols != rhs._rows) throw std::invalid_argument("M*M -> Rows And Col Does Not Match");
 
 	matrix<T> result(_rows, rhs._cols);
 
-	if(_cols != rhs._rows) throw std::invalid_argument("M*M -> Rows And Col Does Not Match");
-
-	// Rather than indexing using idices, which takes up time due to having to calculate the index again for each iter of the loop.
+	// Rather than indexing using indices, which takes up time due to having to calculate the index again for each iter of the loop.
 	// use pointers, so that on each iter of the loop, a single +1 increment only needs to be done
 	
 	auto res__along_row_ptr = result.begin();
@@ -1100,13 +1099,10 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const // NOT FOR RELEASE
 			for (k = 1; k <= _cols; k++)
 			{
 				// increment of k leads to increment of pointers into the two memory blocks in different ways
-				
-				rhs_row_begin_iter = rhs.constIterAtRowBegin(k);
 				// get the jth item in the row of rhs	
-				rhs_row_begin_iter += j;		
 
 				//result(i, j) += get(i, k) * rhs(k, j);
-				*res__along_row_ptr += (*curr_row_iter)  * (*rhs_row_begin_iter);
+				*res__along_row_ptr += (*curr_row_iter)  * (* (rhs.constIterAtRowBegin(k) + j) ); 
 				++curr_row_iter; // move along the current row k times
 			}
 			++res__along_row_ptr; // fills up the first column before moving to the next
