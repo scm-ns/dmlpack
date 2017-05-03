@@ -1090,13 +1090,14 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const // NOT FOR RELEASE
 	auto res__along_row_ptr = result.begin();
 	typename std::vector<T>::const_iterator curr_row_iter;
 	typename std::vector<T>::const_iterator rhs_row_begin_iter ;
-	for (std::size_t i = 1; i <= _rows; i++)
+	std::size_t i = 0 , j = 0 , k = 0;
+	for (i = 1; i <= _rows; i++)
 	{
 		curr_row_iter = constIterAtRowBegin(i);
 
-		for (std::size_t j = 1; j <= rhs._cols; j++)
+		for (j = 1; j <= rhs._cols; j++)
 		{
-			for (std::size_t k = 1; k <= _cols; k++)
+			for (k = 1; k <= _cols; k++)
 			{
 				// increment of k leads to increment of pointers into the two memory blocks in different ways
 				
