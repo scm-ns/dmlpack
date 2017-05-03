@@ -1087,10 +1087,11 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const // NOT FOR RELEASE
 	// use pointers, so that on each iter of the loop, a single +1 increment only needs to be done
 	
 	auto res__along_row_ptr = result.begin();
-
+	typename std::vector<T>::const_iterator curr_row_iter;
+	typename std::vector<T>::const_iterator rhs_row_begin_iter ;
 	for (std::size_t i = 1; i <= _rows; i++)
 	{
-		auto curr_row_iter = constIterAtRowBegin(i);
+		curr_row_iter = constIterAtRowBegin(i);
 
 		for (std::size_t j = 1; j <= rhs._cols; j++)
 		{
@@ -1098,12 +1099,12 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const // NOT FOR RELEASE
 			{
 				// increment of k leads to increment of pointers into the two memory blocks in different ways
 				
-				auto rhs_row_begin_iter = rhs.constIterAtRowBegin(k);
+				rhs_row_begin_iter = rhs.constIterAtRowBegin(k);
 				// get the jth item in the row of rhs	
 				rhs_row_begin_iter += j;		
 
 				//result(i, j) += get(i, k) * rhs(k, j);
-				*res__along_row_ptr += *curr_row_iter  + * rhs_row_begin_iter;
+				*res__along_row_ptr += (*curr_row_iter)  * (*rhs_row_begin_iter);
 				++curr_row_iter; // move along the current row k times
 			}
 			++res__along_row_ptr; // fills up the first column before moving to the next
