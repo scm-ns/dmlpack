@@ -42,7 +42,6 @@
 // Is this required ? new and new[] is supposed to give alligned memory blocks
 //
 //
-//
 template <typename T, std::size_t ALIGN = 16 , std::size_t BLOCK = 8>
 class aligned_vec_alloc : public std::allocator<T>
 {
@@ -337,7 +336,6 @@ inline void matrix<T>::insert(size_t i, size_t j, T aVaule)
 }
 
 // just returns the value.
-// mutating
 template<typename T>	
 inline T matrix<T>::get(size_t i, size_t j) const
 { 
@@ -980,8 +978,53 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const
 {
 	matrix<T> result(_rows, rhs._cols);
 
-	if (_cols == rhs._rows)
-	{
+		// cast to __m128i* to allow looping over the data with the sizeof(__m128i) and also for loading the data. 
+		//__m128i* rhs_ptr =  reinterpret_cast<__m128i*>(rhs_mem_ptr);
+		//__m128i* ptr = reinterpret_cast<__m128i*>(mem_ptr);
+/*	
+		// pointers into R, where data will be stored	
+		__m128i* itr = reinterpret_cast<__m128i*>(R._matrix.data()); // used to loop over data
+		auto vec_end_itr = R._matrix.end(); // pointer after the last element
+	 	--vec_end_itr; // point to the last element
+
+		__m128i* itr_end = reinterpret_cast<__m128i*>(*vec_end_itr);
+
+		for (; itr <= itr_end  ; ++itr , ++rhs_ptr , ++ptr)
+		{
+			// load the data from buffer to variable. Due to loop 4 32 bit / 1 128 bit at a time
+			__m128i ld = _mm_load_si128(ptr); 
+			__m128i rd = _mm_load_si128(rhs_ptr);
+
+			// _mm_add_epi32 adds the bits stored in the two 128 bit registers, as 4 32 bit intergers
+			// _mm_store_si128(*p , a) stores a into 16 bit alligned mem location p
+			_mm_store_si128(itr ,  _mm_add_epi32(ld , rd)); 
+		}
+*/
+
+	if(_cols != rhs._rows) throw std::invalid_argument("M*M -> Rows And Col Does Not Match");
+
+	// Rather than indexing using idices, which takes up time due to having to calculate the index again for each iter of the loop.
+	// use pointers, so that on each iter of the loop, a single +1 increment only needs to be done
+	
+	// get the start address of rhs	memory block
+	int* rhs_mem_ptr = const_cast<int*>(rhs._matrix.data()); // cast away const for simplicity. Guarantee to make sure rhs is not modified
+	// get start addr of `this` matrix memory block
+	int* mem_ptr = const_cast<int*>(_matrix.data());
+	int* ptr = result._matrix.data();
+
+	// get end address of rhs mem block
+	auto rhs_mat_end_itr = rhs.cend();	
+	--rhs_mat_end_itr;	
+	int* rhs_mem_ptr_end = const_cast<int*>(rhs_mat_end_itr);
+
+	auto mat_end_itr = cend();	
+	--mat_end_itr;	
+	int* mem_ptr_end = const_cast<int*>(mat_end_itr);
+
+
+
+
+
 		for (std::size_t i = 1; i <= _rows; i++)
 		{
 			for (std::size_t j = 1; j <= rhs._cols; j++)
@@ -989,14 +1032,11 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const
 				for (std::size_t k = 1; k <= _cols; k++)
 				{
 					result(i, j) += get(i, k) * rhs(k, j);
+					*ptr = 
 				}
+				++ptr;
 			}
 		}
-	}
-	else
-	{
-		throw std::invalid_argument("M*M -> Rows And Col Does Not Match");
-	}
 
 	return result;
 }
