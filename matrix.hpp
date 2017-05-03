@@ -982,9 +982,9 @@ bool matrix<T>::operator==(const matrix<T> & rhs) const
 }
 
 
-/*
+
 template <>
-matrix<int>  matrix<int>::operator*(const matrix<int> & rhs) const
+inline matrix<int>  matrix<int>::operator*(const matrix<int> & rhs) const
 {
 	matrix<int> result(_rows, rhs._cols);
 
@@ -992,6 +992,8 @@ matrix<int>  matrix<int>::operator*(const matrix<int> & rhs) const
 		// cast to __m128i* to allow looping over the data with the sizeof(__m128i) and also for loading the data. 
 		//__m128i* rhs_ptr =  reinterpret_cast<__m128i*>(rhs_mem_ptr);
 		//__m128i* ptr = reinterpret_cast<__m128i*>(mem_ptr);
+/*	
+		// pointers into R, where data will be stored	
 		__m128i* itr = reinterpret_cast<__m128i*>(R._matrix.data()); // used to loop over data
 		auto vec_end_itr = R._matrix.end(); // pointer after the last element
 	 	--vec_end_itr; // point to the last element
@@ -1008,6 +1010,7 @@ matrix<int>  matrix<int>::operator*(const matrix<int> & rhs) const
 			// _mm_store_si128(*p , a) stores a into 16 bit alligned mem location p
 			_mm_store_si128(itr ,  _mm_add_epi32(ld , rd)); 
 		}
+*/
 
 	if(_cols != rhs._rows) throw std::invalid_argument("M*M -> Rows And Col Does Not Match");
 
@@ -1041,7 +1044,7 @@ matrix<int>  matrix<int>::operator*(const matrix<int> & rhs) const
 	return result;
 }
 
-*/
+
 
 /*
 it takes the current matrix , multiplies it by the matrix on the right , and returns
