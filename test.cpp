@@ -387,12 +387,6 @@ TEST_CASE("testing the matrix class")
 				std::cout << __LINE__ << " : " ;
 				L = K * P;
 			});
-
-			CHECK(L(20,20) == 0);	
-			CHECK(L(70,80) == 0);	
-			CHECK(L(10,50) == 0);	
-			CHECK(L(90,30) == 0);	
-
 			
 		}
 
@@ -406,11 +400,6 @@ TEST_CASE("testing the matrix class")
 				std::cout << __LINE__ << " : " ;
 				L = K.mul(P);
 			});
-
-			CHECK(L(20,20) == 0);	
-			CHECK(L(70,80) == 0);	
-			CHECK(L(10,50) == 0);	
-			CHECK(L(90,30) == 0);	
 
 			
 		}
