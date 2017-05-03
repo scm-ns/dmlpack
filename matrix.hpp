@@ -102,7 +102,7 @@ public:
 	inline typename std::vector<T>::const_iterator cend() const;
 	inline typename std::vector<T>::const_iterator constIterAtRowBegin(const size_t row_idx) const;
 	inline typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx);
-	inline T* ptrAtRowBegin(const size_t row_idx);
+	inline T* ptrAtRowBegin(const size_t row_idx) const;
 
 
 
@@ -336,7 +336,7 @@ inline typename std::vector<T>::iterator matrix<T>::iterAtRowBegin(const size_t 
 
 
 template<typename T>	
-inline T* matrix<T>::ptrAtRowBegin(const size_t row_idx)
+inline T* matrix<T>::ptrAtRowBegin(const size_t row_idx) const // the const condition is not enforced. A contract that the user must follow
 {
 	T* beg_ptr = _matrix.data();	
 	return beg_ptr 	+ (_cols * row_idx);
@@ -1134,7 +1134,7 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const // NOT FOR RELEASE
 	// Rather than indexing using indices, which takes up time due to having to calculate the index again for each iter of the loop.
 	// use pointers, so that on each iter of the loop, a single +1 increment only needs to be done
 	
-	T* res__along_row_ptr = result.data();
+	T* res__along_row_ptr = result._matix.data();
 	T* curr_row_iter;
 	T* rhs_row_begin_iter ;
 	std::size_t i = 0 , j = 0 , k = 0;
