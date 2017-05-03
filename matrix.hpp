@@ -1047,11 +1047,11 @@ inline matrix<int>  matrix<int>::operator*(const matrix<int> & rhs) const
 
 
 /*
-it takes the current matrix , multiplies it by the matrix on the right , and returns
-a new matrix
+	it takes the current matrix , multiplies it by the matrix on the right , and returns
+	a new matrix
 */
 template <class T>
-matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const
+matrix<T>  matrix<T>::mul(const matrix<T> & rhs) const
 {
 	matrix<T> result(_rows, rhs._cols);
 	if (_cols == rhs._rows)
@@ -1076,7 +1076,7 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const
 }
 
 template <class T>
-matrix<T>  matrix<T>::mul(const matrix<T> & rhs) const // NOT FOR RELEASE
+matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const // NOT FOR RELEASE
 {
 
 	matrix<T> result(_rows, rhs._cols);
