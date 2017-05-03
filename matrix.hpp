@@ -102,7 +102,7 @@ public:
 	inline typename std::vector<T>::const_iterator cend() const;
 	inline typename std::vector<T>::const_iterator constIterAtRowBegin(const size_t row_idx) const;
 	inline typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx);
-	inline T* ptrAtRowBegin(const size_t row_idx) const;
+	inline const T* ptrAtRowBegin(const size_t row_idx) const;
 
 
 
@@ -336,9 +336,9 @@ inline typename std::vector<T>::iterator matrix<T>::iterAtRowBegin(const size_t 
 
 
 template<typename T>	
-inline T* matrix<T>::ptrAtRowBegin(const size_t row_idx) const // the const condition is not enforced. A contract that the user must follow
+inline const T* matrix<T>::ptrAtRowBegin(const size_t row_idx) const 
 {
-	T* beg_ptr = _matrix.data();	
+	const T* beg_ptr = _matrix.data();	
 	return beg_ptr 	+ (_cols * row_idx);
 }
 
