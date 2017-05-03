@@ -329,6 +329,7 @@ TEST_CASE("testing the matrix class")
 	SECTION(test12)
 	{
 		std::cout << test12 << std::endl;
+
 		{
 			matrix<int> K(97,97,5);
 			matrix<int> P(97,97,-5);
@@ -372,9 +373,48 @@ TEST_CASE("testing the matrix class")
 	}
 
 	auto test13 = "check new see op+ vs old";
-	SECTION(test12)
+	SECTION(test13)
 	{
-	
+		std::cout << test13 << std::endl;
+
+		{
+			matrix<int> K(97,97,5);
+			matrix<int> P(97,97,-5);
+			matrix<int> L;
+
+			measure_exec_time([&]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				L = K * P;
+			});
+
+			CHECK(L(20,20) == 0);	
+			CHECK(L(70,80) == 0);	
+			CHECK(L(10,50) == 0);	
+			CHECK(L(90,30) == 0);	
+
+			
+		}
+
+		{
+			matrix<int> K(97,97,5);
+			matrix<int> P(97,97,-5);
+			matrix<int> L;
+
+			measure_exec_time([&]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				L = K.mul(P);
+			});
+
+			CHECK(L(20,20) == 0);	
+			CHECK(L(70,80) == 0);	
+			CHECK(L(10,50) == 0);	
+			CHECK(L(90,30) == 0);	
+
+			
+		}
+
 	}
 }
 /*
