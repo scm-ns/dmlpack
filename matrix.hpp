@@ -993,7 +993,7 @@ bool matrix<T>::operator==(const matrix<T> & rhs) const
 }
 
 
-
+/*
 template <>
 inline matrix<int>  matrix<int>::operator*(const matrix<int> & rhs) const
 {
@@ -1003,7 +1003,6 @@ inline matrix<int>  matrix<int>::operator*(const matrix<int> & rhs) const
 		// cast to __m128i* to allow looping over the data with the sizeof(__m128i) and also for loading the data. 
 		//__m128i* rhs_ptr =  reinterpret_cast<__m128i*>(rhs_mem_ptr);
 		//__m128i* ptr = reinterpret_cast<__m128i*>(mem_ptr);
-/*	
 		// pointers into R, where data will be stored	
 		__m128i* itr = reinterpret_cast<__m128i*>(R._matrix.data()); // used to loop over data
 		auto vec_end_itr = R._matrix.end(); // pointer after the last element
@@ -1021,7 +1020,6 @@ inline matrix<int>  matrix<int>::operator*(const matrix<int> & rhs) const
 			// _mm_store_si128(*p , a) stores a into 16 bit alligned mem location p
 			_mm_store_si128(itr ,  _mm_add_epi32(ld , rd)); 
 		}
-*/
 
 	if(_cols != rhs._rows) throw std::invalid_argument("M*M -> Rows And Col Does Not Match");
 
@@ -1054,7 +1052,7 @@ inline matrix<int>  matrix<int>::operator*(const matrix<int> & rhs) const
 
 	return result;
 }
-
+*/
 
 
 /*
@@ -1088,6 +1086,7 @@ matrix<T>  matrix<T>::mul(const matrix<T> & rhs) const
 
 // Currently mul is faster than op* by about 10 - 20% for large matrices ( 100 * 100), but op* is faster for smaller matrices (10 * 10)
 // The slow down might be due to using the iterators instead of raw pointers.
+// std advance being used in the iterator calculation is the prime suspect (iter at row begin)
 template <class T>
 matrix<T>  matrix<T>::mul_iter(const matrix<T> & rhs) const // NOT FOR RELEASE
 {
@@ -1135,13 +1134,13 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const // NOT FOR RELEASE
 	// Rather than indexing using indices, which takes up time due to having to calculate the index again for each iter of the loop.
 	// use pointers, so that on each iter of the loop, a single +1 increment only needs to be done
 	
-	auto res__along_row_ptr = result.begin();
-	typename std::vector<T>::const_iterator curr_row_iter;
-	typename std::vector<T>::const_iterator rhs_row_begin_iter ;
+	T* res__along_row_ptr = result.data();
+	T* curr_row_iter;
+	T* rhs_row_begin_iter ;
 	std::size_t i = 0 , j = 0 , k = 0;
 	for (i = 1; i <= _rows; i++)
 	{
-		curr_row_iter = constIterAtRowBegin(i);
+		curr_row_iter = ptrAtRowBegin(i);
 
 		for (j = 1; j <= rhs._cols; j++)
 		{
@@ -1151,7 +1150,7 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const // NOT FOR RELEASE
 				// get the jth item in the row of rhs	
 
 				//result(i, j) += get(i, k) * rhs(k, j);
-				*res__along_row_ptr += (*curr_row_iter)  * (* (rhs.constIterAtRowBegin(k) + j) ); 
+				*res__along_row_ptr += (*curr_row_iter)  * (* (rhs.ptrAtRowBegin(k) + j) ); 
 				++curr_row_iter; // move along the current row k times
 			}
 			++res__along_row_ptr; // fills up the first column before moving to the next
