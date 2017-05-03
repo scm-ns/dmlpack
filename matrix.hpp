@@ -1064,6 +1064,33 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const
 	return result;
 }
 
+template <class T>
+matrix<T>  matrix<T>::mul(const matrix<T> & rhs) const // REMOVE 
+{
+	matrix<T> result(_rows, rhs._cols);
+	if (_cols == rhs._rows)
+	{
+		for (std::size_t i = 1; i <= _rows; i++)
+		{
+			for (std::size_t j = 1; j <= rhs._cols; j++)
+			{
+				for (std::size_t k = 1; k <= _cols; k++)
+				{
+					result(i, j) += get(i, k) * rhs(k, j);
+				}
+			}
+		}
+	}
+	else
+	{
+		throw std::invalid_argument("M*M -> Rows And Col Does Not Match");
+	}
+
+	return result;
+}
+
+
+
 
 
 
@@ -1135,7 +1162,7 @@ matrix<T> matrix<T>::operator/(const T rhs) const
 
 
 template <class T>
-matrix<T> matrix<T>::add(const  matrix<T> &rhs) const
+matrix<T> matrix<T>::add(const  matrix<T> &rhs) const // NOT FOR RELEASE
 {
 	matrix<T> R(_rows, _cols);
 	if (_rows == rhs._rows && _cols == rhs._cols)
