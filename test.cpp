@@ -434,6 +434,61 @@ TEST_CASE("testing the matrix class")
 
 
 
+		{
+			matrix<float> K(97,97,5);
+			matrix<float> P(97,97,-5);
+			matrix<float> L;
+
+			measure_exec_time([&]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				L = K * P;
+			});
+			
+		}
+
+		{
+			matrix<float> K(97,97,5);
+			matrix<float> P(97,97,-5);
+			matrix<float> L;
+
+			measure_exec_time([&]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				L = K.mul(P);
+			});
+
+			
+		}
+
+
+		{
+			matrix<float> K(9,9,5);
+			matrix<float> P(9,9,-5);
+			matrix<float> L;
+
+			measure_exec_time([&]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				L = K * P;
+			});
+			
+		}
+
+		{
+			matrix<float> K(9,9,5);
+			matrix<float> P(9,9,-5);
+			matrix<float> L;
+
+			measure_exec_time([&]() ->void 
+			{
+				std::cout << __LINE__ << " : " ;
+				L = K.mul(P);
+			});
+
+			
+		}
+
 
 	}
 }
