@@ -1075,7 +1075,7 @@ matrix<T>  matrix<T>::mul(const matrix<T> & rhs) const
 	return result;
 }
 
-// Currently mul is faster than op* by about 10 - 20%
+// Currently mul is faster than op* by about 10 - 20% for large matrices ( 100 * 100), but op* is faster for smaller matrices (10 * 10)
 template <class T>
 matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const // NOT FOR RELEASE
 {
