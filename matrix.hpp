@@ -167,6 +167,7 @@ public:
 	void operator*=(const P rhs) ;
 	matrix<T> operator/(const T rhs) const;
 	matrix<T> mul(const matrix<T> & rhs) const; // NOT FOR RELEASE
+	matrix<T> mul_iter(const matrix<T> & rhs) const; // NOT FOR RELEASE
 	matrix<T> operator*(const matrix<T> &rhs) const;
 	matrix<T> add(const  matrix<T> &rhs) const; // NOT FOR RELEASE
 	matrix<T> operator+(const matrix<T> &rhs) const;
@@ -1076,6 +1077,44 @@ matrix<T>  matrix<T>::mul(const matrix<T> & rhs) const
 }
 
 // Currently mul is faster than op* by about 10 - 20% for large matrices ( 100 * 100), but op* is faster for smaller matrices (10 * 10)
+// The slow down might be due to using the iterators instead of raw pointers.
+template <class T>
+matrix<T>  matrix<T>::mul_iter(const matrix<T> & rhs) const // NOT FOR RELEASE
+{
+	if(_cols != rhs._rows) throw std::invalid_argument("M*M -> Rows And Col Does Not Match");
+
+	matrix<T> result(_rows, rhs._cols);
+
+	// Rather than indexing using indices, which takes up time due to having to calculate the index again for each iter of the loop.
+	// use pointers, so that on each iter of the loop, a single +1 increment only needs to be done
+	
+	auto res__along_row_ptr = result.begin();
+	typename std::vector<T>::const_iterator curr_row_iter;
+	typename std::vector<T>::const_iterator rhs_row_begin_iter ;
+	std::size_t i = 0 , j = 0 , k = 0;
+	for (i = 1; i <= _rows; i++)
+	{
+		curr_row_iter = constIterAtRowBegin(i);
+
+		for (j = 1; j <= rhs._cols; j++)
+		{
+			for (k = 1; k <= _cols; k++)
+			{
+				// increment of k leads to increment of pointers into the two memory blocks in different ways
+				// get the jth item in the row of rhs	
+
+				//result(i, j) += get(i, k) * rhs(k, j);
+				*res__along_row_ptr += (*curr_row_iter)  * (* (rhs.constIterAtRowBegin(k) + j) ); 
+				++curr_row_iter; // move along the current row k times
+			}
+			++res__along_row_ptr; // fills up the first column before moving to the next
+		}
+	}
+
+	return result;
+}
+
+
 template <class T>
 matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const // NOT FOR RELEASE
 {
