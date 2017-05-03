@@ -100,7 +100,8 @@ public:
 	inline typename std::vector<T>::const_iterator cbegin() const;
 	inline typename std::vector<T>::iterator end();
 	inline typename std::vector<T>::const_iterator cend() const;
-	typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx) const;
+	typename std::vector<T>::const_iterator constIterAtRowBegin(const size_t row_idx) const;
+	typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx);
 
 
 
@@ -324,12 +325,21 @@ inline typename std::vector<T>::const_iterator matrix<T>::cend() const
 
  //Iterator at the begining of each of the rows
 template<typename T>	
-typename std::vector<T>::iterator matrix<T>::iterAtRowBegin(const size_t row_idx) const
+typename std::vector<T>::iterator matrix<T>::iterAtRowBegin(const size_t row_idx) 
 {
-	typename std::vector<T>::iterator it = begin();
+	typename std::vector<T>::iterator it = cbegin();
 	std::advance(it , (row_idx * _cols));
 	return it;
 }
+
+template<typename T>	
+typename std::vector<T>::const_iterator matrix<T>::constIterAtRowBegin(const size_t row_idx) const
+{
+	typename std::vector<T>::const_iterator it = cbegin();
+	std::advance(it , (row_idx * _cols));
+	return it;
+}
+
 
 // insert value in a particular position in the vector
 template<typename T>	
@@ -1011,7 +1021,7 @@ matrix<int>  matrix<int>::operator*(const matrix<int> & rhs) const
 
 	for (std::size_t i = 1; i <= _rows; i++)
 	{
-		std::vector<int>::iterator curr_row_iter = iterAtRowBegin(i);
+		std::vector<int>::const_iterator curr_row_iter = constIterAtRowBegin(i);
 
 		for (std::size_t j = 1; j <= rhs._cols; j++)
 		{
@@ -1019,7 +1029,7 @@ matrix<int>  matrix<int>::operator*(const matrix<int> & rhs) const
 			{
 				// increment of k leads to increment of pointers into the two memory blocks in different ways
 				
-				std::vector<int>::iterator rhs_row_begin_iter = rhs.iterAtRowBegin(k);
+				std::vector<int>::const_iterator rhs_row_begin_iter = rhs.constIterAtRowBegin(k);
 				// get the jth item in the row of rhs	
 				rhs_row_begin_iter += j;		
 
@@ -1080,7 +1090,7 @@ matrix<T>  matrix<T>::mul(const matrix<T> & rhs) const // NOT FOR RELEASE
 
 	for (std::size_t i = 1; i <= _rows; i++)
 	{
-		auto curr_row_iter = iterAtRowBegin(i);
+		auto curr_row_iter = constIterAtRowBegin(i);
 
 		for (std::size_t j = 1; j <= rhs._cols; j++)
 		{
@@ -1088,7 +1098,7 @@ matrix<T>  matrix<T>::mul(const matrix<T> & rhs) const // NOT FOR RELEASE
 			{
 				// increment of k leads to increment of pointers into the two memory blocks in different ways
 				
-				auto rhs_row_begin_iter = rhs.iterAtRowBegin(k);
+				auto rhs_row_begin_iter = rhs.constIterAtRowBegin(k);
 				// get the jth item in the row of rhs	
 				rhs_row_begin_iter += j;		
 
