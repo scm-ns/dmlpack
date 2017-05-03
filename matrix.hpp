@@ -165,6 +165,7 @@ public:
 	template <class P>
 	void operator*=(const P rhs) ;
 	matrix<T> operator/(const T rhs) const;
+	matrix<T> mul(const matrix<T> & rhs) const; // NOT FOR RELEASE
 	matrix<T> operator*(const matrix<T> &rhs) const;
 	matrix<T> add(const  matrix<T> &rhs) const; // NOT FOR RELEASE
 	matrix<T> operator+(const matrix<T> &rhs) const;
@@ -323,7 +324,7 @@ inline typename std::vector<T>::const_iterator matrix<T>::cend() const
 
  //Iterator at the begining of each of the rows
 template<typename T>	
-typename std::vector<T>::iterator matrix<T>::iterAtRowBegin(const size_t row_idx)
+typename std::vector<T>::iterator matrix<T>::iterAtRowBegin(const size_t row_idx) const
 {
 	typename std::vector<T>::iterator it = begin();
 	std::advance(it , (row_idx * _cols));
@@ -1065,7 +1066,7 @@ matrix<T>  matrix<T>::operator*(const matrix<T> & rhs) const
 }
 
 template <class T>
-matrix<T>  matrix<T>::mul(const matrix<T> & rhs) const // REMOVE 
+matrix<T>  matrix<T>::mul(const matrix<T> & rhs) const // NOT FOR RELEASE
 {
 	matrix<T> result(_rows, rhs._cols);
 	if (_cols == rhs._rows)
