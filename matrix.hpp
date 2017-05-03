@@ -100,8 +100,8 @@ public:
 	inline typename std::vector<T>::const_iterator cbegin() const;
 	inline typename std::vector<T>::iterator end();
 	inline typename std::vector<T>::const_iterator cend() const;
-	typename std::vector<T>::const_iterator constIterAtRowBegin(const size_t row_idx) const;
-	typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx);
+	inline typename std::vector<T>::const_iterator constIterAtRowBegin(const size_t row_idx) const;
+	inline typename std::vector<T>::iterator iterAtRowBegin(const size_t row_idx);
 
 
 
