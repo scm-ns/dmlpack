@@ -26,6 +26,8 @@ void measure_exec_time(std::function<void(void)> lam)
 
 TEST_CASE("testing the matrix class")
 {
+	using namespace matrix_op;
+
 	auto test1 =  "Create matrix ";
 	SECTION(test1)
 	{
@@ -527,7 +529,6 @@ TEST_CASE("testing the matrix class")
 				L = K.mul(P);
 			});
 
-			
 		}
 
 		{
@@ -547,7 +548,26 @@ TEST_CASE("testing the matrix class")
 
 
 	}
+
+
 }
+
+
+TEST_CASE("testing the matrix_op namepsace ")
+{
+
+	auto test1 = "check new namepsace ";
+	SECTION(test1)
+	{
+		std::cout << test1 << std::endl;
+		matrix_op::matrix<double> mat = matrix_op::linspace_row<double>(0 , 5 , 1);
+		std::cout << mat << std::endl;
+
+	}
+
+}
+
+
 /*
 
 
