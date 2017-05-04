@@ -115,7 +115,6 @@ public:
 	void symetricRandFill(T start = 0, T end = 1000); 
 
 
-
 	void resizeLinSpaceRow(T start , T end,T interval);
 	void resizeLinSpaceCol(T start , T end,T interval);
 
@@ -1604,6 +1603,34 @@ T matrix<T>::normEuclidean()
 	T innerProd = selfInnerProduct();
 	return std::sqrt(innerProd);
 }
+
+namespace matirx_op
+{
+
+	template<class T>
+	class matrix;
+
+
+	//Returns a rowVector with numbers begining at start , ending at end with interval interval ; 
+	//Inclusive Inclusive range 
+	template<class T>
+	matrix<T> linspace_row(T start,T end, T interval)
+	{	
+		double size = (end - start) / interval;
+		matrix<T> R(1,size+1); 
+		for(double i = start , k = 1; i <= end ; i+= interval,k+=1) // Condition only depend on start and end 
+		{
+			R(1,k) = i ; 
+		}
+		return R ; 
+	}
+
+
+}
+
+
+
+
 
 
 #endif
