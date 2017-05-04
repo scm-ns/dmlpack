@@ -52,19 +52,19 @@ class data_source
 		data_source(const data_source& ) = delete;
 		data_source& operator=(const data_source& ) = delete;	
 
-		matrix<double> get_features()
+		matrix_op::matrix<double> get_features()
 		{
 			return x_data_;
 		}
 
-		matrix<double> get_labels()
+		matrix_op::matrix<double> get_labels()
 		{
 			return y_data_;
 		}
 
 	private:
-		matrix<double> x_data_;
-		matrix<double> y_data_;	
+		matrix_op::matrix<double> x_data_;
+		matrix_op::matrix<double> y_data_;	
 		void add_py_feature_list(PyObject * container);
 		// one hot encoding
 		void add_py_label_list(PyObject * container, const int num_classes);
