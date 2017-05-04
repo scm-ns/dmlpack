@@ -104,7 +104,7 @@ struct hash_fctor // functor
 
 };
 
-
+using namespace matrix_op; // CHANGE THIS TEMP SOLUTION
 template <typename T>
 class dmlpack
 {
