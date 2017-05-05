@@ -1401,20 +1401,6 @@ namespace matrix_op
 			return  get(rows, cols) ; 
 	}
 
-
-	template <class T>
-	void matrix<T>::randFill(T start, T end)
-	{
-		std::srand(time(0));
-		for (long long i = 1; i <= _rows; i++)
-		{
-			for (long long j = 1; j <= _cols; j++)
-			{
-				_matrix[(i - 1)*_cols + (j - 1)] = static_cast<T>(std::rand() / (end - start) + 1);
-			}
-		}
-	}
-
 	template <class T>
 	void matrix<T>::randFillUniform(T start, T end)
 	{
@@ -1622,6 +1608,24 @@ namespace matrix_op
 		}
 		return R ; 
 	}
+
+
+	template <class T>
+	matrix<T> rand_fill(std::size_t rows , std::size_t cols , T low, T high)
+	{
+		matrix<T> R(rows , cols);
+		std::srand(time(0));
+		for (std::size_t i = 1; i <= R.numRows; i++)
+		{
+			for (std::size_t j = 1; j <= R.numCols; j++)
+			{
+				R(i , j) = static_cast<T>(std::rand() / (high - low) + 1); // biase towards low if rand not divisble by (high - low) + 1
+			}
+		}
+
+		return R;
+	}
+
 
 
 
