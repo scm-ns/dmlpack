@@ -1627,7 +1627,7 @@ namespace matrix_op
 
 
 	template <>
-	matrix<float> rand_fill(std::size_t rows , std::size_t cols , float low, float high)
+	inline matrix<float> rand_fill(std::size_t rows , std::size_t cols , float low, float high)
 	{
 		matrix<float> R(rows , cols);
 		std::srand(time(0));
@@ -1643,7 +1643,7 @@ namespace matrix_op
 
 
 	template <>
-	matrix<double> rand_fill(std::size_t rows , std::size_t cols , double low, double high)
+	inline matrix<double> rand_fill(std::size_t rows , std::size_t cols , double low, double high)
 	{
 		matrix<double> R(rows , cols);
 		std::srand(time(0));
