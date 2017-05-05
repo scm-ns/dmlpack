@@ -1619,10 +1619,9 @@ namespace matrix_op
 		{
 			for (std::size_t j = 1; j <= R.numCols() ;  j++)
 			{
-				R(i , j) = static_cast<T>(std::rand() / (high - low) + 1); // biase towards low if rand not divisble by (high - low) + 1
+				R(i , j) = static_cast<T>( (  static_cast<T>( std::rand() ) % static_cast<T>( high - low )  + 1  ) + low ); // bias towards low if rand not divisble by (high - low) + 1
 			}
 		}
-
 		return R;
 	}
 
