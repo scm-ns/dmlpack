@@ -1610,7 +1610,7 @@ namespace matrix_op
 	}
 
 
-	template <class T>
+	template <class T> // Make the generic implementation similar to that used for ints. This way, long, long long and smaller int types like uint8 are supported
 	matrix<T> rand_fill(std::size_t rows , std::size_t cols , T low, T high)
 	{
 		matrix<T> R(rows , cols);
@@ -1619,7 +1619,41 @@ namespace matrix_op
 		{
 			for (std::size_t j = 1; j <= R.numCols() ;  j++)
 			{
-				R(i , j) = static_cast<T>( (  static_cast<T>( std::rand() ) % static_cast<T>( high - low )  + 1  ) + low ); // bias towards low if rand not divisble by (high - low) + 1
+				R(i , j) = static_cast<T>( ( static_cast<T>(std::rand())  % static_cast<T>( high - low )  + 1  ) + low ) ; // bias towards low if rand not divisble by (high - low) + 1
+			}
+		}
+		return R;
+	}
+
+
+
+	template <>
+	matrix<int> rand_fill(std::size_t rows , std::size_t cols , int low, int high)
+	{
+		matrix<int> R(rows , cols);
+		std::srand(time(0));
+		for (std::size_t i = 1; i <= R.numRows(); i++)
+		{
+			for (std::size_t j = 1; j <= R.numCols() ;  j++)
+			{
+				R(i , j) = ( std::rand()  %( high - low )  + 1  ) + low ; // bias towards low if rand not divisble by (high - low) + 1
+			}
+		}
+		return R;
+	}
+
+
+
+	template <>
+	matrix<float> rand_fill(std::size_t rows , std::size_t cols , float low, float high)
+	{
+		matrix<float> R(rows , cols);
+		std::srand(time(0));
+		for (std::size_t i = 1; i <= R.numRows(); i++)
+		{
+			for (std::size_t j = 1; j <= R.numCols() ;  j++)
+			{
+				R(i , j) = ( static_cast<float>(std::rand())  / static_cast<float>(RAND_MAX/ (high - low ))  ) + low ; // bias towards low if rand not divisble by (high - low) + 1
 			}
 		}
 		return R;
