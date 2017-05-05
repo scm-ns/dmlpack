@@ -19,7 +19,7 @@ void measure_exec_time(std::function<void(void)> lam)
 	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 
 	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
-	std::cout << "time taken : " << duration << "\n";
+	std::cout << "time taken : " << duration << "ns" << std::endl;
 }
 
 
@@ -570,10 +570,15 @@ TEST_CASE("testing the matrix_op namepsace ")
 	SECTION(test_rand_fill)
 	{
 		std::cout << test_rand_fill << std::endl;
-		matrix_op::matrix<double> L = matrix_op::rand_fill<double>(100 , 100 , 0 , 1);
-	
 
-		std::cout << L << std::endl;
+		matrix_op::matrix<double> L;
+
+		measure_exec_time([&]() ->void 
+		{
+				L = matrix_op::rand_fill<double>(100 , 100 , 0 , 1);
+				std::cout << __LINE__ << " : " ;
+		});			
+
 
 		CHECK( (L(20,20) >= 0 && L(20,20) <= 1) );
 		CHECK( (L(90,20) >= 0 && L(90,20) <= 1) );
