@@ -565,6 +565,25 @@ TEST_CASE("testing the matrix_op namepsace ")
 
 	}
 
+	
+	auto test_rand_fill = "check new namepsace ";
+	SECTION(test_rand_fill)
+	{
+		std::cout << test_rand_fill << std::endl;
+		matrix_op::matrix<double> L = matrix_op::rand_fill<double>(100 , 100 , 0 , 1);
+	
+
+		std::cout << L << std::endl;
+
+		CHECK( (L(20,20) >= 0 && L(20,20) <= 1) );
+		CHECK( (L(90,20) >= 0 && L(90,20) <= 1) );
+		CHECK( (L(80,30) >= 0 && L(80,30) <= 1) );
+		CHECK( (L(90,90) >= 0 && L(90,90) <= 1) );
+		CHECK( (L(100,100) >= 0 && L(100,100) <= 1) );
+
+
+	}	
+
 }
 
 
