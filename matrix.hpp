@@ -1626,24 +1626,6 @@ namespace matrix_op
 	}
 
 
-
-	template <>
-	matrix<int> rand_fill(std::size_t rows , std::size_t cols , int low, int high)
-	{
-		matrix<int> R(rows , cols);
-		std::srand(time(0));
-		for (std::size_t i = 1; i <= R.numRows(); i++)
-		{
-			for (std::size_t j = 1; j <= R.numCols() ;  j++)
-			{
-				R(i , j) = ( std::rand()  %( high - low )  + 1  ) + low ; // bias towards low if rand not divisble by (high - low) + 1
-			}
-		}
-		return R;
-	}
-
-
-
 	template <>
 	matrix<float> rand_fill(std::size_t rows , std::size_t cols , float low, float high)
 	{
@@ -1654,6 +1636,22 @@ namespace matrix_op
 			for (std::size_t j = 1; j <= R.numCols() ;  j++)
 			{
 				R(i , j) = ( static_cast<float>(std::rand())  / static_cast<float>(RAND_MAX/ (high - low ))  ) + low ; // bias towards low if rand not divisble by (high - low) + 1
+			}
+		}
+		return R;
+	}
+
+
+	template <>
+	matrix<double> rand_fill(std::size_t rows , std::size_t cols , double low, double high)
+	{
+		matrix<double> R(rows , cols);
+		std::srand(time(0));
+		for (std::size_t i = 1; i <= R.numRows(); i++)
+		{
+			for (std::size_t j = 1; j <= R.numCols() ;  j++)
+			{
+				R(i , j) = ( static_cast<double>(std::rand())  / static_cast<double>(RAND_MAX/ (high - low ))  ) + low ; // bias towards low if rand not divisble by (high - low) + 1
 			}
 		}
 		return R;
