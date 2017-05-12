@@ -568,26 +568,128 @@ TEST_CASE("testing the matrix_op namepsace ")
 	}
 
 	
-	auto test_rand_fill = "check new namepsace ";
+	auto test_rand_fill = "check rand_fill namepsace ";
 	SECTION(test_rand_fill)
 	{
 		std::cout << test_rand_fill << std::endl;
 
-		matrix_op::matrix<double> L;
-
-		measure_exec_time([&]() ->void 
 		{
-				L = matrix_op::rand_fill<double>(100 , 100 , 0 , 1);
-				std::cout << __LINE__ << " : " ;
-		});			
+			matrix_op::matrix<double> L;
 
-		std::cout << L << std::endl;
+			measure_exec_time([&]() ->void 
+			{
+					L = matrix_op::rand_fill<double>(100 , 100 , 0 , 1);
+					std::cout << __LINE__ << " : " ;
+			});			
 
-		CHECK( (L(20,20) >= 0 && L(20,20) <= 1) );
-		CHECK( (L(90,20) >= 0 && L(90,20) <= 1) );
-		CHECK( (L(80,30) >= 0 && L(80,30) <= 1) );
-		CHECK( (L(90,90) >= 0 && L(90,90) <= 1) );
-		CHECK( (L(100,100) >= 0 && L(100,100) <= 1) );
+
+			CHECK( (L(20,20) >= 0 && L(20,20) <= 1) );
+			CHECK( (L(90,20) >= 0 && L(90,20) <= 1) );
+			CHECK( (L(80,30) >= 0 && L(80,30) <= 1) );
+			CHECK( (L(90,90) >= 0 && L(90,90) <= 1) );
+			CHECK( (L(100,100) >= 0 && L(100,100) <= 1) );
+		}
+
+
+
+		{
+
+			matrix_op::matrix<float> L;
+
+			measure_exec_time([&]() ->void 
+			{
+					L = matrix_op::rand_fill<float>(100 , 100 , 0 , 1);
+					std::cout << __LINE__ << " : " ;
+			});			
+
+
+			CHECK( (L(20,20) >= 0 && L(20,20) <= 1) );
+			CHECK( (L(90,20) >= 0 && L(90,20) <= 1) );
+			CHECK( (L(80,30) >= 0 && L(80,30) <= 1) );
+			CHECK( (L(90,90) >= 0 && L(90,90) <= 1) );
+			CHECK( (L(100,100) >= 0 && L(100,100) <= 1) );
+		}
+
+
+		{
+
+			matrix_op::matrix<float> L;
+
+			measure_exec_time([&]() ->void 
+			{
+					L = matrix_op::rand_fill<float>(10000 , 10000 , 0 , 1);
+					std::cout << __LINE__ << " : " ;
+			});			
+
+
+			CHECK( (L(20,20) >= 0 && L(20,20) <= 1) );
+			CHECK( (L(90,20) >= 0 && L(90,20) <= 1) );
+			CHECK( (L(80,30) >= 0 && L(80,30) <= 1) );
+			CHECK( (L(90,90) >= 0 && L(90,90) <= 1) );
+			CHECK( (L(100,100) >= 0 && L(100,100) <= 1) );
+		}
+
+
+		{
+
+			matrix_op::matrix<int> L;
+
+			measure_exec_time([&]() ->void 
+			{
+					L = matrix_op::rand_fill<int>(100 , 100 , 0 , 1);
+					std::cout << __LINE__ << " : " ;
+			});			
+
+
+			CHECK( (L(20,20) >= 0 && L(20,20) <= 1) );
+			CHECK( (L(90,20) >= 0 && L(90,20) <= 1) );
+			CHECK( (L(80,30) >= 0 && L(80,30) <= 1) );
+			CHECK( (L(90,90) >= 0 && L(90,90) <= 1) );
+			CHECK( (L(100,100) >= 0 && L(100,100) <= 1) );
+		}
+
+
+
+
+		{
+
+			#include <stdint.h>
+			matrix_op::matrix<std::uint8_t> L;
+
+			measure_exec_time([&]() ->void 
+			{
+					L = matrix_op::rand_fill<std::uint8_t>(100 , 100 , 0 , 1);
+					std::cout << __LINE__ << " : " ;
+			});			
+
+
+			CHECK( (L(20,20) >= 0 && L(20,20) <= 1) );
+			CHECK( (L(90,20) >= 0 && L(90,20) <= 1) );
+			CHECK( (L(80,30) >= 0 && L(80,30) <= 1) );
+			CHECK( (L(90,90) >= 0 && L(90,90) <= 1) );
+			CHECK( (L(100,100) >= 0 && L(100,100) <= 1) );
+		}
+
+
+
+		{
+
+			#include <stdint.h>
+			matrix_op::matrix<std::uint8_t> L;
+
+			measure_exec_time([&]() ->void 
+			{
+					L = matrix_op::rand_fill<std::uint8_t>(10000 , 100000 , 0 , 1);
+					std::cout << __LINE__ << " : " ;
+			});			
+
+
+			CHECK( (L(20,20) >= 0 && L(20,20) <= 1) );
+			CHECK( (L(90,20) >= 0 && L(90,20) <= 1) );
+			CHECK( (L(80,30) >= 0 && L(80,30) <= 1) );
+			CHECK( (L(90,90) >= 0 && L(90,90) <= 1) );
+			CHECK( (L(100,100) >= 0 && L(100,100) <= 1) );
+		}
 
 
 	}	
