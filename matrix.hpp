@@ -157,10 +157,7 @@ namespace matrix_op
 
 		void createIdentity(long long  aRow);
 		matrix<T> transpose() const;
-		T innerProduct(const matrix<T>& B) const;
 		T sum();
-
-		T selfInnerProduct();
 
 		// returns the index which has the maximum value in the vector // onlys works on row or column vectors, not on matrix
 		size_t arg_max();
@@ -183,7 +180,6 @@ namespace matrix_op
 		T& operator()(const long long  rows, const long long  cols); // not a const operation as this can be used to change the value
 		T operator()(const long long  rows, const long long  cols)  const;
 
-		T normEuclidean();
 		matrix<T> transform_create(std::size_t rows , std::size_t cols , std::function<T(std::size_t , std::size_t , matrix<T>)> lam);
 		matrix<T> transform_inplace(std::function<T(std::size_t , std::size_t , T)> lam) ;
 
