@@ -68,11 +68,16 @@ TEST_CASE("testing the dmlpack::single_layer_nn")
 		train_x(4,2)  = 1 ;
 		train_y(4,1) =  0 ;
 
+		matrix_op::matrix<double> feature = { 0 , 0 };
+
 		measure_exec_time([&]() ->void 
 		{
-			dmlpack::single_layer_nn<double> nn( 10000 , 0.001 , 100);
+			dmlpack::single_layer_nn<double> nn( 10000 , 0.001 );
 			nn.set_training_data(train_x , train_y);
 			nn.train();
+			
+			std::cout << "res : " << nn.infer_single_feature(feature) << std::endl;
+
 		});
 
 		
