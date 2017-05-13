@@ -705,7 +705,7 @@ TEST_CASE("testing the matrix_op namepsace ")
 
 			measure_exec_time([&]() ->void 
 			{
-					L = matrix_op::rand_fill<float>(10000 , 10000 , 0 , 1);
+					L = matrix_op::rand_fill<float>(10000000 , 1 , 0 , 100);
 					std::cout << __LINE__ << " : " ;
 			});			
 
