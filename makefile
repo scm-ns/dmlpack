@@ -8,6 +8,7 @@ OBJECTS= data_source.o
 PROG= dml.exe
 PROG_DEBUG= dml_debug.exe
 TEST= test.exe
+TEST_DMLPACK= test_dmlpack.exe
 
 $(PROG) : $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIB) $(LIB_FLAGS) -o $@
@@ -26,6 +27,9 @@ run:
 test : $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIB_FLAGS) $(LIB)  $(DEBUG_FLAGS) $(CFLAGS) test.cpp -o $(TEST)
 
+
+test_dmlpack : $(OBJECTS)
+	$(CC) $(OBJECTS) $(LIB_FLAGS) $(LIB)  $(DEBUG_FLAGS) $(CFLAGS) test_dmlpack.cpp -o $(TEST_DMLPACK)
 
 test_dis : $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIB_FLAGS) $(LIB) $(CFLAGS) -S -c test.cpp
