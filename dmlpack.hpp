@@ -116,7 +116,7 @@ namespace dmlpack
 						if( _logging_iter != 0 && iter % _logging_iter == 0)
 						{
 							std::cout << "Current Error Vector : " << error << std::endl;
-							std::cout << "Current Error : " << error.innerProduct(error) << std::endl;
+							std::cout << "Current Error : " << matrix_op::inner_product<T>(error , error) << std::endl;
 						}
 
 						//incremental change
