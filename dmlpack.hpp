@@ -137,7 +137,15 @@ namespace dmlpack
 				// data size : (1 , num_features)
 				
 				// output : ( num_classes , 1)
-				
+				//
+				std::cout << _layer << std::endl;
+				std::cout << feature_vec << std::endl;
+
+
+				// Append the +1 towards its end. 
+				feature_vec.resize(1 , feature_vec.numCols() + 1);
+				feature_vec(1 , feature_vec.numCols()) = 1;
+					
 				return _layer * feature_vec.transpose();
 			}
 
