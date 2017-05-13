@@ -3,7 +3,7 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
-#include "dmlpack.h"
+#include "dmlpack.hpp"
 #include "matrix.hpp"
 #include "data_source.h"
 

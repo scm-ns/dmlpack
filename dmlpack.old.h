@@ -152,7 +152,6 @@ class dmlpack
 		// train on the percentage of the data set provided
 		void train(float percentage = 1, int iter = 4);	
 
-
 		// set the test set on the model and give back the accuracy 		
 		double test();	
 
@@ -898,54 +897,6 @@ std::pair<matrix<T> , matrix<T>> dmlpack<T>::multi_class_perceptron_inference()
 	prediction_ = prediction; // keep track of the prediciton that was made to test the accuracy
 
 	return std::make_pair( res , prediction );
-}
-
-
-/*
- * Create a single layer neural network. 
- * assume all the neruons are of sigmoid type
- * Train the neural net using the back prop algorithm
- * 
- * Hold the weight vector within a single matrix for now. 
- * What determines the size of the neuron matrix ? 
- */
-template <typename T>
-void dmlpack<T>::single_layer_nn_train(double learning_rate, size_t iterations)
-{
-	const size_t num_train_samples = train_x_.numRows();
-
-	//Resize the weight vector to hold # classes rows and #features columns
-	// A weight vector for each of the classes 
-	// the weight vector will be used to determine how much the neuron will look at each feature
-	// Initially all the weights are 0
-	single_layer_nn_weigh_.resize(num_classes , num_features + 1 , 0 ); // + 1 for the biases 
-	// m * n
-
-	//matrix<T> delta_weight(num_classes , num_features + 1 , 0);		
-	for(size_t iter = 0 ; iter < iterations ; ++iter)
-	{
-		for(size_t train_sample = 1; train_sample <= num_train_samples ; ++train_sample) // each row in the matrices
-		{
-			// get the feature vector 1 * n
-			matrix<T> feature_vec = train_x_.returnRow(train_sample);	
-
-			// Append the +1 towards its end. 
-			feature_vec.resize(1 , feature_vec.numCols() + 1);
-			feature_vec(1 , feature_vec.numCols()) = 1;
-		
-			// m * 1
-			matrix<T> actual_output_vec  = train_y_.returnRow(train_sample).transpose();
-			
-		 	// m * 1				// m * n 		// n * 1
-			matrix<T> pred_output_vec = single_layer_nn_weigh_ * feature_vec.transpose();
-
-			//incremental change
-
-			single_layer_nn_weigh_ = single_layer_nn_weigh_ + ( ( actual_output_vec - pred_output_vec ) * feature_vec) * learning_rate; 
-
-		}
-	}
-
 }
 
 

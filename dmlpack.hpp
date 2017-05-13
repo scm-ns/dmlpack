@@ -64,17 +64,16 @@ namespace dmlpack
 	class single_layer_nn : public ml<T>
 	{
 		public:
-			single_layer_nn() 
+			single_layer_nn(std::size_t iterations , double learning_rate) 
 			{
-				
+				_iterations = iterations;
+				_learning_rate = learning_rate;	
 			};
 				
 		private: 
-			std::size_t iterations;
-			double learning_rate;				
+			std::size_t _iterations;
+			double _learning_rate;				
 	};
-
-
 
 
 }
