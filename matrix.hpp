@@ -1577,26 +1577,15 @@ namespace matrix_op
 	}
 
 
-
-
-	template <class T>
-	T matrix<T>::selfInnerProduct()
-	{
-		return innerProduct(*this);	
-	}
-
-
 	/*
 		Returns Euclidean or L2 norm of a matrix 
 	*/
 	template <class T>
-	T matrix<T>::normEuclidean()
+	T norm_euclidean(const matrix<T>& A)
 	{
-		T innerProd = selfInnerProduct();
-		return std::sqrt(innerProd);
+		T inner_prod = inner_product(A,A);
+		return std::sqrt(inner_prod);
 	}
-
-
 
 
 	//Returns a rowVector with numbers begining at start , ending at end with interval interval ; 
