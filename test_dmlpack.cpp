@@ -41,6 +41,44 @@ TEST_CASE("testing the dmlpack::single_layer_nn")
 		});
 	}
 
+
+	auto test2  = " try to approximate xor funtion ";
+	SECTION(test2)
+	{
+		// create artifical data set xor
+		matrix_op::matrix<double> train_x(4,2,0); // 4 data point each with 2 features
+		matrix_op::matrix<double> train_y(4,1,0); // 4 data point each with 1 class
+		// 0 ^ 0 = 0 
+		train_x(1,1)  = 0 ;
+		train_x(1,2)  = 0 ;
+		train_y(1,1) = 0 ;
+
+		// 0 ^ 1 = 1
+		train_x(2,1)  = 0 ;
+		train_x(2,2)  = 1 ;
+		train_y(2,1) =  1 ;
+
+		// 1 ^ 0 = 1
+		train_x(3,1)  = 1 ;
+		train_x(3,2)  = 0 ;
+		train_y(3,1) =  1 ;
+
+		// 1 ^ 1 = 0 
+		train_x(4,1)  = 1 ;
+		train_x(4,2)  = 1 ;
+		train_y(4,1) =  0 ;
+
+		measure_exec_time([&]() ->void 
+		{
+			dmlpack::single_layer_nn<double> nn( 1000 , 0.001 );
+			nn.set_training_data(train_x , train_y);
+			nn.train();
+		});
+
+		
+
+	}
+
 }
 
 
