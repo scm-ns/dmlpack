@@ -37,7 +37,7 @@ TEST_CASE("testing the dmlpack::single_layer_nn")
 
 		measure_exec_time([&]() ->void 
 		{
-			dmlpack::single_layer_nn<int>();
+			dmlpack::single_layer_nn<int>( 1000 , 0.001);
 		});
 	}
 
