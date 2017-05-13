@@ -38,7 +38,6 @@ namespace dmlpack
 				
 			}
 
-
 			void set_training_data( matrix_op::matrix<T> train_x , matrix_op::matrix<T> train_y)
 			{
 				_train_x = train_x;
@@ -69,12 +68,23 @@ namespace dmlpack
 				_iterations = iterations;
 				_learning_rate = learning_rate;	
 			};
+
+			void train()
+			{
+
+			}
+
+
+			void test()
+			{
+
+
+			}
 				
 		private: 
 			std::size_t _iterations;
 			double _learning_rate;				
 	};
-
 
 }
 
