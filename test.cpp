@@ -692,7 +692,38 @@ TEST_CASE("testing the matrix_op namepsace ")
 		}
 
 
+
 	}	
+
+	
+	auto test_inner_prod = "test inner product ";
+	SECTION(test_inner_prod)
+	{
+		{
+
+			matrix_op::matrix<float> L;
+
+			measure_exec_time([&]() ->void 
+			{
+					L = matrix_op::rand_fill<float>(10000 , 10000 , 0 , 1);
+					std::cout << __LINE__ << " : " ;
+			});			
+
+			int result = 0;
+			measure_exec_time([&]() ->void 
+			{
+					result = matrix_op::inner_product<float>(L , L);
+					std::cout << __LINE__ << " : " ;
+			});			
+
+
+
+
+		}
+
+
+	}
+
 
 }
 
