@@ -13,7 +13,7 @@ TEST_DMLPACK= test_dmlpack.exe
 $(PROG) : $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIB) $(LIB_FLAGS) -o $@
 
-%.o: %.cpp matrix.hpp dmlpack.h data_source.cpp
+%.o: %.cpp matrix.hpp dmlpack.hpp data_source.cpp
 	$(CC) $(OPTIMIZE_FLAG) $(DEBUG_FLAGS) $(LIB_FLAGS) $(LIB) $(CFLAGS)  -c $<
 
 debug: 
@@ -26,7 +26,6 @@ run:
 
 test : $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIB_FLAGS) $(LIB)  $(DEBUG_FLAGS) $(CFLAGS) test.cpp -o $(TEST)
-
 
 test_dmlpack : $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIB_FLAGS) $(LIB)  $(DEBUG_FLAGS) $(CFLAGS) test_dmlpack.cpp -o $(TEST_DMLPACK)
