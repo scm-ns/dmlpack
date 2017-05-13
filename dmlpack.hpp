@@ -84,7 +84,7 @@ namespace dmlpack
 				//matrix<T> delta_weight(num_classes , num_features + 1 , 0);		
 				for(size_t iter = 0 ; iter < _iterations ; ++iter)
 				{
-					for(size_t train_sample = 1; train_sample <= ml<T>::num_train_samples ; ++train_sample) // each row in the matrices
+					for(size_t train_sample = 1; train_sample <= ml<T>::_num_train_samples ; ++train_sample) // each row in the matrices
 					{
 						// get the feature vector 1 * n
 						matrix_op::matrix<T> feature_vec = ml<T>::_train_x.returnRow(train_sample);	
@@ -100,7 +100,6 @@ namespace dmlpack
 						matrix_op::matrix<T> pred_output_vec = _layer * feature_vec.transpose();
 
 						//incremental change
-
 						_layer = _layer + ( ( actual_output_vec - pred_output_vec ) * feature_vec) * _learning_rate; 
 
 					}
