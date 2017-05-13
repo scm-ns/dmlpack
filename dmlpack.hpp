@@ -75,10 +75,11 @@ namespace dmlpack
 	{
 		public:
 			// TODO : create a better way to pass in parameters
-			single_layer_nn(std::size_t iterations , double learning_rate) 
+			single_layer_nn(std::size_t iterations , double learning_rate , std::size_t logging_iter = 0) 
 			{
 				_iterations = iterations;
 				_learning_rate = learning_rate;	
+				_logging_iter = logging_iter;
 
 			};
 
@@ -110,9 +111,15 @@ namespace dmlpack
 						// m * 1				// m * n 		// n * 1
 						matrix_op::matrix<T> pred_output_vec = _layer * feature_vec.transpose();
 
-						//incremental change
-						_layer = _layer + ( ( actual_output_vec - pred_output_vec ) * feature_vec) * _learning_rate; 
+						auto error = actual_output_vec - pred_output_vec;
+						
+						if( _logging_iter != 0 && iter % _logging_iter == 0)
+						{
+							std::cout << error << std::endl;
+						}
 
+						//incremental change
+						_layer = _layer + ( ( error ) * feature_vec) * _learning_rate; 
 					}
 				}
 
@@ -145,6 +152,7 @@ namespace dmlpack
 			std::size_t _iterations;
 			double _learning_rate;				
 			matrix_op::matrix<T> _layer;
+			std::size_t _logging_iter;
 	};
 
 }
