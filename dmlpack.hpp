@@ -66,6 +66,8 @@ namespace dmlpack
 
 			virtual void train() = 0;
 			virtual void test() = 0;
+			virtual matrix_op::matrix<T> infer_single_feature(matrix_op::matrix<T> feature_vec) = 0;
+			virtual matrix_op::matrix<T> infer_batch(matrix_op::matrix<T> feature_vec) = 0;
 	};
 
 	template <typename T>
@@ -122,7 +124,23 @@ namespace dmlpack
 
 
 			}
+
+			matrix_op::matrix<T> infer_single_feature(matrix_op::matrix<T> feature_vec)
+			{
+				// data size : (1 , num_features)
 				
+				// output : ( num_classes , 1)
+				
+				return _layer * feature_vec.transpose();
+			}
+
+			matrix_op::matrix<T> infer_batch(matrix_op::matrix<T> batch)
+			{
+
+
+			}
+
+
 		private: 
 			std::size_t _iterations;
 			double _learning_rate;				
