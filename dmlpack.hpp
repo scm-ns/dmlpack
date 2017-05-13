@@ -2,6 +2,15 @@
  * differenct objects for handling different algorithms
  * adding support to a single object to do everything was a bad architecture design causing a lot of pain
  * Each algorithm will have some function redrived from a base class. 
+ *
+ * along column : features of a particular data point
+ * along row : all the data point in the data set
+ *	
+ *	     *	*  *  *  *
+ *	     *	*  *  *  *
+ *	     *	*  *  *  *
+ *	 num features : 5
+ *	 num data points : 3
  */
 
 #include "matrix.hpp"
