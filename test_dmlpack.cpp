@@ -70,13 +70,12 @@ TEST_CASE("testing the dmlpack::single_layer_nn")
 
 		measure_exec_time([&]() ->void 
 		{
-			dmlpack::single_layer_nn<double> nn( 1000 , 0.001 );
+			dmlpack::single_layer_nn<double> nn( 10000 , 0.001 );
 			nn.set_training_data(train_x , train_y);
 			nn.train();
 		});
 
 		
-
 	}
 
 }
