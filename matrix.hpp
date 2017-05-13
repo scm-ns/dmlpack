@@ -1542,40 +1542,42 @@ namespace matrix_op
 		Here A is the current matrix
 	*/
 	template <class T>
-	T matrix<T>::innerProduct(const matrix<T>& B) const
+	T inner_product(const matrix<T>& A , const matrix<T>& B) 
 	{
 		T result = 0 ; 
 		
-		if(isRowVector() && B.isColVector() && (numCols() == B.numRows()))
+		if(A.isRowVector() && B.isColVector() && (A.numCols() == B.numRows()))
 		{
-			for(size_t  i = 1 ; i <= numRows();i++)
+			for(size_t  i = 1 ; i <= A.numRows();i++)
 			{	
-				result += get(1,i) * B(i,1);
+				result += A(1,i) * B(i,1);
 			}
 			return result;
 		}
-		else if(isRowVector() && B.isRowVector() && (numCols() == B.numCols()))
+		else if(A.isRowVector() && B.isRowVector() && (A.numCols() == B.numCols()))
 		{
-			for(size_t i = 1 ; i <= numCols();i++)
+			for(size_t i = 1 ; i <= A.numCols();i++)
 			{	
-				result += get(1,i) * B(1,i);
+				result += A(1,i) * B(1,i);
 			}
 			return result;
 		}
-		else if(isColVector() && B.isColVector() && (numRows() == B.numRows()))
+		else if(A.isColVector() && B.isColVector() && (A.numRows() == B.numRows()))
 		{
-			for(size_t i = 1 ; i <= numRows();i++)
+			for(size_t i = 1 ; i <= A.numRows();i++)
 			{	
-				result += get(i,1)*B(i,1);
+				result += A(i,1)*B(i,1);
 			}
 			return result;
 		}
 		else
 		{
 			throw std::logic_error("innerProduct -> A and B are not in proper format ");
-			return result*(0);
 		}
 	}
+
+
+
 
 	template <class T>
 	T matrix<T>::selfInnerProduct()
@@ -1593,6 +1595,8 @@ namespace matrix_op
 		T innerProd = selfInnerProduct();
 		return std::sqrt(innerProd);
 	}
+
+
 
 
 	//Returns a rowVector with numbers begining at start , ending at end with interval interval ; 
