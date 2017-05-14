@@ -157,7 +157,6 @@ namespace matrix_op
 
 		void createIdentity(long long  aRow);
 		matrix<T> transpose() const;
-		T sum();
 
 		// returns the index which has the maximum value in the vector // onlys works on row or column vectors, not on matrix
 		size_t arg_max();
@@ -1451,40 +1450,6 @@ namespace matrix_op
 	}
 
 
-	template <class T>
-	T matrix<T>::sum()
-	{
-		T sum = 0; 
-
-		if (isColVector())
-		{
-			for (size_t i = 1; i <= numRows(); i++) // Go through each row and add them up 
-			{
-				sum += get(i, 1);
-			}
-		}
-		else if (isRowVector())
-		{
-			for (size_t i = 1; i <= numCols(); i++) // Go through each row and add them up 
-			{
-				sum += get(1,i);
-			}
-
-		}
-		else // matrix is a normal matrix , fat or thin 
-		{
-			for (size_t i = 1; i <= numRows(); i++)
-			{
-				for (size_t j = 1; j <= numCols(); j++)
-				{
-					sum += get(i, j);
-				}
-			}
-		}
-
-		return sum; 
-	}
-
 
 	template <class T>
 	std::ostream& operator<<(std::ostream& out, const matrix<T>& temp)
@@ -1523,6 +1488,48 @@ namespace matrix_op
 			}
 		}
 		return R;
+	}
+
+	
+	// TODO : Think about sse implementation and about writing a helper fuction for iteration over the sse blocks
+	// TODO : create vector sum, where by we can add in the case of a 2D matrix, along the rows giving back a col vec or else along the columns giving back a row vec
+	/*
+	 * Takes the sum of the matrix
+	 * If the matrix is row vector, adds up along the row
+	 * If matrix is a column vector, adds up along the column
+	 * If matrix is 2D , then adds up along both axis
+	 */	
+	template <class T>
+	T sum(const matrix<T>& A)
+	{
+		T sum = 0; 
+
+		if (A.isColVector())
+		{
+			for (size_t i = 1; i <= A.numRows(); i++) // Go through each row and add them up 
+			{
+				sum += A(i, 1);
+			}
+		}
+		else if (A.isRowVector())
+		{
+			for (size_t i = 1; i <= A.numCols(); i++) // Go through each row and add them up 
+			{
+				sum += A(1,i);
+			}
+
+		}
+		else // matrix is a normal matrix , fat or thin 
+		{
+			for (size_t i = 1; i <= A.numRows(); i++)
+			{
+				for (size_t j = 1; j <= A.numCols(); j++)
+				{
+					sum += A(i, j);
+				}
+			}
+		}
+		return sum; 
 	}
 
 
