@@ -609,7 +609,7 @@ TEST_CASE("testing the matrix_op namepsace ")
 
 			int num_cols = 10000; 
 			int num_rows = 10000; 
-			matrix_op::matrix<float> L(num_rows,num_cols,5); // row vector
+			matrix_op::matrix<long long> L(num_rows,num_cols,5); // row vector
 			
 			long result = 0;
 			measure_exec_time([&]() ->void 
