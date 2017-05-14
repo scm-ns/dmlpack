@@ -584,6 +584,8 @@ TEST_CASE("testing the matrix_op namepsace ")
 				L = matrix_op::tanh<float>(L);
 				L = matrix_op::sigmoid<float>(L);
 				L = matrix_op::relu<float>(L);
+				L = matrix_op::leaky_relu<float>(L);
+				L = matrix_op::leaky_relu<float>(L, 0.1);
 			});
 		}
 
@@ -600,6 +602,7 @@ TEST_CASE("testing the matrix_op namepsace ")
 				L = matrix_op::tanh<float>(L);
 				L = matrix_op::sigmoid<float>(L);
 				L = matrix_op::relu<float>(L);
+				L = matrix_op::leaky_relu<float>(L);
 			});
 		}
 
@@ -617,6 +620,7 @@ TEST_CASE("testing the matrix_op namepsace ")
 				L = matrix_op::tanh<float>(L);
 				L = matrix_op::sigmoid<float>(L);
 				L = matrix_op::relu<float>(L);
+				L = matrix_op::leaky_relu<float>(L);
 			});
 		}
 
