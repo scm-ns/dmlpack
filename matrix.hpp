@@ -1572,8 +1572,7 @@ namespace matrix_op
 
 
 
-	
-	// scalar cos
+	// scalar tanh
 	template <typename T>
 	T tanh(T val)
 	{
@@ -1581,7 +1580,7 @@ namespace matrix_op
 	}
 
 
-	// matrix cos
+	// matrix tanh
 	template <class T>
 	matrix<T> tanh(const matrix<T>& A)
 	{
@@ -1595,6 +1594,28 @@ namespace matrix_op
 		}
 	}
 
+
+	// scalar sigmoid
+	template <typename T>
+	T sigmoid(T val)
+	{
+		return 1.0/(1 + std::exp(-val));
+	}
+
+
+	// matrix sigmoid
+	template <class T>
+	matrix<T> sigmoid(const matrix<T>& A)
+	{
+		matrix<T> res(A.numRows() , A.numCols());
+		for(std::size_t row = 1 ; row <= A.numRows() ; ++row)
+		{
+			for(std::size_t col = 1 ; col <= A.numCols() ; ++col)
+			{
+				res(row , col) = matrix_op::sigmoid(A(row , col));			
+			}
+		}
+	}
 
 
 
