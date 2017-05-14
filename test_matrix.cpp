@@ -569,6 +569,74 @@ TEST_CASE("testing the matrix_op namepsace ")
 
 
 
+	auto test_sin = "test sin";
+	SECTION(test_sin)
+	{
+		{
+			int num_cols = 100000; 
+			matrix_op::matrix<float> L; 
+			L = matrix_op::rand_fill<float>(1 , num_cols , 1 ,10);	// row vector
+			std::cout << __LINE__ << " : " ;
+			measure_exec_time([&]() ->void 
+			{
+				L = matrix_op::sin<float>(L);
+				L = matrix_op::cos<float>(L);
+				L = matrix_op::tanh<float>(L);
+				L = matrix_op::sigmoid<float>(L);
+				L = matrix_op::relu<float>(L);
+			});
+		}
+
+
+		{
+			int num_cols = 100000; 
+			matrix_op::matrix<float> L; 
+			L = matrix_op::rand_fill<float>(1 , num_cols , 1 ,10);	// row vector
+			std::cout << __LINE__ << " : " ;
+			measure_exec_time([&]() ->void 
+			{
+				L = matrix_op::sin<float>(L);
+				L = matrix_op::cos<float>(L);
+				L = matrix_op::tanh<float>(L);
+				L = matrix_op::sigmoid<float>(L);
+				L = matrix_op::relu<float>(L);
+			});
+		}
+
+
+		{
+			int num_cols = 1000; 
+			int num_rows = 1000; 
+			matrix_op::matrix<float> L; 
+			L = matrix_op::rand_fill<float>(num_rows , num_cols , 1 ,10);	// row vector
+			std::cout << __LINE__ << " : " ;
+			measure_exec_time([&]() ->void 
+			{
+				L = matrix_op::sin<float>(L);
+				L = matrix_op::cos<float>(L);
+				L = matrix_op::tanh<float>(L);
+				L = matrix_op::sigmoid<float>(L);
+				L = matrix_op::relu<float>(L);
+			});
+		}
+
+		{
+			float L = 0.5;
+			std::cout << __LINE__ << " : " ;
+			measure_exec_time([&]() ->void 
+			{
+				L = matrix_op::sin<float>(L);
+				L = matrix_op::cos<float>(L);
+				L = matrix_op::tanh<float>(L);
+				L = matrix_op::sigmoid<float>(L);
+				L = matrix_op::relu<float>(L);
+			});
+		}
+
+
+
+	}	
+
 
 	auto test_sum = "test sum";
 	SECTION(test_sum)
@@ -623,6 +691,8 @@ TEST_CASE("testing the matrix_op namepsace ")
 
 
 	}
+
+
 
 
 
