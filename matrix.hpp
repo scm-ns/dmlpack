@@ -1517,6 +1517,12 @@ namespace matrix_op
 	}
 
 
+	// Constant pi
+	constexpr double pi()
+	{
+		return std::acos(-1);
+	}
+
 
 	
 	// TODO : Think about sse implementation and about writing a helper fuction for iteration over the sse blocks
