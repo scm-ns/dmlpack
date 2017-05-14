@@ -551,6 +551,33 @@ TEST_CASE("testing the matrix class")
 
 	}
 
+	auto test_op_plus = "check if scalar perator+ works ";
+	SECTION(test_op_plus)
+	{
+		std::cout << test_op_plus << std::endl;
+		{
+			matrix<int> K(97,97,5);
+			int P = 10;
+			auto L = K + P;
+
+			CHECK(L(20,20) == 15);	
+			CHECK(L(70,80) == 15);	
+			CHECK(L(10,50) == 15);	
+			CHECK(L(90,30) == 15);	
+		}
+
+
+		{
+			matrix<float> K(1,1,5);
+			float P = 10;
+			auto L = K + P;
+			CHECK(L(1,1) == 15);
+		}
+
+	}
+
+
+
 
 }
 
