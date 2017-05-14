@@ -1650,7 +1650,34 @@ namespace matrix_op
 
 
 
+	// scalar leaky_relu
+	template <typename T>
+	T leaky_relu(T val,float slope=0.01)
+	{
+		if( val > static_cast<T>(0) )
+		{
+			return val;
+		}
+		else
+		{
+			return  val * static_cast<T>(slope);
+		}
+	}
 
+	// matrix leaky_relu
+	template <class T>
+	matrix<T> leaky_relu(const matrix<T>& A, float slope = 0.01)
+	{
+		matrix<T> res(A.numRows() , A.numCols());
+		for(std::size_t row = 1 ; row <= A.numRows() ; ++row)
+		{
+			for(std::size_t col = 1 ; col <= A.numCols() ; ++col)
+			{
+				res(row , col) = matrix_op::leaky_relu(A(row , col), slope);			
+			}
+		}
+		return res;
+	}
 
 
 	
