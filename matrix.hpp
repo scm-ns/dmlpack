@@ -1490,6 +1490,170 @@ namespace matrix_op
 		return R;
 	}
 
+
+
+
+	
+	// scalar exp
+	template <typename T>
+	T exp(T val)
+	{
+		return std::exp(val);
+	}
+
+
+	// matrix exp
+	template <class T>
+	matrix<T> exp(const matrix<T>& A)
+	{
+		matrix<T> res(A.numRows() , A.numCols());
+		for(std::size_t row = 1 ; row <= A.numRows() ; ++row)
+		{
+			for(std::size_t col = 1 ; col <= A.numCols() ; ++col)
+			{
+				res(row , col) = std::exp(A(row , col));			
+			}
+		}
+
+		return res;
+	}
+
+
+	// Constant pi
+	constexpr double pi()
+	{
+		return std::acos(-1);
+	}
+
+	
+	// scalar sin
+	template <typename T>
+	T sin(T val)
+	{
+		return std::sin(val);
+	}
+
+
+	// matrix sin
+	template <class T>
+	matrix<T> sin(const matrix<T>& A)
+	{
+		matrix<T> res(A.numRows() , A.numCols());
+		for(std::size_t row = 1 ; row <= A.numRows() ; ++row)
+		{
+			for(std::size_t col = 1 ; col <= A.numCols() ; ++col)
+			{
+				res(row , col) = std::sin(A(row , col));			
+			}
+		}
+
+		return res;
+	}
+
+
+	
+	// scalar cos
+	template <typename T>
+	T cos(T val)
+	{
+		return std::sin(val);
+	}
+
+
+	// matrix cos
+	template <class T>
+	matrix<T> cos(const matrix<T>& A)
+	{
+		matrix<T> res(A.numRows() , A.numCols());
+		for(std::size_t row = 1 ; row <= A.numRows() ; ++row)
+		{
+			for(std::size_t col = 1 ; col <= A.numCols() ; ++col)
+			{
+				res(row , col) = std::cos(A(row , col));			
+			}
+		}
+		return res;
+	}
+
+
+
+	// scalar tanh
+	template <typename T>
+	T tanh(T val)
+	{
+		return std::tanh(val);
+	}
+
+
+	// matrix tanh
+	template <class T>
+	matrix<T> tanh(const matrix<T>& A)
+	{
+		matrix<T> res(A.numRows() , A.numCols());
+		for(std::size_t row = 1 ; row <= A.numRows() ; ++row)
+		{
+			for(std::size_t col = 1 ; col <= A.numCols() ; ++col)
+			{
+				res(row , col) = std::tanh(A(row , col));			
+			}
+		}
+		return res;
+	}
+
+
+	// scalar sigmoid
+	template <typename T>
+	T sigmoid(T val)
+	{
+		return 1.0/(1 + std::exp(-val));
+	}
+
+
+	// matrix sigmoid
+	template <class T>
+	matrix<T> sigmoid(const matrix<T>& A)
+	{
+		matrix<T> res(A.numRows() , A.numCols());
+		for(std::size_t row = 1 ; row <= A.numRows() ; ++row)
+		{
+			for(std::size_t col = 1 ; col <= A.numCols() ; ++col)
+			{
+				res(row , col) = matrix_op::sigmoid(A(row , col));			
+			}
+		}
+		return res;
+	}
+
+
+
+	// scalar relu
+	template <typename T>
+	T relu(T val)
+	{
+		return std::max(0 , val);
+	}
+
+
+	// matrix relu
+	template <class T>
+	matrix<T> relu(const matrix<T>& A)
+	{
+		matrix<T> res(A.numRows() , A.numCols());
+		for(std::size_t row = 1 ; row <= A.numRows() ; ++row)
+		{
+			for(std::size_t col = 1 ; col <= A.numCols() ; ++col)
+			{
+				res(row , col) = matrix_op::relu(A(row , col));			
+			}
+		}
+		return res;
+	}
+
+
+
+
+
+
 	
 	// TODO : Think about sse implementation and about writing a helper fuction for iteration over the sse blocks
 	// TODO : create vector sum, where by we can add in the case of a 2D matrix, along the rows giving back a col vec or else along the columns giving back a row vec
