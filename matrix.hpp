@@ -1490,6 +1490,18 @@ namespace matrix_op
 		return R;
 	}
 
+
+
+
+	
+	// scalar exp
+	template <typename T>
+	T exp(T val)
+	{
+		std::exp(val);
+	}
+
+
 	
 	// TODO : Think about sse implementation and about writing a helper fuction for iteration over the sse blocks
 	// TODO : create vector sum, where by we can add in the case of a 2D matrix, along the rows giving back a col vec or else along the columns giving back a row vec
