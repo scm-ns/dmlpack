@@ -30,4 +30,18 @@ TEST_CASE("testing the matrix class")
 {
 	using namespace matrix_op;
 
+	auto test_simple_neuron = "create a simple neuron func ";
+	SECTION(test_simple_neuron)
+	{
+		auto dims = 100;
+		auto inputs = matrix_op::rand_fill<float>(dims , 1 , 0 , 10);
+		auto weights = matrix_op::rand_fill<float>(1 , dims , 0 , 10);
+		float bias = 0.5;		
+		
+		auto res = (inputs * weights) + bias;
+
+		auto firing = matrix_op::exp(res);
+		std::cout << firing << std::endl;
+	}
+
 }
