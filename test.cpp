@@ -70,6 +70,32 @@ TEST_CASE("testing the matrix class")
 			std::cout << firing << std::endl;
 		}
 
+		
+		{
+			auto dims = 100;
+			auto inputs = matrix_op::rand_fill<float>(dims , 1 , 0 , 10);
+			auto weights = matrix_op::rand_fill<float>(1 , dims , 0 , 10);
+			float bias = 0.5;		
+			
+			auto res = (weights * inputs) + bias;
+
+			auto firing = matrix_op::sigmoid(res);
+			std::cout << firing << std::endl; 
+		}
+
+
+		{
+			auto dims = 100;
+			auto inputs = matrix_op::rand_fill<float>(dims , 1 , 0 , 10);
+			auto weights = matrix_op::rand_fill<float>(1 , dims , 0 , 10);
+			float bias = 0.5;		
+			
+			auto res = (inputs * weights) + bias;
+
+			auto firing = matrix_op::sigmoid(res);
+			std::cout << firing << std::endl; 
+		}
+
 	}
 
 }
