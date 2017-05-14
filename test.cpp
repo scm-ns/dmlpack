@@ -77,7 +77,7 @@ TEST_CASE("testing the matrix class")
 			auto weights = matrix_op::rand_fill<float>(1 , dims , 0 , 10);
 			float bias = 0.5;		
 			
-			auto res = (weights * inputs) + bias;
+			auto res = (weights.mul(inputs)) + bias;
 
 			auto firing = matrix_op::sigmoid(res);
 			std::cout << firing << std::endl; 
@@ -85,17 +85,22 @@ TEST_CASE("testing the matrix class")
 
 
 		{
-			auto dims = 100;
+			auto dims = 10;
 			auto inputs = matrix_op::rand_fill<float>(dims , 1 , 0 , 10);
 			auto weights = matrix_op::rand_fill<float>(1 , dims , 0 , 10);
 			float bias = 0.5;		
+	
+/* op* does not work, I need to complete its implementation. For now use mul
+ *				 std::cout << inputs
+				  << weights 
+				  << inputs.mul(weights)
+				  << weights.mul(inputs);
+*/
+			auto res = (inputs.mul(weights)) + bias;
 			
-			auto res = (inputs * weights) + bias;
-
 			auto firing = matrix_op::sigmoid(res);
 			firing.for_each([](int r, int c , float val )
 			{
-				std::cout << r <<" " <<  c << std::endl;
 				CHECK(val >= 0); CHECK( val <= 1);
 			});	
 
