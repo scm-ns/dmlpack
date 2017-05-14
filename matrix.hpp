@@ -182,6 +182,9 @@ namespace matrix_op
 
 		matrix<T> transform_create(std::size_t rows , std::size_t cols , std::function<T(std::size_t , std::size_t , matrix<T>)> lam);
 		matrix<T> transform_inplace(std::function<T(std::size_t , std::size_t , T)> lam) ;
+		matrix<T> for_each(std::function<void(T)> lambda);
+		matrix<T> for_each(std::function<void(std::size_t , std::size_t , T)> lambda);
+
 
 		bool check_sse_allignment();	
 	private:
@@ -462,6 +465,34 @@ namespace matrix_op
 			}
 		}	
 	}
+
+	// get access to each element in the matrix within the lambda
+	template <class T>
+	matrix<T> matrix<T>::for_each(std::function<void(T)> lambda) 
+	{
+		for(std::size_t idx = 0 ; idx < _rows ; ++idx)
+		{
+			for(std::size_t  jdx = 0 ; jdx < _cols ; ++jdx)
+			{
+				lambda(get(idx, jdx));
+			}
+		}	
+	}
+
+	// get access to each element in the matrix and the associated index within the lambda
+	template <class T>
+	matrix<T> matrix<T>::for_each(std::function<void( std::size_t , std::size_t , T)> lambda) 
+	{
+		for(std::size_t idx = 0 ; idx < _rows ; ++idx)
+		{
+			for(std::size_t  jdx = 0 ; jdx < _cols ; ++jdx)
+			{
+				lamdba( idx , jdx , get(idx, jdx));
+			}
+		}	
+	}
+
+
 
 	// Get the maximum element in a row or col vector
 	//  0 indexed
