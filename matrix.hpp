@@ -171,6 +171,7 @@ namespace matrix_op
 		matrix<T> operator*(const matrix<T> &rhs) const;
 		matrix<T> add(const  matrix<T> &rhs) const; // NOT FOR RELEASE
 		matrix<T> operator+(const matrix<T> &rhs) const;
+		matrix<T> operator+(const T &rhs) const;
 		matrix<T> operator-(const matrix<T> &rhs) const;
 		
 		bool operator==(const matrix<T> & rhs) const ;
@@ -1232,6 +1233,27 @@ namespace matrix_op
 		{
 			throw std::invalid_argument(" Not of same size ");
 		}
+	}
+
+
+	/*
+	 * Adds a scalar value to the matrix. 
+	 * Adds the same value to each element of the matrix
+	 * Not strictly mathematical, but helps with using the matrix
+	 */
+	template <class T>
+	matrix<T> matrix<T>::operator+(const T &rhs) const
+	{
+		matrix<T> res(numRows() , numCols());
+		for(std::size_t row = 1 ; row <= numRows() ; ++row)
+		{
+			for(std::size_t col = 1 ; col <= numCols() ; ++col)
+			{
+				res(row , col) =  get(row, col) + rhs;
+			}
+		}
+		return res;
+
 	}
 
 
