@@ -9,6 +9,7 @@ PROG= dml.exe
 PROG_DEBUG= dml_debug.exe
 TEST= test.exe
 TEST_DMLPACK= test_dmlpack.exe
+TEST_MATRIX= test_matrix.exe
 
 $(PROG) : $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIB) $(LIB_FLAGS) -o $@
@@ -29,6 +30,9 @@ test : $(OBJECTS)
 
 test_dmlpack : $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIB_FLAGS) $(LIB)  $(DEBUG_FLAGS) $(CFLAGS) test_dmlpack.cpp -o $(TEST_DMLPACK)
+
+test_matrix : $(OBJECTS)
+	$(CC) $(OBJECTS) $(LIB_FLAGS) $(LIB)  $(DEBUG_FLAGS) $(CFLAGS) test_matrix.cpp -o $(TEST_MATRIX)
 
 test_dis : $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIB_FLAGS) $(LIB) $(CFLAGS) -S -c test.cpp
