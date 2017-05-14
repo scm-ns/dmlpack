@@ -1626,6 +1626,34 @@ namespace matrix_op
 
 
 
+	// scalar relu
+	template <typename T>
+	T relu(T val)
+	{
+		return std::max(0 , val);
+	}
+
+
+	// matrix relu
+	template <class T>
+	matrix<T> relu(const matrix<T>& A)
+	{
+		matrix<T> res(A.numRows() , A.numCols());
+		for(std::size_t row = 1 ; row <= A.numRows() ; ++row)
+		{
+			for(std::size_t col = 1 ; col <= A.numCols() ; ++col)
+			{
+				res(row , col) = matrix_op::relu(A(row , col));			
+			}
+		}
+		return res;
+	}
+
+
+
+
+
+
 	
 	// TODO : Think about sse implementation and about writing a helper fuction for iteration over the sse blocks
 	// TODO : create vector sum, where by we can add in the case of a 2D matrix, along the rows giving back a col vec or else along the columns giving back a row vec
