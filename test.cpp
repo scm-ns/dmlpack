@@ -617,7 +617,7 @@ TEST_CASE("testing the matrix_op namepsace ")
 					result = matrix_op::sum(L);	
 					std::cout << __LINE__ << " : " ;
 			});			
-			CHECK(result == (5 * num_rows) + (5 * num_cols) );
+			CHECK(result == (5 * num_rows *  num_cols) );
 		}
 
 
