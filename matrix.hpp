@@ -1498,7 +1498,7 @@ namespace matrix_op
 	template <typename T>
 	T exp(T val)
 	{
-		std::exp(val);
+		return std::exp(val);
 	}
 
 
@@ -1514,6 +1514,8 @@ namespace matrix_op
 				res(row , col) = std::exp(A(row , col));			
 			}
 		}
+
+		return res;
 	}
 
 
@@ -1528,7 +1530,7 @@ namespace matrix_op
 	template <typename T>
 	T sin(T val)
 	{
-		std::sin(val);
+		return std::sin(val);
 	}
 
 
@@ -1544,6 +1546,8 @@ namespace matrix_op
 				res(row , col) = std::sin(A(row , col));			
 			}
 		}
+
+		return res;
 	}
 
 
@@ -1552,7 +1556,7 @@ namespace matrix_op
 	template <typename T>
 	T cos(T val)
 	{
-		std::sin(val);
+		return std::sin(val);
 	}
 
 
@@ -1568,6 +1572,7 @@ namespace matrix_op
 				res(row , col) = std::cos(A(row , col));			
 			}
 		}
+		return res;
 	}
 
 
@@ -1576,7 +1581,7 @@ namespace matrix_op
 	template <typename T>
 	T tanh(T val)
 	{
-		std::tanh(val);
+		return std::tanh(val);
 	}
 
 
@@ -1592,6 +1597,7 @@ namespace matrix_op
 				res(row , col) = std::tanh(A(row , col));			
 			}
 		}
+		return res;
 	}
 
 
@@ -1615,8 +1621,8 @@ namespace matrix_op
 				res(row , col) = matrix_op::sigmoid(A(row , col));			
 			}
 		}
+		return res;
 	}
-
 
 
 
