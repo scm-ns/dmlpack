@@ -1630,9 +1630,8 @@ namespace matrix_op
 	template <typename T>
 	T relu(T val)
 	{
-		return std::max(0 , val);
+		return std::max(static_cast<T>(0) , val);
 	}
-
 
 	// matrix relu
 	template <class T>
