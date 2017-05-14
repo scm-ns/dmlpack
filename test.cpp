@@ -54,8 +54,22 @@ TEST_CASE("testing the matrix class")
 			auto res = (weights * inputs) + bias;
 
 			auto firing = matrix_op::exp(res);
+			std::cout << firing << std::endl; // produces inf
+		}
+
+
+		{
+			auto dims = 10;
+			auto inputs = matrix_op::rand_fill<float>(dims , 1 , 0 , 1);
+			auto weights = matrix_op::rand_fill<float>(1 , dims , 0 , 1);
+			float bias = 0.5;		
+			
+			auto res = (weights * inputs) + bias;
+
+			auto firing = matrix_op::exp(res);
 			std::cout << firing << std::endl;
 		}
+
 	}
 
 }
