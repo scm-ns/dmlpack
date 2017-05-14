@@ -1523,8 +1523,6 @@ namespace matrix_op
 		return std::acos(-1);
 	}
 
-
-
 	
 	// scalar sin
 	template <typename T>
@@ -1548,6 +1546,29 @@ namespace matrix_op
 		}
 	}
 
+
+	
+	// scalar cos
+	template <typename T>
+	T cos(T val)
+	{
+		std::sin(val);
+	}
+
+
+	// matrix cos
+	template <class T>
+	matrix<T> cos(const matrix<T>& A)
+	{
+		matrix<T> res(A.numRows() , A.numCols());
+		for(std::size_t row = 1 ; row <= A.numRows() ; ++row)
+		{
+			for(std::size_t col = 1 ; col <= A.numCols() ; ++col)
+			{
+				res(row , col) = std::cos(A(row , col));			
+			}
+		}
+	}
 
 
 
