@@ -715,11 +715,68 @@ TEST_CASE("testing the matrix_op namepsace ")
 					result = matrix_op::inner_product<float>(L , L);
 					std::cout << __LINE__ << " : " ;
 			});			
+			
 
 
 
 
 		}
+
+
+	}
+
+
+
+	auto test_sum = "test sum";
+	SECTION(test_sum)
+	{
+		{
+			int num_cols = 100000; 
+			matrix_op::matrix<float> L(1,num_cols,5); // row vector
+			
+			long result = 0;
+			measure_exec_time([&]() ->void 
+			{
+					result = matrix_op::sum(L);	
+					std::cout << __LINE__ << " : " ;
+			});			
+			CHECK(result == (5 * num_cols));
+
+		}
+
+
+
+		{
+			int num_rows = 100000; 
+			matrix_op::matrix<float> L(num_rows,1,5); // row vector
+			
+			long result = 0;
+			measure_exec_time([&]() ->void 
+			{
+					result = matrix_op::sum(L);	
+					std::cout << __LINE__ << " : " ;
+			});			
+			CHECK(result == (5 * num_rows));
+
+		}
+
+
+
+		{
+
+			int num_cols = 10000; 
+			int num_rows = 10000; 
+			matrix_op::matrix<float> L(num_rows,num_cols,5); // row vector
+			
+			long result = 0;
+			measure_exec_time([&]() ->void 
+			{
+					result = matrix_op::sum(L);	
+					std::cout << __LINE__ << " : " ;
+			});			
+			CHECK(result == (5 * num_rows) + (5 * num_cols) );
+		}
+
 
 
 	}
