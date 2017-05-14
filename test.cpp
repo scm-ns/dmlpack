@@ -93,7 +93,12 @@ TEST_CASE("testing the matrix class")
 			auto res = (inputs * weights) + bias;
 
 			auto firing = matrix_op::sigmoid(res);
-			std::cout << firing << std::endl; 
+			firing.for_each([](int r, int c , float val )
+			{
+				std::cout << r << c << std::endl;
+				CHECK(val >= 0); CHECK( val <= 1);
+			});	
+
 		}
 
 	}
