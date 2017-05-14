@@ -487,7 +487,7 @@ namespace matrix_op
 		{
 			for(std::size_t  jdx = 0 ; jdx < _cols ; ++jdx)
 			{
-				lamdba( idx , jdx , get(idx, jdx));
+				lambda( idx , jdx , get(idx, jdx));
 			}
 		}	
 	}
