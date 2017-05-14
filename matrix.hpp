@@ -1496,7 +1496,7 @@ namespace matrix_op
 	
 	// scalar exp
 	template <typename T>
-	T exp(T val)
+	inline T exp(T val)
 	{
 		return std::exp(val);
 	}
@@ -1528,7 +1528,7 @@ namespace matrix_op
 	
 	// scalar sin
 	template <typename T>
-	T sin(T val)
+	inline T sin(T val)
 	{
 		return std::sin(val);
 	}
@@ -1554,7 +1554,7 @@ namespace matrix_op
 	
 	// scalar cos
 	template <typename T>
-	T cos(T val)
+	inline T cos(T val)
 	{
 		return std::sin(val);
 	}
@@ -1579,7 +1579,7 @@ namespace matrix_op
 
 	// scalar tanh
 	template <typename T>
-	T tanh(T val)
+	inline T tanh(T val)
 	{
 		return std::tanh(val);
 	}
@@ -1603,7 +1603,7 @@ namespace matrix_op
 
 	// scalar sigmoid
 	template <typename T>
-	T sigmoid(T val)
+	inline T sigmoid(T val)
 	{
 		return 1.0/(1 + std::exp(-val));
 	}
@@ -1628,7 +1628,7 @@ namespace matrix_op
 
 	// scalar relu
 	template <typename T>
-	T relu(T val)
+	inline T relu(T val)
 	{
 		return std::max(static_cast<T>(0) , val);
 	}
@@ -1652,7 +1652,7 @@ namespace matrix_op
 
 	// scalar leaky_relu
 	template <typename T>
-	T leaky_relu(T val,float slope=0.01)
+	inline T leaky_relu(T val,float slope=0.01)
 	{
 		if( val > static_cast<T>(0) )
 		{
