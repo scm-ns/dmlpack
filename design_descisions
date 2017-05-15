@@ -5,5 +5,12 @@ Create an abstract class : Which supports the following methods :
 	train  : Either single example or a batch 
 	inference  : Take in a single example and see the result 
 	
+Better arch  would be split up the matrix_op into multiple header only files, and the user can include the required classes
 
-
+TODO : 
+	Implement 
+		-  axis mean	
+		-  axis sum
+		-  guassian rand fill	
+		-  correct op* to old function
+		-  add sse support 
