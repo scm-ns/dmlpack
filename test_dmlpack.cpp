@@ -6,6 +6,7 @@
 #include "catch.hpp"
 
 #include "dmlpack.hpp"
+#include "single_layer_nn.hpp"
 #include "matrix.hpp"
 #include "data_source.h"
 
