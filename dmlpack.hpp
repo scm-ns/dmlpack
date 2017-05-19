@@ -79,6 +79,57 @@ namespace dmlpack
 			virtual matrix_op::matrix<T> infer_batch(matrix_op::matrix<T> feature_vec) = 0;
 	};
 
+
+
+
+
+	// Contains the operators used to create the hash functions
+	struct hash_fctor // functor
+	{
+		template <class T1 , class T2>
+		std::size_t operator() (const std::pair<T1 , T2> & p) const 
+		{
+			auto h1 = std::hash<T1>{}(p.first);
+			auto h2 = std::hash<T2>{}(p.second);	
+			// check out 
+			// http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx for good hash algorithms
+			
+			unsigned int hash = 0 ; 
+		
+			h1 = h1 * 2654435761 % (2^17);
+			h2 = h2 * 2654435761 % (2^17);
+
+			h1 >> 13;
+			h2 >> 3;
+
+			// SHIFT ADD XOR HASH
+			hash ^= (hash << 5) + (hash >> 2) + h1 + h2;
+			
+			return hash;
+		}
+
+
+		template <class T>
+		std::size_t operator() (const T& p) const 
+		{
+			auto h1 = std::hash<T>{}(p);
+
+			
+			unsigned int hash = 0 ; 
+			
+			// SHIFT ADD XOR HASH
+			hash ^= (hash << 5) + (hash >> 2) + h1 ;
+			
+			return hash;
+		}
+
+	};
+
+
+
+
+
+
 	template <typename T>
 	class single_layer_nn : public ml<T>
 	{
@@ -299,9 +350,6 @@ namespace dmlpack
 
 			// to compute p(f_i | y)
 			std::unordered_map< feature_in_class , occurance , hash_fctor> map_feature_in_class_occurance ;  // mapping between the occurance of each feature in a particular class
-
-
-
 
 
 
