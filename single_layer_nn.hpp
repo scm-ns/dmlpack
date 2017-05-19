@@ -1,3 +1,6 @@
+#ifndef SINGLE_LAYER_NN_HPP
+#define SINLGE_LAYER_NN_HPP
+
 #include "dmlpack.hpp"
 
 
@@ -106,3 +109,6 @@ namespace  dmlpack
 
 
 }	
+
+#endif
+
