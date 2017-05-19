@@ -140,12 +140,10 @@ namespace dmlpack
 		
 		public :
 
-
-			multi_class_perceptron(perceptron_type type) : _type(type)
+			multi_class_perceptron(perceptron_type type)
 			{
-
+				_type = type;
 			};
-
 
 
 
@@ -186,7 +184,7 @@ namespace dmlpack
 					{
 						//dout << class_idx << " " << ml<T>::_num_classes << std::endl;
 						// get the weight vector for a particular class
-						matrix_op::matrix<T> weight_vec = perceptron_weight_.returnRow(class_idx);			
+						matrix_op::matrix<T> weight_vec = _perceptron_weight.returnRow(class_idx);			
 						//dout << " weight_actual_feature " << weight_vec ;
 
 						std::pair<bool, T> pred = single_preceptron(feature_vec , weight_vec);
@@ -262,25 +260,25 @@ namespace dmlpack
 
 
 			}
+
 			void test()
-j			{
+			{
 
 			}
+
 			matrix_op::matrix<T> infer_single_feature(matrix_op::matrix<T> feature_vec)
 			{
 
 			}
+
 			matrix_op::matrix<T> infer_batch(matrix_op::matrix<T> feature_vec)
 			{
 
 
 			}
 	
-
-	
 		private :
 			perceptron_type _type;
-
 			matrix_op::matrix<T> _perceptron_weight;
 
 			std::pair<bool,T> single_preceptron(const matrix_op::matrix<T>& feature , const matrix_op::matrix<T>& weight , T threshold  = 0 ) const;
@@ -295,14 +293,6 @@ j			{
 
 	};
 	
-
-
-
-	
-
-
-
-
 
 }
 
