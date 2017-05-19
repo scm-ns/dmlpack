@@ -45,7 +45,11 @@ namespace dmlpack
 			// hold the validation data 
 			matrix_op::matrix<T> _valid_x;
 			matrix_op::matrix<T> _valid_y;	
-	
+
+			// output of the running the algorithm on the test set is stored
+			matrix_op::matrix<T> _test_prob_pred;
+			matrix_op::matrix<T> _test_class_pred;
+
 			std::size_t _num_classes;
 			std::size_t _num_features;
 			std::size_t _num_train_samples;
@@ -305,8 +309,82 @@ namespace dmlpack
 			void test()
 			{
 
+				matrix_op::matrix<T> res; // the matrix will be of size # test samples * num classes
 
+				size_t num_test_samples = ml<T>::_test_x.numRows();
+
+		// Now compute the class prediction for each test sample
+				matrix_op::matrix<T> prediction(num_test_samples , 1);  
+				ml<T>::_test_prob_pred.resize(num_test_samples , 1); // Store all the output probabilities
+
+				// Go through each element in the features of x and from compuute the probabilites
+				for(size_t test_sample = 1; test_sample <= num_test_samples; ++test_sample) // each row in the matrices
+				{
+
+					matrix_op::matrix<T> sub_mat(1, ml<T>::num_classes); // this row vector will be concatenated to the end of the res
+					// fill them with P(Y)
+					dout << test_sample << std::endl;
+
+					for(size_t class_idx = 1 ; class_idx <= ml<T>::num_classes ; ++class_idx)
+					{
+						//dout << num_classes << " " << num_samples << " " << map_class_occurance[class_idx];
+
+						sub_mat(1,class_idx) =  normalize_laplace(map_class_occurance[class_idx] , ml<T>::num_classes , ml<T>::_num_train_samples);  // number of occuracnes of the given clas
+
+						//dout << sub_mat  << std::endl;
+
+						//sub_mat(1 , class_idx) = std::log(sub_mat(1 , class_idx));
+					}
+
+					dout << sub_mat  << std::endl;
+					size_t num_features = ml<T>::_test_x.numCols(); 
+					/*
+					 * p(y , f_i ) = p(y) * sigma{ p(f_i|y) }
+					 */
+					for(size_t feature_idx = 1 ; feature_idx <=  num_features; ++feature_idx)
+					{
+						T val = ml<T>::_test_x(test_sample , feature_idx); 
+
+						if(val == 1) // The feature is present and we will have to compute the p(f_i | y)
+						{
+						// if the feature is not present, then it does not give up any way to update the probability of which class to choose from
+						// we have to compute for each class. That is given this feature, what is the probability of seeeing a partucular class	
+							
+							for(size_t class_idx = 1 ; class_idx <= ml<T>::_num_classes ; ++class_idx)
+							{
+								// compute p(f_i / y) , by counting the occurance of a feature for the partucular class and dividing it by the total occurance of that feature
+							
+								dout << class_idx << " " << map_feature_in_class_occurance[std::make_pair(feature_idx , class_idx)]  << " " << num_features << " " << map_feature_occurance[feature_idx]  << std::endl;
+
+								T temp = normalize_laplace( map_feature_in_class_occurance[std::make_pair(feature_idx , class_idx)] ,
+												num_features , 
+												map_feature_occurance[feature_idx] ); 
+
+								sub_mat(1, class_idx) += temp ;// std::log(temp);
+							}
+
+						}
+
+					}
+
+					// Use softMax and select max to do prediction on what is the best class to be taken
+
+					// normalize using softmax. squishes everything to lie in the 0,1 range and the total sum = 1. 
+					// std::max_element + distance to find the index of with the largest probaility . 
+					// Add one since the output of distance is 0 index, while the classes are 1 indexed 
+				
+					sub_mat = softmax(sub_mat);
+					res.addRow(sub_mat); // add the probabilities over the different classes 
+
+					prediction(test_sample , 1) = sub_mat.arg_max();
+
+				}
+
+				ml<T>::_test_prob_pred = prediction;
+				ml<T>::_test_class_pred = res;
+				
 			}
+
 
 			matrix_op::matrix<T> infer_single_feature(matrix_op::matrix<T> feature_vec)
 			{
@@ -345,7 +423,6 @@ namespace dmlpack
 
 
 	};
-
 
 
 
