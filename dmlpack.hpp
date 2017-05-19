@@ -13,6 +13,15 @@
  *	 num data points : 3
  */
 
+#include <stdexcept>
+#include <unordered_map>
+#include <cmath>
+#include <algorithm>
+#include <memory>
+#include <queue>
+
+
+
 #include "matrix.hpp"
 
 
@@ -163,6 +172,81 @@ namespace dmlpack
 			matrix_op::matrix<T> _layer;
 			std::size_t _logging_iter;
 	};
+
+	template <typename T>
+	class  naive_bayes : public ml<T>
+	{
+		public:
+			naive_bayes()
+			{
+
+			};
+
+			
+			void train()
+			{
+
+			}
+
+
+			void test()
+			{
+
+
+			}
+
+			matrix_op::matrix<T> infer_single_feature(matrix_op::matrix<T> feature_vec)
+			{
+
+
+			}
+
+			matrix_op::matrix<T> infer_batch(matrix_op::matrix<T> feature_vec)
+			{
+
+
+			}
+
+
+		private:
+
+		
+			using occurance = std::size_t;
+			using class_index = std::size_t;
+			using feature_index = std::size_t;
+
+			// These objects should persist between multiple calls of the function
+			// TO DO : Move them into class memebers 
+			
+			// to compute p(y)
+			std::unordered_map<class_index,occurance , hash_fctor> map_class_occurance;  // maintain mapping between class and count of its occurances in the training set
+
+			// to compute p(f_i)
+			std::unordered_map<feature_index, occurance , hash_fctor> map_feature_occurance ; // maintain mapping between each feature and the number of times it appears in the data set
+
+			using feature_in_class = std::pair<size_t , size_t>;
+
+			// to compute p(f_i | y)
+			std::unordered_map< feature_in_class , occurance , hash_fctor> map_feature_in_class_occurance ;  // mapping between the occurance of each feature in a particular class
+
+
+
+
+
+
+	};
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
 
