@@ -13,14 +13,15 @@
  *	 num data points : 3
  */
 
+#ifndef DMLPACK_HPP
+#define DMLPACK_HPP
+
 #include <stdexcept>
 #include <unordered_map>
 #include <cmath>
 #include <algorithm>
 #include <memory>
 #include <queue>
-
-
 
 #include "matrix.hpp"
 
@@ -327,16 +328,8 @@ namespace dmlpack
 
 
 
-
-
-
-
-
-
-
-
-
 }
 
+#endif 
 
 
