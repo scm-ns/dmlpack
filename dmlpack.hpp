@@ -263,6 +263,52 @@ namespace dmlpack
 
 			void test()
 			{
+				using namespace matrix_op;
+
+				matrix<T> res; // the matrix will be of size # test samples * num classes
+
+				size_t num_test_samples = ml<T>::_test_x.numRows();
+
+				// Now compute the class prediction for each test sample
+				matrix<T> prediction(num_test_samples , 1);  
+
+				// Go through each element in the features of x and from compuute the probabilites
+				for(size_t test_sample = 1; test_sample <= num_test_samples; ++test_sample) // each row in the matrices
+				{
+					// get the feature vector
+					matrix<T> feature_vec = ml<T>::_test_x.returnRow(test_sample);	
+
+					// Append the +1 towards its end. 
+					feature_vec.resize(1 , feature_vec.numCols() + 1);
+					feature_vec(1 , feature_vec.numCols()) = 1;
+
+					//dout << " inference " << feature_vec;
+
+					matrix<T> sub_res(1 , ml<T>::num_classes);
+
+					// compute the similiarty between the current feature and each of the classes
+					for(int class_idx = 1 ; class_idx <= ml<T>::num_classes ; ++class_idx)
+					{
+						sub_res(1,class_idx)  = _perceptron_weight.returnRow(class_idx).innerProduct(feature_vec);
+					}
+					
+					//dout << " result matrix " << sub_res;
+
+					res.addRow(sub_res); // add the probabilities over the different classes 
+				
+					//dout << " total result " << res ;
+					// Use softMax and select max to do prediction on what is the best class to be taken
+					// std::max_element + distance to find the index of with the largest probaility . 
+					// Add one since the output of distance is 0 index, while the classes are 1 indexed 
+				
+					prediction(test_sample , 1) = sub_res.arg_max();
+					//dout << " prediction udpates " << prediction;
+
+				}
+
+			       	// keep track of the prediciton that was made to test the accuracy
+				ml<T>::_test_prob_pred = prediction;
+				ml<T>::_test_class_pred = res;
 
 			}
 
