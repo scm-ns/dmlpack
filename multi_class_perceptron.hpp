@@ -1,11 +1,11 @@
+#ifndef MULTI_CLASS_PERCEPTRON_HPP
+#define MULTI_CLASS_PERCEPTRON_HPP
 
 #include "dmlpack.hpp"
-
 
 namespace dmlpack
 {
 
-	// TODO : add this sepereat to the namespace when creating file for naive bayes
 	enum class perceptron_type {simple, mira};
 
 	template <typename T>
@@ -216,6 +216,4 @@ void multi_class_perceptron_train(perceptron_type type = perceptron_type::simple
 
 }
 
-
-
-
+#endif
