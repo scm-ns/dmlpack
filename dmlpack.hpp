@@ -223,6 +223,8 @@ namespace dmlpack
 			matrix_op::matrix<T> _layer;
 			std::size_t _logging_iter;
 	};
+	
+	//TODO : Break out namespace into seperate files
 
 	template <typename T>
 	class  naive_bayes : public ml<T>
@@ -237,75 +239,64 @@ namespace dmlpack
 			{
 
 
-			/*
-			 * 
-			 * Basic Idea : 
-			 * 	Go through the training set and count the occurance of each type of training sample and feature.
-			 *	
-			 *	The training can be continued with another batch. 
-			 *	So do not compute the probabilities directly, instead just keep the numbers and when probabilites are needed, normalize them to 
-			 *	get the required results.
-			 */
-			
-
-			// Now go through the data set and fill in these values
-			for(size_t train_sample = 1; train_sample <= ml<T>::_train_x.numRows() ; ++train_sample) // each row in the matrices
-			{
-
-				size_t class_idx = 1;
+				/*
+				 * 
+				 * Basic Idea : 
+				 * 	Go through the training set and count the occurance of each type of training sample and feature.
+				 *	
+				 *	The training can be continued with another batch. 
+				 *	So do not compute the probabilities directly, instead just keep the numbers and when probabilites are needed, normalize them to 
+				 *	get the required results.
+				 */
 				
-				dout << train_sample << std::endl;
-				// first go over the y portion of the data set to find the class
-				for(class_idx = 1  ; class_idx <= ml<T>::_num_classes ; ++class_idx)
+
+				// Now go through the data set and fill in these values
+				for(size_t train_sample = 1; train_sample <= ml<T>::_train_x.numRows() ; ++train_sample) // each row in the matrices
 				{
-					T val = ml<T>::_train_y(train_sample , class_idx );		 // the matrix is 1 indexed, this is odd for cs. But is standard in math > what is better ? 
-					dout << val << std::endl;
+
+					size_t class_idx = 1;
 					
-					/*
-					 * Why keep templates ? 
-					 * Because in a deep learning network, I will want to different data types.
-					 * If I use a short instead of a double, then it could lead to descritization of the search space ? Faster convergence ? 
-					 */
-
-					if(val == 1)
+					dout << train_sample << std::endl;
+					// first go over the y portion of the data set to find the class
+					for(class_idx = 1  ; class_idx <= ml<T>::_num_classes ; ++class_idx)
 					{
-						map_class_occurance[class_idx] += 1; // this class has been seen agian in the data set
-						break;
-						// we know know that class_idx is the y value for the current training sample
-					}	
+						T val = ml<T>::_train_y(train_sample , class_idx );		 // the matrix is 1 indexed, this is odd for cs. But is standard in math > what is better ? 
+						dout << val << std::endl;
+						
+						/*
+						 * Why keep templates ? 
+						 * Because in a deep learning network, I will want to different data types.
+						 * If I use a short instead of a double, then it could lead to descritization of the search space ? Faster convergence ? 
+						 */
 
+						if(val == 1)
+						{
+							map_class_occurance[class_idx] += 1; // this class has been seen agian in the data set
+							break;
+							// we know know that class_idx is the y value for the current training sample
+						}	
+
+
+					}
+
+
+					// Go over all the features and count of occurances of a feature and feature given class
+					for(size_t feature_idx = 1 ; feature_idx <= ml<T>::_num_features ; ++feature_idx)
+					{
+						T val = ml<T>::_train_x(train_sample , feature_idx); 
+							
+						if(val == 1)
+						{
+							map_feature_occurance[feature_idx] += 1; // occurance of a feature in the data set
+							
+							feature_in_class key(feature_idx , class_idx);
+
+							map_feature_in_class_occurance[key] += 1;  // occurance of a feature together with the class
+
+						}	
+					}
 
 				}
-
-
-				// Go over all the features and count of occurances of a feature and feature given class
-				for(size_t feature_idx = 1 ; feature_idx <= ml<T>::_num_features ; ++feature_idx)
-				{
-					T val = ml<T>::_train_x(train_sample , feature_idx); 
-						
-					if(val == 1)
-					{
-						map_feature_occurance[feature_idx] += 1; // occurance of a feature in the data set
-						
-						feature_in_class key(feature_idx , class_idx);
-
-						map_feature_in_class_occurance[key] += 1;  // occurance of a feature together with the class
-
-					}	
-				}
-
-			}
-
-
-
-
-
-
-
-
-
-
-
 
 
 			}
